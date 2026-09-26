@@ -3,205 +3,526 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ExamFlow</title>
+    <title>ExamFlow | Твой путь к 100 баллам</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Canvas Confetti для победного салюта -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         body {
-            background-color: #0d1117;
-            color: #f0f6fc;
+            background-color: #090d16;
+            color: #f1f5f9;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             -webkit-tap-highlight-color: transparent;
             user-select: none;
+            overflow-x: hidden;
         }
-        .card-glossy {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 100%);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .glass-card {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
         }
-        .card-active:active {
-            transform: scale(0.98);
+        .glass-card:active {
+            transform: scale(0.985);
+            transition: transform 0.1s ease;
         }
-        .glow-button {
-            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.35);
+        .glow-streak {
+            box-shadow: 0 0 25px rgba(249, 115, 22, 0.25);
         }
-        .glow-button:active {
+        .glow-btn {
+            box-shadow: 0 4px 25px rgba(239, 68, 68, 0.4);
+        }
+        .glow-btn:active {
             transform: scale(0.97);
+        }
+        .badge-gradient {
+            background: linear-gradient(90deg, #ff416c 0%, #ff4b2b 100%);
+        }
+        /* Скрытие полосы скролла */
+        ::-webkit-scrollbar {
+            display: none;
         }
     </style>
 </head>
-<body class="flex flex-col min-h-screen p-4 pb-28">
+<body class="flex flex-col min-h-screen pb-24">
 
-    <!-- Верхний бар профиля -->
-    <div class="flex justify-between items-center mb-6 pt-1">
-        <div>
-            <span class="text-xs font-semibold text-blue-400 tracking-wider uppercase">ExamFlow AI</span>
-            <h1 class="text-2xl font-black tracking-tight text-white">Тренажер ОГЭ/ЕГЭ</h1>
-        </div>
-        
-        <!-- Стрик и XP -->
-        <div class="flex items-center space-x-2">
-            <div class="flex items-center space-x-1.5 bg-orange-500/10 border border-orange-500/20 px-3 py-1.5 rounded-full text-orange-400 text-xs font-bold">
-                <span>🔥</span>
-                <span id="streak-val">5 дней</span>
+    <!-- ВЕРХНЯЯ ШАПКА: Профиль, Стрик, Опыт -->
+    <header class="p-4 pt-3 flex justify-between items-center border-b border-white/5 bg-[#090d16]/80 sticky top-0 z-40 backdrop-blur-md">
+        <div class="flex items-center space-x-3">
+            <!-- Логотип-стикер -->
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 p-0.5 shadow-lg shadow-orange-500/20 flex items-center justify-center">
+                <img src="logo.png" onerror="this.src='logo_transparent.png'" alt="100" class="w-full h-full object-cover rounded-[14px]">
             </div>
-            <div class="flex items-center space-x-1.5 bg-blue-500/10 border border-blue-500/20 px-3 py-1.5 rounded-full text-blue-400 text-xs font-bold">
-                <span>💎</span>
-                <span id="xp-val">240 XP</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Заголовок раздела -->
-    <div class="flex justify-between items-center mb-3">
-        <h2 class="text-lg font-bold text-gray-200">Выбери режим</h2>
-        <span class="text-xs text-gray-400 bg-gray-800/80 px-2.5 py-1 rounded-lg">Сезон 2026</span>
-    </div>
-
-    <!-- Главная карточка: Ежедневный Спринт (в стиле твоего скриншота) -->
-    <div onclick="openQuiz('Математика')" class="card-glossy card-active rounded-3xl p-5 mb-4 relative overflow-hidden cursor-pointer border border-blue-500/30">
-        <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-blue-600/20 rounded-full blur-2xl pointer-events-none"></div>
-
-        <div class="flex justify-between items-start mb-3">
-            <div class="flex items-center space-x-2">
-                <span class="bg-blue-600 text-white text-[11px] font-black px-2.5 py-0.5 rounded-md">DAILY</span>
-                <span class="bg-white/10 text-gray-300 text-[11px] font-semibold px-2 py-0.5 rounded-md">ОГЭ / ЕГЭ</span>
-            </div>
-            <span class="text-2xl">⚡️</span>
-        </div>
-
-        <h3 class="text-xl font-black text-white mb-1">Ежедневный Спринт</h3>
-        <p class="text-xs text-gray-400 mb-4">3 короткие задачи для удержания стрика и прокачки рейтинга</p>
-
-        <!-- Плашка награды (как курс в твоем референсе) -->
-        <div class="bg-black/40 rounded-2xl p-3 flex justify-between items-center border border-white/5">
             <div>
-                <div class="text-[10px] text-gray-400 uppercase font-bold">Награда за тест</div>
-                <div class="text-sm font-extrabold text-green-400">+50 XP • Стрик +1</div>
+                <div class="flex items-center space-x-1.5">
+                    <span class="text-sm font-black tracking-tight text-white">ExamFlow</span>
+                    <span class="text-[9px] bg-red-500/20 text-red-400 font-extrabold px-1.5 py-0.5 rounded border border-red-500/30">PRO</span>
+                </div>
+                <div class="text-[11px] text-gray-400 font-medium">Сезон ОГЭ / ЕГЭ 2026</div>
             </div>
-            <div class="text-right">
-                <div class="text-[10px] text-gray-400 uppercase font-bold">Время</div>
-                <div class="text-sm font-extrabold text-blue-400">~2 минуты</div>
+        </div>
+
+        <!-- Виджет Стрика и XP -->
+        <div class="flex items-center space-x-2">
+            <div class="flex items-center space-x-1 bg-orange-500/10 border border-orange-500/25 px-2.5 py-1.5 rounded-xl text-orange-400 font-black text-xs">
+                <span>🔥</span>
+                <span id="streak-counter">5</span>
             </div>
+            <div class="flex items-center space-x-1 bg-blue-500/10 border border-blue-500/25 px-2.5 py-1.5 rounded-xl text-blue-400 font-black text-xs">
+                <span>💎</span>
+                <span id="xp-counter">320</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- ОСНОВНОЙ КОНТЕНТ (ВКЛАДКИ) -->
+    <main class="flex-grow p-4 space-y-5">
+
+        <!-- СЕКЦИЯ 1: ГЛАВНАЯ (ТРЕНАЖЕР) -->
+        <div id="tab-home" class="space-y-4">
+
+            <!-- БАННЕР ДНЯ (Ежедневный Спринт) -->
+            <div onclick="startDailySprint()" class="glass-card glow-streak rounded-3xl p-5 relative overflow-hidden cursor-pointer border border-orange-500/30">
+                <div class="absolute -right-8 -top-8 w-40 h-40 bg-orange-500/15 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div class="flex justify-between items-start mb-3">
+                    <span class="badge-gradient text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full tracking-wider shadow-sm">
+                        Дневной Спринт
+                    </span>
+                    <span class="text-xs font-bold text-orange-400 flex items-center space-x-1">
+                        <span>⏳</span>
+                        <span>до сброса 05:42</span>
+                    </span>
+                </div>
+
+                <h2 class="text-2xl font-black text-white leading-tight mb-1">
+                    Сдай 3 задачи дня 🔥
+                </h2>
+                <p class="text-xs text-gray-400 mb-4 leading-relaxed">
+                    Решай каждый день по 2 минуты, чтобы не сгорел стрик и подняться в Алмазную лигу.
+                </p>
+
+                <!-- Статистика награды (как в крутых финтех-картах) -->
+                <div class="bg-black/40 rounded-2xl p-3.5 flex justify-between items-center border border-white/5">
+                    <div>
+                        <div class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Награда за спринт</div>
+                        <div class="text-sm font-black text-emerald-400 flex items-center space-x-1">
+                            <span>+50 XP</span>
+                            <span class="text-gray-500">•</span>
+                            <span class="text-orange-400">🔥 Стрик +1</span>
+                        </div>
+                    </div>
+                    <button class="bg-gradient-to-r from-orange-500 to-red-600 text-white font-black text-xs px-4 py-2.5 rounded-xl shadow-md">
+                        Старт →
+                    </button>
+                </div>
+            </div>
+
+            <!-- ЗАГОЛОВОК СЕКЦИИ: ПРЕДМЕТЫ -->
+            <div class="flex justify-between items-center pt-2">
+                <h3 class="text-base font-black text-gray-200 tracking-tight">Выбери предмет</h3>
+                <span class="text-xs text-blue-400 font-semibold cursor-pointer">Все темы (14)</span>
+            </div>
+
+            <!-- КАРТОЧКА 1: МАТЕМАТИКА -->
+            <div onclick="openTopic('Математика: Уравнения', 'math')" class="glass-card rounded-3xl p-4 cursor-pointer relative overflow-hidden flex items-center justify-between">
+                <div class="flex items-center space-x-3.5">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-2xl shadow-lg shadow-blue-500/20">
+                        📐
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2 mb-0.5">
+                            <h4 class="text-base font-black text-white">Математика</h4>
+                            <span class="text-[10px] bg-blue-500/20 text-blue-300 font-bold px-1.5 py-0.2 rounded">ОГЭ №6-9</span>
+                        </div>
+                        <div class="text-xs text-gray-400">Линейные и квадратные уравнения</div>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="text-xs font-black text-blue-400">75%</div>
+                    <div class="w-12 h-1.5 bg-gray-800 rounded-full mt-1 overflow-hidden">
+                        <div class="bg-blue-500 h-full rounded-full" style="width: 75%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- КАРТОЧКА 2: РУССКИЙ ЯЗЫК -->
+            <div onclick="openTopic('Русский: Орфоэпия и нормы', 'rus')" class="glass-card rounded-3xl p-4 cursor-pointer relative overflow-hidden flex items-center justify-between">
+                <div class="flex items-center space-x-3.5">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-2xl shadow-lg shadow-emerald-500/20">
+                        📚
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2 mb-0.5">
+                            <h4 class="text-base font-black text-white">Русский язык</h4>
+                            <span class="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-1.5 py-0.2 rounded">Задание 4</span>
+                        </div>
+                        <div class="text-xs text-gray-400">Ударения и орфографические нормы</div>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="text-xs font-black text-emerald-400">40%</div>
+                    <div class="w-12 h-1.5 bg-gray-800 rounded-full mt-1 overflow-hidden">
+                        <div class="bg-emerald-500 h-full rounded-full" style="width: 40%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- КАРТОЧКА 3: ИНФОРМАТИКА -->
+            <div onclick="openTopic('Информатика: Системы счисления', 'inf')" class="glass-card rounded-3xl p-4 cursor-pointer relative overflow-hidden flex items-center justify-between">
+                <div class="flex items-center space-x-3.5">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-2xl shadow-lg shadow-purple-500/20">
+                        💻
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2 mb-0.5">
+                            <h4 class="text-base font-black text-white">Информатика</h4>
+                            <span class="text-[10px] bg-purple-500/20 text-purple-300 font-bold px-1.5 py-0.2 rounded">База</span>
+                        </div>
+                        <div class="text-xs text-gray-400">Биты, байты, двоичный код</div>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="text-xs font-black text-purple-400">90%</div>
+                    <div class="w-12 h-1.5 bg-gray-800 rounded-full mt-1 overflow-hidden">
+                        <div class="bg-purple-500 h-full rounded-full" style="width: 90%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- КАРТОЧКА 4: ОБЩЕСТВОЗНАНИЕ -->
+            <div onclick="openTopic('Обществознание: Экономика', 'soc')" class="glass-card rounded-3xl p-4 cursor-pointer relative overflow-hidden flex items-center justify-between">
+                <div class="flex items-center space-x-3.5">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-2xl shadow-lg shadow-amber-500/20">
+                        🏛️
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2 mb-0.5">
+                            <h4 class="text-base font-black text-white">Обществознание</h4>
+                            <span class="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-1.5 py-0.2 rounded">Блок 2</span>
+                        </div>
+                        <div class="text-xs text-gray-400">Рынок, инфляция, налоги</div>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="text-xs font-black text-amber-400">20%</div>
+                    <div class="w-12 h-1.5 bg-gray-800 rounded-full mt-1 overflow-hidden">
+                        <div class="bg-amber-500 h-full rounded-full" style="width: 20%"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- СЕКЦИЯ 2: РЕЙТИНГ (ЛИДЕРБОРД) -->
+        <div id="tab-leaderboard" class="space-y-4 hidden">
+            <div class="glass-card rounded-3xl p-5 text-center relative overflow-hidden border border-yellow-500/20">
+                <div class="text-3xl mb-1">🏆</div>
+                <h3 class="text-xl font-black text-white">Алмазная Лига</h3>
+                <p class="text-xs text-gray-400">Топ учеников этой недели. Топ-3 получают статус PRO!</p>
+            </div>
+
+            <div class="space-y-2">
+                <div class="glass-card rounded-2xl p-3 flex items-center justify-between border border-yellow-500/30 bg-yellow-500/5">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-lg font-black text-yellow-400 w-5 text-center">1</span>
+                        <div class="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center font-bold text-sm">🦁</div>
+                        <div>
+                            <div class="text-xs font-bold text-white">Александр С.</div>
+                            <div class="text-[10px] text-gray-400">Стрик 28 дней 🔥</div>
+                        </div>
+                    </div>
+                    <span class="text-xs font-black text-yellow-400">1 420 XP</span>
+                </div>
+
+                <div class="glass-card rounded-2xl p-3 flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-lg font-black text-gray-400 w-5 text-center">2</span>
+                        <div class="w-8 h-8 rounded-full bg-gray-500/20 flex items-center justify-center font-bold text-sm">🦊</div>
+                        <div>
+                            <div class="text-xs font-bold text-white">Данил К. (Ты)</div>
+                            <div class="text-[10px] text-orange-400">Стрик 5 дней 🔥</div>
+                        </div>
+                    </div>
+                    <span class="text-xs font-black text-blue-400">320 XP</span>
+                </div>
+
+                <div class="glass-card rounded-2xl p-3 flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-lg font-black text-amber-700 w-5 text-center">3</span>
+                        <div class="w-8 h-8 rounded-full bg-amber-700/20 flex items-center justify-center font-bold text-sm">🐼</div>
+                        <div>
+                            <div class="text-xs font-bold text-white">Мария В.</div>
+                            <div class="text-[10px] text-gray-400">Стрик 12 дней 🔥</div>
+                        </div>
+                    </div>
+                    <span class="text-xs font-black text-gray-300">290 XP</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- СЕКЦИЯ 3: ПРОФИЛЬ -->
+        <div id="tab-profile" class="space-y-4 hidden">
+            <div class="glass-card rounded-3xl p-6 text-center">
+                <div class="w-20 h-20 rounded-3xl bg-gradient-to-br from-orange-500 to-red-600 mx-auto p-1 shadow-xl shadow-orange-500/20 mb-3 flex items-center justify-center">
+                    <img src="logo.png" onerror="this.src='logo_transparent.png'" alt="100" class="w-full h-full object-cover rounded-[20px]">
+                </div>
+                <h3 class="text-lg font-black text-white">Данил Ковалев</h3>
+                <p class="text-xs text-gray-400">Уровень 4 • Знаток ОГЭ</p>
+
+                <div class="grid grid-cols-3 gap-2 mt-5">
+                    <div class="bg-black/30 rounded-2xl p-2.5 border border-white/5">
+                        <div class="text-[10px] text-gray-400">Точность</div>
+                        <div class="text-sm font-black text-emerald-400">88%</div>
+                    </div>
+                    <div class="bg-black/30 rounded-2xl p-2.5 border border-white/5">
+                        <div class="text-[10px] text-gray-400">Решено</div>
+                        <div class="text-sm font-black text-blue-400">42 задачи</div>
+                    </div>
+                    <div class="bg-black/30 rounded-2xl p-2.5 border border-white/5">
+                        <div class="text-[10px] text-gray-400">Стрик</div>
+                        <div class="text-sm font-black text-orange-400">5 дней</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- НИЖНЯЯ НАВИГАЦИОННАЯ ПАНЕЛЬ (iOS Style) -->
+    <nav class="fixed bottom-0 left-0 right-0 p-3 bg-[#090d16]/90 border-t border-white/10 backdrop-blur-xl z-50 flex justify-around items-center">
+        <button onclick="switchTab('home')" id="nav-home" class="flex flex-col items-center space-y-1 text-orange-500">
+            <span class="text-xl">⚡️</span>
+            <span class="text-[10px] font-black tracking-wider">Спринт</span>
+        </button>
+        <button onclick="switchTab('leaderboard')" id="nav-leaderboard" class="flex flex-col items-center space-y-1 text-gray-400 hover:text-white">
+            <span class="text-xl">🏆</span>
+            <span class="text-[10px] font-bold tracking-wider">Рейтинг</span>
+        </button>
+        <button onclick="switchTab('profile')" id="nav-profile" class="flex flex-col items-center space-y-1 text-gray-400 hover:text-white">
+            <span class="text-xl">👤</span>
+            <span class="text-[10px] font-bold tracking-wider">Профиль</span>
+        </button>
+    </nav>
+
+    <!-- МОДАЛЬНОЕ ОКНО ТЕСТА (ИНТЕРАКТИВНЫЙ КВИЗ) -->
+    <div id="quiz-modal" class="fixed inset-0 bg-[#090d16] z-50 p-5 flex flex-col justify-between hidden">
+        <!-- Верх квиза -->
+        <div class="flex justify-between items-center mb-4">
+            <button onclick="closeQuiz()" class="text-gray-400 text-xs font-bold bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl active:scale-95">
+                ✕ Выйти
+            </button>
+            <div id="quiz-topic" class="text-xs font-black text-orange-400 uppercase tracking-wider">Математика</div>
+            <div id="quiz-step" class="text-xs font-extrabold text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-lg">1 / 3</div>
+        </div>
+
+        <!-- Прогресс-бар теста -->
+        <div class="w-full bg-gray-800/80 h-1.5 rounded-full overflow-hidden mb-6">
+            <div id="quiz-progress" class="bg-gradient-to-r from-orange-500 to-red-500 h-full rounded-full transition-all duration-300" style="width: 33%"></div>
+        </div>
+
+        <!-- Блок вопроса -->
+        <div class="flex-grow flex flex-col justify-center my-auto space-y-6">
+            <div class="text-center">
+                <span class="text-[10px] font-black uppercase text-gray-500 tracking-widest bg-white/5 px-2.5 py-1 rounded-md">Реальное задание</span>
+                <h3 id="quiz-question-title" class="text-xs font-bold text-gray-400 mt-2">Найдите значение выражения:</h3>
+            </div>
+
+            <!-- Карточка с формулой / текстом задачи -->
+            <div id="quiz-question-box" class="glass-card rounded-3xl p-7 text-center text-3xl font-black text-white border border-white/10 shadow-2xl">
+                5x - 15 = 20
+            </div>
+
+            <!-- Сетка вариантов ответов -->
+            <div id="quiz-options" class="grid grid-cols-2 gap-3.5 pt-2">
+                <!-- Кнопки вставляются динамически -->
+            </div>
+        </div>
+
+        <!-- Подсказка / Ошибка / Успех -->
+        <div id="quiz-footer" class="text-center h-12 flex items-center justify-center">
+            <div id="quiz-feedback" class="text-xs font-bold"></div>
         </div>
     </div>
 
-    <!-- Карточка 2: Профильная Математика -->
-    <div onclick="openQuiz('Алгебра')" class="card-glossy card-active rounded-3xl p-5 mb-4 relative overflow-hidden cursor-pointer">
-        <div class="flex justify-between items-start mb-2">
-            <div class="flex items-center space-x-2">
-                <span class="bg-purple-600/30 text-purple-300 border border-purple-500/30 text-[11px] font-bold px-2 py-0.5 rounded-md">МАТЕМАТИКА</span>
-                <span class="bg-white/10 text-gray-300 text-[11px] font-semibold px-2 py-0.5 rounded-md">Часть 1</span>
-            </div>
-            <span class="text-2xl">📐</span>
+    <!-- ПОБЕДНОЕ ОКНО ФИНИША СПРИНТА -->
+    <div id="win-modal" class="fixed inset-0 bg-[#090d16]/95 z-50 p-6 flex flex-col items-center justify-center text-center hidden backdrop-blur-xl">
+        <div class="w-24 h-24 rounded-3xl bg-gradient-to-br from-orange-500 to-red-600 p-1 shadow-2xl shadow-orange-500/40 mb-4 flex items-center justify-center animate-bounce">
+            <img src="logo.png" onerror="this.src='logo_transparent.png'" alt="100" class="w-full h-full object-cover rounded-[22px]">
         </div>
-        <h3 class="text-lg font-black text-white mb-1">Уравнения и Степени</h3>
-        <p class="text-xs text-gray-400 mb-3">Задания №6-№9 из реальных вариантов ФИПИ</p>
-        
-        <div class="bg-black/30 rounded-xl p-2.5 flex justify-between items-center border border-white/5">
-            <span class="text-xs text-gray-300 font-semibold">Готовность к теме</span>
-            <span class="text-xs font-black text-purple-400">75%</span>
-        </div>
-    </div>
+        <h2 class="text-3xl font-black text-white mb-1">Спринт Закрыт! 🔥</h2>
+        <p class="text-xs text-gray-400 max-w-xs mb-6">Ты ответил на все задачи без единой ошибки и удержал свой ежедневный стрик.</p>
 
-    <!-- Карточка 3: Обществознание / Информатика -->
-    <div onclick="openQuiz('Информатика')" class="card-glossy card-active rounded-3xl p-5 mb-4 relative overflow-hidden cursor-pointer">
-        <div class="flex justify-between items-start mb-2">
-            <div class="flex items-center space-x-2">
-                <span class="bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold px-2 py-0.5 rounded-md">ИНФОРМАТИКА</span>
-                <span class="bg-white/10 text-gray-300 text-[11px] font-semibold px-2 py-0.5 rounded-md">Теория + Код</span>
+        <div class="bg-white/5 border border-white/10 rounded-2xl p-4 w-full max-w-xs flex justify-around mb-8">
+            <div>
+                <div class="text-[10px] text-gray-400 uppercase font-bold">Получено</div>
+                <div class="text-lg font-black text-emerald-400">+50 XP 💎</div>
             </div>
-            <span class="text-2xl">💻</span>
+            <div class="w-px bg-white/10"></div>
+            <div>
+                <div class="text-[10px] text-gray-400 uppercase font-bold">Стрик дня</div>
+                <div class="text-lg font-black text-orange-400">6 дней 🔥</div>
+            </div>
         </div>
-        <h3 class="text-lg font-black text-white mb-1">Системы счисления</h3>
-        <p class="text-xs text-gray-400 mb-3">Двоичный и шестнадцатеричный код за 5 минут</p>
-        
-        <div class="bg-black/30 rounded-xl p-2.5 flex justify-between items-center border border-white/5">
-            <span class="text-xs text-gray-300 font-semibold">Готовность к теме</span>
-            <span class="text-xs font-black text-emerald-400">40%</span>
-        </div>
-    </div>
 
-    <!-- Фиксированная нижняя кнопка (в стиле "Войти или создать аккаунт") -->
-    <div class="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-[#0d1117] via-[#0d1117]/95 to-transparent">
-        <button onclick="openQuiz('Математика')" class="glow-button w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-extrabold py-4 rounded-2xl text-center text-base tracking-wide flex items-center justify-center space-x-2 transition-all">
-            <span>🔥</span>
-            <span>Начать Ежедневный Спринт</span>
+        <button onclick="finishSprint()" class="glow-btn w-full max-w-xs bg-gradient-to-r from-orange-500 to-red-600 text-white font-extrabold py-4 rounded-2xl text-center text-base tracking-wide">
+            Забрать награду 🚀
         </button>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО ТЕСТА (Открывается при клике на любую карточку) -->
-    <div id="quiz-modal" class="fixed inset-0 bg-[#0d1117] z-50 p-5 flex flex-col justify-between hidden">
-        <!-- Верх модалки -->
-        <div class="flex justify-between items-center mb-4">
-            <button onclick="closeQuiz()" class="text-gray-400 text-sm font-bold bg-white/5 px-3 py-1.5 rounded-xl">✕ Закрыть</button>
-            <div id="quiz-subject" class="text-xs font-bold text-blue-400 uppercase tracking-wider">Математика</div>
-            <div class="text-xs font-black text-orange-400">Вопрос 1/1</div>
-        </div>
-
-        <!-- Карточка вопроса -->
-        <div class="flex-grow flex flex-col justify-center my-auto">
-            <div class="text-center text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Решите уравнение</div>
-            <div class="card-glossy rounded-3xl p-6 text-center text-3xl font-black text-white mb-8 border border-white/10 shadow-2xl">
-                2x + 14 = 30
-            </div>
-
-            <!-- Варианты ответов -->
-            <div class="grid grid-cols-2 gap-3.5">
-                <button onclick="answer(this, false)" class="card-glossy card-active p-4 rounded-2xl text-lg font-black text-white border border-white/10 hover:border-blue-500">6</button>
-                <button onclick="answer(this, true)" class="card-glossy card-active p-4 rounded-2xl text-lg font-black text-white border border-white/10 hover:border-blue-500">8</button>
-                <button onclick="answer(this, false)" class="card-glossy card-active p-4 rounded-2xl text-lg font-black text-white border border-white/10 hover:border-blue-500">10</button>
-                <button onclick="answer(this, false)" class="card-glossy card-active p-4 rounded-2xl text-lg font-black text-white border border-white/10 hover:border-blue-500">12</button>
-            </div>
-        </div>
-
-        <!-- Статус ответа -->
-        <div id="quiz-result" class="text-center text-sm font-bold h-10 flex items-center justify-center"></div>
-    </div>
-
     <script>
+        // Инициализация Telegram WebApp
         let tg = window.Telegram?.WebApp;
         if (tg) {
             tg.expand();
-            tg.setHeaderColor('#0d1117');
+            tg.setHeaderColor('#090d16');
+            tg.setBackgroundColor('#090d16');
         }
 
-        let currentStreak = 5;
-        let currentXP = 240;
+        let streak = 5;
+        let xp = 320;
 
-        function openQuiz(subject) {
-            document.getElementById('quiz-subject').innerText = subject;
-            document.getElementById('quiz-result').innerText = '';
+        // База реальных вопросов для спринта
+        const sprintQuestions = [
+            {
+                subject: "Математика (ОГЭ)",
+                title: "Найдите корень уравнения:",
+                question: "5x - 15 = 20",
+                options: ["5", "7", "8", "10"],
+                correct: 1, // 7
+                explanation: "5x = 35 => x = 7"
+            },
+            {
+                subject: "Русский язык",
+                title: "В каком слове ударение падает на первый слог?",
+                question: "Выберите верный вариант:",
+                options: ["звонИт", "тОрты", "красИвее", "свеклА"],
+                correct: 1, // тОрты
+                explanation: "Правильно: тОрты (ударение всегда на первую букву О)"
+            },
+            {
+                subject: "Информатика",
+                title: "Перевод единиц информации:",
+                question: "Сколько бит содержится в 4 байтах?",
+                options: ["16", "24", "32", "64"],
+                correct: 2, // 32
+                explanation: "1 байт = 8 бит. 4 * 8 = 32 бита."
+            }
+        ];
+
+        let currentQuestionIdx = 0;
+
+        // Переключение табов
+        function switchTab(tab) {
+            document.getElementById('tab-home').classList.add('hidden');
+            document.getElementById('tab-leaderboard').classList.add('hidden');
+            document.getElementById('tab-profile').classList.add('hidden');
+
+            document.getElementById('nav-home').className = "flex flex-col items-center space-y-1 text-gray-400 hover:text-white";
+            document.getElementById('nav-leaderboard').className = "flex flex-col items-center space-y-1 text-gray-400 hover:text-white";
+            document.getElementById('nav-profile').className = "flex flex-col items-center space-y-1 text-gray-400 hover:text-white";
+
+            document.getElementById(`tab-${tab}`).classList.remove('hidden');
+            document.getElementById(`nav-${tab}`).className = "flex flex-col items-center space-y-1 text-orange-500 font-black";
+
+            if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred("light");
+        }
+
+        // Запуск Дневного Спринта
+        function startDailySprint() {
+            currentQuestionIdx = 0;
+            loadQuestion();
             document.getElementById('quiz-modal').classList.remove('hidden');
+            if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred("medium");
+        }
+
+        function openTopic(title, code) {
+            startDailySprint();
         }
 
         function closeQuiz() {
             document.getElementById('quiz-modal').classList.add('hidden');
         }
 
-        function answer(btn, isCorrect) {
-            const resultEl = document.getElementById('quiz-result');
-            
-            if (isCorrect) {
-                btn.classList.add('!bg-green-600', '!border-green-400');
-                resultEl.innerHTML = '<span class="text-green-400">🎉 Верно! +10 XP начислено</span>';
+        // Загрузка вопроса
+        function loadQuestion() {
+            const q = sprintQuestions[currentQuestionIdx];
+            document.getElementById('quiz-topic').innerText = q.subject;
+            document.getElementById('quiz-question-title').innerText = q.title;
+            document.getElementById('quiz-question-box').innerText = q.question;
+            document.getElementById('quiz-step').innerText = `${currentQuestionIdx + 1} / ${sprintQuestions.length}`;
+            document.getElementById('quiz-progress').style.width = `${((currentQuestionIdx + 1) / sprintQuestions.length) * 100}%`;
+            document.getElementById('quiz-feedback').innerHTML = '';
+
+            const optionsContainer = document.getElementById('quiz-options');
+            optionsContainer.innerHTML = '';
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "glass-card p-4 rounded-2xl text-lg font-black text-white border border-white/10 hover:border-orange-500/50 active:scale-95 transition-all text-center";
+                btn.innerText = opt;
+                btn.onclick = () => selectAnswer(btn, idx);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        // Выбор ответа
+        function selectAnswer(btn, selectedIdx) {
+            const q = sprintQuestions[currentQuestionIdx];
+            const feedback = document.getElementById('quiz-feedback');
+
+            if (selectedIdx === q.correct) {
+                btn.className = "p-4 rounded-2xl text-lg font-black text-white bg-emerald-600 border border-emerald-400 shadow-lg shadow-emerald-600/30 transition-all";
+                feedback.innerHTML = `<span class="text-emerald-400 font-extrabold">🎉 Верно! +10 XP</span>`;
                 if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
 
-                currentXP += 10;
-                document.getElementById('xp-val').innerText = currentXP + ' XP';
+                xp += 10;
+                document.getElementById('xp-counter').innerText = xp;
 
                 setTimeout(() => {
-                    closeQuiz();
-                    if (tg) {
-                        tg.sendData("win_10xp");
+                    if (currentQuestionIdx + 1 < sprintQuestions.length) {
+                        currentQuestionIdx++;
+                        loadQuestion();
+                    } else {
+                        // Победа в спринте!
+                        document.getElementById('quiz-modal').classList.add('hidden');
+                        document.getElementById('win-modal').classList.remove('hidden');
+                        triggerConfetti();
                     }
-                }, 1200);
+                }, 800);
             } else {
-                btn.classList.add('!bg-red-600', '!border-red-400');
-                resultEl.innerHTML = '<span class="text-red-400">❌ Неверно, попробуй еще раз!</span>';
+                btn.className = "p-4 rounded-2xl text-lg font-black text-white bg-red-600 border border-red-400 shadow-lg shadow-red-600/30 transition-all";
+                feedback.innerHTML = `<span class="text-red-400 font-extrabold">❌ Неверно! Попробуй другой вариант</span>`;
                 if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
+            }
+        }
+
+        // Салют победителя
+        function triggerConfetti() {
+            if (window.confetti) {
+                confetti({
+                    particleCount: 80,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+        }
+
+        // Финиш
+        function finishSprint() {
+            streak += 1;
+            xp += 20; // бонус
+            document.getElementById('streak-counter').innerText = streak;
+            document.getElementById('xp-counter').innerText = xp;
+
+            document.getElementById('win-modal').classList.add('hidden');
+
+            if (tg) {
+                tg.sendData("win_10xp");
+                tg.close();
             }
         }
     </script>

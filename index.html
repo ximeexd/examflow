@@ -3,374 +3,363 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ExamFlow | Твой путь к 100 баллам</title>
+    <title>ExamFlow | Твой Duolingo для ОГЭ и ЕГЭ</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Шрифт Nunito как в Duolingo -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
     <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Canvas Confetti для победного салюта -->
+    <!-- Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         body {
-            background-color: #090d16;
-            color: #f1f5f9;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #131f24;
+            color: #ffffff;
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
             -webkit-tap-highlight-color: transparent;
             user-select: none;
-            overflow-x: hidden;
         }
-        .glass-card {
-            background: linear-gradient(145deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+
+        /* 3D-кнопки в стиле Duolingo с объемным нижним краем */
+        .duo-btn {
+            border-bottom-width: 4px;
+            transition: all 0.08s ease-in-out;
         }
-        .glass-card:active {
-            transform: scale(0.985);
-            transition: transform 0.1s ease;
+        .duo-btn:active {
+            transform: translateY(3px);
+            border-bottom-width: 1px;
         }
-        .glow-streak {
-            box-shadow: 0 0 25px rgba(249, 115, 22, 0.25);
+
+        /* Уровни-кругляшки (дорожка квестов) */
+        .level-node {
+            width: 76px;
+            height: 72px;
+            border-bottom-width: 7px;
+            transition: transform 0.1s ease, border-bottom-width 0.1s ease;
         }
-        .glow-btn {
-            box-shadow: 0 4px 25px rgba(239, 68, 68, 0.4);
+        .level-node:active {
+            transform: translateY(4px);
+            border-bottom-width: 3px;
         }
-        .glow-btn:active {
-            transform: scale(0.97);
+
+        /* Плавающая подсказка "НАЧАТЬ" */
+        @keyframes float-badge {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
         }
-        .badge-gradient {
-            background: linear-gradient(90deg, #ff416c 0%, #ff4b2b 100%);
+        .animate-start-badge {
+            animation: float-badge 1.8s infinite ease-in-out;
         }
-        /* Скрытие полосы скролла */
+
+        /* Скрытие скроллбара */
         ::-webkit-scrollbar {
             display: none;
         }
     </style>
 </head>
-<body class="flex flex-col min-h-screen pb-24">
+<body class="min-h-screen flex flex-col md:flex-row justify-between">
 
-    <!-- ВЕРХНЯЯ ШАПКА: Профиль, Стрик, Опыт -->
-    <header class="p-4 pt-3 flex justify-between items-center border-b border-white/5 bg-[#090d16]/80 sticky top-0 z-40 backdrop-blur-md">
-        <div class="flex items-center space-x-3">
-            <!-- Логотип-стикер -->
-            <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 p-0.5 shadow-lg shadow-orange-500/20 flex items-center justify-center">
-                <img src="logo.png" onerror="this.src='logo_transparent.png'" alt="100" class="w-full h-full object-cover rounded-[14px]">
+    <!-- ЛЕВАЯ КОЛОНКА / НАВИГАЦИЯ (как на скриншоте Duolingo) -->
+    <aside class="hidden md:flex flex-col justify-between w-64 p-4 border-r border-[#202f36] bg-[#131f24] min-h-screen sticky top-0">
+        <div class="space-y-6">
+            <!-- Логотип ExamFlow -->
+            <div class="flex items-center space-x-3 px-3 py-2 cursor-pointer">
+                <img src="logo.png" onerror="this.src='logo_transparent.png'" alt="100" class="w-9 h-9 object-contain">
+                <span class="text-2xl font-black tracking-tight text-[#ff9600]">ExamFlow</span>
             </div>
+
+            <!-- Пункты меню -->
+            <nav class="space-y-1.5 text-sm font-black tracking-wider">
+                <a href="#" onclick="switchDuoTab('learn')" id="m-nav-learn" class="flex items-center space-x-4 px-4 py-3 rounded-2xl bg-[#202f36] border-2 border-[#37464f] text-[#1cb0f6] duo-btn border-b-[#202f36]">
+                    <span class="text-xl">🏠</span>
+                    <span>ОБУЧЕНИЕ</span>
+                </a>
+                <a href="#" onclick="switchDuoTab('train')" id="m-nav-train" class="flex items-center space-x-4 px-4 py-3 rounded-2xl hover:bg-[#202f36]/50 text-[#84959f] hover:text-white transition">
+                    <span class="text-xl">🏋️</span>
+                    <span>ТРЕНИРОВКА</span>
+                </a>
+                <a href="#" onclick="switchDuoTab('leaderboard')" id="m-nav-leaderboard" class="flex items-center space-x-4 px-4 py-3 rounded-2xl hover:bg-[#202f36]/50 text-[#84959f] hover:text-white transition">
+                    <span class="text-xl">🏆</span>
+                    <span>РЕЙТИНГИ</span>
+                </a>
+                <a href="#" onclick="switchDuoTab('quests')" id="m-nav-quests" class="flex items-center space-x-4 px-4 py-3 rounded-2xl hover:bg-[#202f36]/50 text-[#84959f] hover:text-white transition">
+                    <span class="text-xl">🎯</span>
+                    <span>ЗАДАНИЯ</span>
+                </a>
+                <a href="#" onclick="switchDuoTab('profile')" id="m-nav-profile" class="flex items-center space-x-4 px-4 py-3 rounded-2xl hover:bg-[#202f36]/50 text-[#84959f] hover:text-white transition">
+                    <span class="text-xl">👤</span>
+                    <span>ПРОФИЛЬ</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Нижний блок в боковом меню -->
+        <div class="p-3 bg-[#202f36] rounded-2xl border-2 border-[#37464f] text-xs text-gray-400 font-bold">
+            <span class="text-white block mb-1">Сдаешь в 2026?</span>
+            Готовься играя каждый день по 5 минут!
+        </div>
+    </aside>
+
+    <!-- ЦЕНТРАЛЬНАЯ ЧАСТЬ: ДОРОЖКА УРОВНЕЙ DUOLINGO -->
+    <main class="flex-1 max-w-2xl mx-auto p-4 md:p-6 pb-24 md:pb-8 flex flex-col items-center">
+
+        <!-- ВЕРХНЯЯ СТАТИСТИКА (Флаг/Предмет, Огонек, Алмазы, Сердца) -->
+        <header class="w-full flex justify-between items-center mb-6 py-2 px-1 border-b border-[#202f36] sticky top-0 bg-[#131f24]/90 backdrop-blur-md z-30">
+            <!-- Селектор предмета -->
+            <div class="flex items-center space-x-2 bg-[#202f36] px-3 py-1.5 rounded-xl border border-[#37464f] cursor-pointer active:scale-95 transition">
+                <span class="text-lg">📐</span>
+                <span class="text-xs font-black uppercase text-gray-200">ОГЭ Матем</span>
+            </div>
+
+            <!-- Иконки статы Duolingo -->
+            <div class="flex items-center space-x-3.5 text-sm font-black">
+                <!-- Стрик (Огонь) -->
+                <div class="flex items-center space-x-1.5 text-[#ff9600]">
+                    <span class="text-lg">🔥</span>
+                    <span id="stat-streak">5</span>
+                </div>
+                <!-- Алмазы (Гемы) -->
+                <div class="flex items-center space-x-1.5 text-[#1cb0f6]">
+                    <span class="text-lg">💎</span>
+                    <span id="stat-gems">610</span>
+                </div>
+                <!-- Сердца (Жизни) -->
+                <div class="flex items-center space-x-1.5 text-[#ff4b4b]">
+                    <span class="text-lg">❤️</span>
+                    <span id="stat-hearts">5</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- БАННЕР РАЗДЕЛА (Синяя плашка наверху дорожки) -->
+        <div class="w-full bg-[#1cb0f6] rounded-2xl p-4 mb-10 flex justify-between items-center shadow-lg border-b-4 border-[#1899d6]">
             <div>
-                <div class="flex items-center space-x-1.5">
-                    <span class="text-sm font-black tracking-tight text-white">ExamFlow</span>
-                    <span class="text-[9px] bg-red-500/20 text-red-400 font-extrabold px-1.5 py-0.5 rounded border border-red-500/30">PRO</span>
+                <div class="text-[11px] font-black tracking-wider uppercase text-blue-100 mb-0.5">
+                    ← МОДУЛЬ 1, РАЗДЕЛ 1
                 </div>
-                <div class="text-[11px] text-gray-400 font-medium">Сезон ОГЭ / ЕГЭ 2026</div>
+                <h1 class="text-lg font-black text-white">
+                    Уравнения и Степени (ОГЭ)
+                </h1>
             </div>
+            <button class="bg-[#1899d6] hover:bg-[#1588be] text-white text-xs font-black px-3.5 py-2 rounded-xl flex items-center space-x-1.5 border-b-2 border-[#126f9c] active:translate-y-0.5 transition">
+                <span>📖</span>
+                <span>ТЕОРИЯ</span>
+            </button>
         </div>
 
-        <!-- Виджет Стрика и XP -->
-        <div class="flex items-center space-x-2">
-            <div class="flex items-center space-x-1 bg-orange-500/10 border border-orange-500/25 px-2.5 py-1.5 rounded-xl text-orange-400 font-black text-xs">
-                <span>🔥</span>
-                <span id="streak-counter">5</span>
+        <!-- ЗМЕЙКА-ДОРОЖКА УРОВНЕЙ (Кругляшки квестов) -->
+        <div class="w-full flex flex-col items-center space-y-6 relative py-4">
+
+            <!-- УРОВЕНЬ 1: ПРОЙДЕНО (Синий с галочкой) -->
+            <div class="relative flex flex-col items-center">
+                <button onclick="openDuoLesson(1)" class="level-node rounded-full bg-[#1cb0f6] border-[#1899d6] duo-btn flex items-center justify-center text-3xl shadow-lg cursor-pointer">
+                    <span class="text-white font-black text-2xl">✓</span>
+                </button>
             </div>
-            <div class="flex items-center space-x-1 bg-blue-500/10 border border-blue-500/25 px-2.5 py-1.5 rounded-xl text-blue-400 font-black text-xs">
-                <span>💎</span>
-                <span id="xp-counter">320</span>
-            </div>
-        </div>
-    </header>
 
-    <!-- ОСНОВНОЙ КОНТЕНТ (ВКЛАДКИ) -->
-    <main class="flex-grow p-4 space-y-5">
-
-        <!-- СЕКЦИЯ 1: ГЛАВНАЯ (ТРЕНАЖЕР) -->
-        <div id="tab-home" class="space-y-4">
-
-            <!-- БАННЕР ДНЯ (Ежедневный Спринт) -->
-            <div onclick="startDailySprint()" class="glass-card glow-streak rounded-3xl p-5 relative overflow-hidden cursor-pointer border border-orange-500/30">
-                <div class="absolute -right-8 -top-8 w-40 h-40 bg-orange-500/15 rounded-full blur-3xl pointer-events-none"></div>
-
-                <div class="flex justify-between items-start mb-3">
-                    <span class="badge-gradient text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full tracking-wider shadow-sm">
-                        Дневной Спринт
-                    </span>
-                    <span class="text-xs font-bold text-orange-400 flex items-center space-x-1">
-                        <span>⏳</span>
-                        <span>до сброса 05:42</span>
-                    </span>
+            <!-- УРОВЕНЬ 2: ТЕКУЩИЙ АКТИВНЫЙ (С плавающей кнопкой "НАЧАТЬ") -->
+            <div class="relative flex flex-col items-center -translate-x-10">
+                <!-- Плавающий бейдж "НАЧАТЬ" -->
+                <div class="absolute -top-11 bg-[#202f36] border-2 border-[#37464f] text-[#ffffff] text-xs font-black px-3 py-1 rounded-xl animate-start-badge shadow-xl flex items-center space-x-1 pointer-events-none z-10">
+                    <span>НАЧАТЬ</span>
+                    <div class="w-2 h-2 bg-[#202f36] border-r-2 border-b-2 border-[#37464f] transform rotate-45 absolute -bottom-1.5 left-1/2 -translate-x-1/2"></div>
                 </div>
 
-                <h2 class="text-2xl font-black text-white leading-tight mb-1">
-                    Сдай 3 задачи дня 🔥
-                </h2>
-                <p class="text-xs text-gray-400 mb-4 leading-relaxed">
-                    Решай каждый день по 2 минуты, чтобы не сгорел стрик и подняться в Алмазную лигу.
-                </p>
+                <!-- Пульсирующий кругляш -->
+                <button onclick="openDuoLesson(2)" class="level-node rounded-full bg-[#ff9600] border-[#d87f00] duo-btn flex items-center justify-center text-3xl shadow-xl shadow-orange-500/20 cursor-pointer scale-105">
+                    <span class="text-white">⭐</span>
+                </button>
 
-                <!-- Статистика награды (как в крутых финтех-картах) -->
-                <div class="bg-black/40 rounded-2xl p-3.5 flex justify-between items-center border border-white/5">
-                    <div>
-                        <div class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Награда за спринт</div>
-                        <div class="text-sm font-black text-emerald-400 flex items-center space-x-1">
-                            <span>+50 XP</span>
-                            <span class="text-gray-500">•</span>
-                            <span class="text-orange-400">🔥 Стрик +1</span>
-                        </div>
-                    </div>
-                    <button class="bg-gradient-to-r from-orange-500 to-red-600 text-white font-black text-xs px-4 py-2.5 rounded-xl shadow-md">
-                        Старт →
-                    </button>
+                <!-- Иллюстрация костра / маскота рядом с дорожкой (как на скриншоте) -->
+                <div class="absolute left-24 top-0 flex flex-col items-center pointer-events-none">
+                    <span class="text-4xl">🔥</span>
+                    <span class="text-[10px] font-black text-[#ff9600] mt-1 bg-[#202f36] px-2 py-0.5 rounded-full border border-[#37464f]">Спринт</span>
                 </div>
             </div>
 
-            <!-- ЗАГОЛОВОК СЕКЦИИ: ПРЕДМЕТЫ -->
-            <div class="flex justify-between items-center pt-2">
-                <h3 class="text-base font-black text-gray-200 tracking-tight">Выбери предмет</h3>
-                <span class="text-xs text-blue-400 font-semibold cursor-pointer">Все темы (14)</span>
+            <!-- УРОВЕНЬ 3: СЛЕДУЮЩИЙ (Сундук с сокровищами) -->
+            <div class="relative flex flex-col items-center translate-x-8">
+                <button onclick="alert('Пройди предыдущий уровень, чтобы открыть сундук!')" class="level-node rounded-full bg-[#37464f] border-[#2b383f] flex items-center justify-center text-3xl shadow cursor-not-allowed opacity-80">
+                    <span>📦</span>
+                </button>
             </div>
 
-            <!-- КАРТОЧКА 1: МАТЕМАТИКА -->
-            <div onclick="openTopic('Математика: Уравнения', 'math')" class="glass-card rounded-3xl p-4 cursor-pointer relative overflow-hidden flex items-center justify-between">
-                <div class="flex items-center space-x-3.5">
-                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-2xl shadow-lg shadow-blue-500/20">
-                        📐
-                    </div>
-                    <div>
-                        <div class="flex items-center space-x-2 mb-0.5">
-                            <h4 class="text-base font-black text-white">Математика</h4>
-                            <span class="text-[10px] bg-blue-500/20 text-blue-300 font-bold px-1.5 py-0.2 rounded">ОГЭ №6-9</span>
-                        </div>
-                        <div class="text-xs text-gray-400">Линейные и квадратные уравнения</div>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <div class="text-xs font-black text-blue-400">75%</div>
-                    <div class="w-12 h-1.5 bg-gray-800 rounded-full mt-1 overflow-hidden">
-                        <div class="bg-blue-500 h-full rounded-full" style="width: 75%"></div>
-                    </div>
-                </div>
+            <!-- УРОВЕНЬ 4: ЗАБЛОКИРОВАН (Книжка) -->
+            <div class="relative flex flex-col items-center translate-x-12">
+                <button onclick="alert('Уровень заблокирован!')" class="level-node rounded-full bg-[#2b383f] border-[#202b32] flex items-center justify-center text-2xl shadow cursor-not-allowed opacity-60">
+                    <span>📖</span>
+                </button>
             </div>
 
-            <!-- КАРТОЧКА 2: РУССКИЙ ЯЗЫК -->
-            <div onclick="openTopic('Русский: Орфоэпия и нормы', 'rus')" class="glass-card rounded-3xl p-4 cursor-pointer relative overflow-hidden flex items-center justify-between">
-                <div class="flex items-center space-x-3.5">
-                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-2xl shadow-lg shadow-emerald-500/20">
-                        📚
-                    </div>
-                    <div>
-                        <div class="flex items-center space-x-2 mb-0.5">
-                            <h4 class="text-base font-black text-white">Русский язык</h4>
-                            <span class="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-1.5 py-0.2 rounded">Задание 4</span>
-                        </div>
-                        <div class="text-xs text-gray-400">Ударения и орфографические нормы</div>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <div class="text-xs font-black text-emerald-400">40%</div>
-                    <div class="w-12 h-1.5 bg-gray-800 rounded-full mt-1 overflow-hidden">
-                        <div class="bg-emerald-500 h-full rounded-full" style="width: 40%"></div>
-                    </div>
-                </div>
+            <!-- УРОВЕНЬ 5: ЗАБЛОКИРОВАН (Гантель тренировки) -->
+            <div class="relative flex flex-col items-center">
+                <button onclick="alert('Уровень заблокирован!')" class="level-node rounded-full bg-[#2b383f] border-[#202b32] flex items-center justify-center text-2xl shadow cursor-not-allowed opacity-40">
+                    <span>🏋️</span>
+                </button>
             </div>
 
-            <!-- КАРТОЧКА 3: ИНФОРМАТИКА -->
-            <div onclick="openTopic('Информатика: Системы счисления', 'inf')" class="glass-card rounded-3xl p-4 cursor-pointer relative overflow-hidden flex items-center justify-between">
-                <div class="flex items-center space-x-3.5">
-                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-2xl shadow-lg shadow-purple-500/20">
-                        💻
-                    </div>
-                    <div>
-                        <div class="flex items-center space-x-2 mb-0.5">
-                            <h4 class="text-base font-black text-white">Информатика</h4>
-                            <span class="text-[10px] bg-purple-500/20 text-purple-300 font-bold px-1.5 py-0.2 rounded">База</span>
-                        </div>
-                        <div class="text-xs text-gray-400">Биты, байты, двоичный код</div>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <div class="text-xs font-black text-purple-400">90%</div>
-                    <div class="w-12 h-1.5 bg-gray-800 rounded-full mt-1 overflow-hidden">
-                        <div class="bg-purple-500 h-full rounded-full" style="width: 90%"></div>
-                    </div>
-                </div>
+            <!-- УРОВЕНЬ 6: ФИНАЛЬНЫЙ ТРОФЕЙ МОДУЛЯ -->
+            <div class="relative flex flex-col items-center -translate-x-6">
+                <button onclick="alert('Финальный экзамен модуля!')" class="level-node rounded-full bg-[#2b383f] border-[#202b32] flex items-center justify-center text-3xl shadow cursor-not-allowed opacity-30">
+                    <span>🏆</span>
+                </button>
             </div>
 
-            <!-- КАРТОЧКА 4: ОБЩЕСТВОЗНАНИЕ -->
-            <div onclick="openTopic('Обществознание: Экономика', 'soc')" class="glass-card rounded-3xl p-4 cursor-pointer relative overflow-hidden flex items-center justify-between">
-                <div class="flex items-center space-x-3.5">
-                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-2xl shadow-lg shadow-amber-500/20">
-                        🏛️
-                    </div>
-                    <div>
-                        <div class="flex items-center space-x-2 mb-0.5">
-                            <h4 class="text-base font-black text-white">Обществознание</h4>
-                            <span class="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-1.5 py-0.2 rounded">Блок 2</span>
-                        </div>
-                        <div class="text-xs text-gray-400">Рынок, инфляция, налоги</div>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <div class="text-xs font-black text-amber-400">20%</div>
-                    <div class="w-12 h-1.5 bg-gray-800 rounded-full mt-1 overflow-hidden">
-                        <div class="bg-amber-500 h-full rounded-full" style="width: 20%"></div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- СЕКЦИЯ 2: РЕЙТИНГ (ЛИДЕРБОРД) -->
-        <div id="tab-leaderboard" class="space-y-4 hidden">
-            <div class="glass-card rounded-3xl p-5 text-center relative overflow-hidden border border-yellow-500/20">
-                <div class="text-3xl mb-1">🏆</div>
-                <h3 class="text-xl font-black text-white">Алмазная Лига</h3>
-                <p class="text-xs text-gray-400">Топ учеников этой недели. Топ-3 получают статус PRO!</p>
-            </div>
-
-            <div class="space-y-2">
-                <div class="glass-card rounded-2xl p-3 flex items-center justify-between border border-yellow-500/30 bg-yellow-500/5">
-                    <div class="flex items-center space-x-3">
-                        <span class="text-lg font-black text-yellow-400 w-5 text-center">1</span>
-                        <div class="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center font-bold text-sm">🦁</div>
-                        <div>
-                            <div class="text-xs font-bold text-white">Александр С.</div>
-                            <div class="text-[10px] text-gray-400">Стрик 28 дней 🔥</div>
-                        </div>
-                    </div>
-                    <span class="text-xs font-black text-yellow-400">1 420 XP</span>
-                </div>
-
-                <div class="glass-card rounded-2xl p-3 flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <span class="text-lg font-black text-gray-400 w-5 text-center">2</span>
-                        <div class="w-8 h-8 rounded-full bg-gray-500/20 flex items-center justify-center font-bold text-sm">🦊</div>
-                        <div>
-                            <div class="text-xs font-bold text-white">Данил К. (Ты)</div>
-                            <div class="text-[10px] text-orange-400">Стрик 5 дней 🔥</div>
-                        </div>
-                    </div>
-                    <span class="text-xs font-black text-blue-400">320 XP</span>
-                </div>
-
-                <div class="glass-card rounded-2xl p-3 flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <span class="text-lg font-black text-amber-700 w-5 text-center">3</span>
-                        <div class="w-8 h-8 rounded-full bg-amber-700/20 flex items-center justify-center font-bold text-sm">🐼</div>
-                        <div>
-                            <div class="text-xs font-bold text-white">Мария В.</div>
-                            <div class="text-[10px] text-gray-400">Стрик 12 дней 🔥</div>
-                        </div>
-                    </div>
-                    <span class="text-xs font-black text-gray-300">290 XP</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- СЕКЦИЯ 3: ПРОФИЛЬ -->
-        <div id="tab-profile" class="space-y-4 hidden">
-            <div class="glass-card rounded-3xl p-6 text-center">
-                <div class="w-20 h-20 rounded-3xl bg-gradient-to-br from-orange-500 to-red-600 mx-auto p-1 shadow-xl shadow-orange-500/20 mb-3 flex items-center justify-center">
-                    <img src="logo.png" onerror="this.src='logo_transparent.png'" alt="100" class="w-full h-full object-cover rounded-[20px]">
-                </div>
-                <h3 class="text-lg font-black text-white">Данил Ковалев</h3>
-                <p class="text-xs text-gray-400">Уровень 4 • Знаток ОГЭ</p>
-
-                <div class="grid grid-cols-3 gap-2 mt-5">
-                    <div class="bg-black/30 rounded-2xl p-2.5 border border-white/5">
-                        <div class="text-[10px] text-gray-400">Точность</div>
-                        <div class="text-sm font-black text-emerald-400">88%</div>
-                    </div>
-                    <div class="bg-black/30 rounded-2xl p-2.5 border border-white/5">
-                        <div class="text-[10px] text-gray-400">Решено</div>
-                        <div class="text-sm font-black text-blue-400">42 задачи</div>
-                    </div>
-                    <div class="bg-black/30 rounded-2xl p-2.5 border border-white/5">
-                        <div class="text-[10px] text-gray-400">Стрик</div>
-                        <div class="text-sm font-black text-orange-400">5 дней</div>
-                    </div>
-                </div>
-            </div>
         </div>
 
     </main>
 
-    <!-- НИЖНЯЯ НАВИГАЦИОННАЯ ПАНЕЛЬ (iOS Style) -->
-    <nav class="fixed bottom-0 left-0 right-0 p-3 bg-[#090d16]/90 border-t border-white/10 backdrop-blur-xl z-50 flex justify-around items-center">
-        <button onclick="switchTab('home')" id="nav-home" class="flex flex-col items-center space-y-1 text-orange-500">
-            <span class="text-xl">⚡️</span>
-            <span class="text-[10px] font-black tracking-wider">Спринт</span>
+    <!-- ПРАВАЯ КОЛОНКА (Виджеты Super, Лиги и Заданий как в Duolingo) -->
+    <aside class="hidden lg:flex flex-col w-80 p-5 space-y-5 border-l border-[#202f36] min-h-screen sticky top-0 bg-[#131f24]">
+
+        <!-- Виджет 1: ExamFlow PRO / SUPER -->
+        <div class="bg-[#202f36] border-2 border-[#37464f] rounded-2xl p-4.5 space-y-3 relative overflow-hidden">
+            <div class="flex justify-between items-start">
+                <div>
+                    <span class="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] font-black uppercase px-2 py-0.5 rounded-md tracking-wider">
+                        SUPER EXAM
+                    </span>
+                    <h3 class="text-base font-black text-white mt-1.5 leading-tight">
+                        Попробуйте PRO бесплатно
+                    </h3>
+                </div>
+                <span class="text-3xl">💎</span>
+            </div>
+            <p class="text-xs text-[#84959f] font-bold leading-relaxed">
+                Подготовка без рекламы, разбор ошибок от нейросети и бесконечные жизни!
+            </p>
+            <button onclick="alert('Подписка ExamFlow PRO оформляется в боте!')" class="w-full bg-[#58cc02] hover:bg-[#46a302] border-b-4 border-[#3b8700] text-white font-black py-3 rounded-xl text-xs uppercase tracking-wider duo-btn transition">
+                Начать бесплатный месяц
+            </button>
+        </div>
+
+        <!-- Виджет 2: Алмазная лига -->
+        <div class="bg-[#202f36] border-2 border-[#37464f] rounded-2xl p-4 space-y-3">
+            <div class="flex justify-between items-center">
+                <h4 class="text-sm font-black text-white">Алмазная лига</h4>
+                <a href="#" onclick="alert('Вы на 2-м месте в лиге!')" class="text-xs font-black text-[#1cb0f6] hover:underline uppercase">Обзор</a>
+            </div>
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-yellow-500/20 flex items-center justify-center text-xl">🏆</div>
+                <div>
+                    <div class="text-xs font-black text-white">Ты на 2 месте</div>
+                    <div class="text-[11px] text-[#84959f] font-bold">Итоги недели через 13 часов</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Виджет 3: Задания дня -->
+        <div class="bg-[#202f36] border-2 border-[#37464f] rounded-2xl p-4 space-y-3">
+            <div class="flex justify-between items-center">
+                <h4 class="text-sm font-black text-white">Задания дня</h4>
+                <span class="text-xs font-black text-[#1cb0f6] uppercase">Все</span>
+            </div>
+
+            <!-- Квест 1 -->
+            <div class="space-y-1">
+                <div class="flex justify-between text-xs font-black">
+                    <span class="flex items-center space-x-1.5 text-gray-200">
+                        <span>⚡️</span>
+                        <span>Получите 10 XP</span>
+                    </span>
+                    <span class="text-gray-400">10 / 10</span>
+                </div>
+                <div class="w-full bg-[#131f24] h-3 rounded-full overflow-hidden p-0.5 border border-[#37464f]">
+                    <div class="bg-[#ff9600] h-full rounded-full" style="width: 100%"></div>
+                </div>
+            </div>
+
+            <!-- Квест 2 -->
+            <div class="space-y-1">
+                <div class="flex justify-between text-xs font-black">
+                    <span class="flex items-center space-x-1.5 text-gray-200">
+                        <span>🎯</span>
+                        <span>Пройдите 1 урок без ошибок</span>
+                    </span>
+                    <span class="text-gray-400">0 / 1</span>
+                </div>
+                <div class="w-full bg-[#131f24] h-3 rounded-full overflow-hidden p-0.5 border border-[#37464f]">
+                    <div class="bg-[#58cc02] h-full rounded-full" style="width: 10%"></div>
+                </div>
+            </div>
+        </div>
+
+    </aside>
+
+    <!-- МОБИЛЬНОЕ НИЖНЕЕ МЕНЮ (для смартфонов в Telegram) -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#131f24] border-t-2 border-[#202f36] flex justify-around items-center z-40 px-2">
+        <button onclick="switchDuoTab('learn')" class="flex flex-col items-center text-[#1cb0f6]">
+            <span class="text-xl">🏠</span>
+            <span class="text-[9px] font-black tracking-wider uppercase">Уроки</span>
         </button>
-        <button onclick="switchTab('leaderboard')" id="nav-leaderboard" class="flex flex-col items-center space-y-1 text-gray-400 hover:text-white">
+        <button onclick="openDuoLesson(2)" class="flex flex-col items-center text-[#ff9600] scale-110">
+            <span class="text-2xl">🔥</span>
+            <span class="text-[9px] font-black tracking-wider uppercase">Спринт</span>
+        </button>
+        <button onclick="alert('Рейтинг: ты на 2 месте!')" class="flex flex-col items-center text-gray-400">
             <span class="text-xl">🏆</span>
-            <span class="text-[10px] font-bold tracking-wider">Рейтинг</span>
+            <span class="text-[9px] font-black tracking-wider uppercase">Лига</span>
         </button>
-        <button onclick="switchTab('profile')" id="nav-profile" class="flex flex-col items-center space-y-1 text-gray-400 hover:text-white">
+        <button onclick="alert('Профиль ученика')" class="flex flex-col items-center text-gray-400">
             <span class="text-xl">👤</span>
-            <span class="text-[10px] font-bold tracking-wider">Профиль</span>
+            <span class="text-[9px] font-black tracking-wider uppercase">Профиль</span>
         </button>
     </nav>
 
-    <!-- МОДАЛЬНОЕ ОКНО ТЕСТА (ИНТЕРАКТИВНЫЙ КВИЗ) -->
-    <div id="quiz-modal" class="fixed inset-0 bg-[#090d16] z-50 p-5 flex flex-col justify-between hidden">
-        <!-- Верх квиза -->
-        <div class="flex justify-between items-center mb-4">
-            <button onclick="closeQuiz()" class="text-gray-400 text-xs font-bold bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl active:scale-95">
-                ✕ Выйти
+    <!-- МОДАЛЬНЫЙ ЭКРАН УРОКА (DUOLINGO LESSON POPUP) -->
+    <div id="duo-quiz-screen" class="fixed inset-0 bg-[#131f24] z-50 flex flex-col justify-between hidden">
+        
+        <!-- Верхняя полоса квиза Duolingo -->
+        <div class="p-4 md:p-6 flex items-center space-x-4 max-w-2xl mx-auto w-full">
+            <button onclick="closeDuoLesson()" class="text-gray-400 hover:text-white text-xl font-black p-1">
+                ✕
             </button>
-            <div id="quiz-topic" class="text-xs font-black text-orange-400 uppercase tracking-wider">Математика</div>
-            <div id="quiz-step" class="text-xs font-extrabold text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-lg">1 / 3</div>
-        </div>
-
-        <!-- Прогресс-бар теста -->
-        <div class="w-full bg-gray-800/80 h-1.5 rounded-full overflow-hidden mb-6">
-            <div id="quiz-progress" class="bg-gradient-to-r from-orange-500 to-red-500 h-full rounded-full transition-all duration-300" style="width: 33%"></div>
-        </div>
-
-        <!-- Блок вопроса -->
-        <div class="flex-grow flex flex-col justify-center my-auto space-y-6">
-            <div class="text-center">
-                <span class="text-[10px] font-black uppercase text-gray-500 tracking-widest bg-white/5 px-2.5 py-1 rounded-md">Реальное задание</span>
-                <h3 id="quiz-question-title" class="text-xs font-bold text-gray-400 mt-2">Найдите значение выражения:</h3>
+            <!-- Зеленая полоса прогресса -->
+            <div class="flex-1 bg-[#202f36] h-4 rounded-full overflow-hidden p-0.5 border border-[#37464f]">
+                <div id="duo-progress-bar" class="bg-[#58cc02] h-full rounded-full transition-all duration-300" style="width: 33%"></div>
             </div>
-
-            <!-- Карточка с формулой / текстом задачи -->
-            <div id="quiz-question-box" class="glass-card rounded-3xl p-7 text-center text-3xl font-black text-white border border-white/10 shadow-2xl">
-                5x - 15 = 20
-            </div>
-
-            <!-- Сетка вариантов ответов -->
-            <div id="quiz-options" class="grid grid-cols-2 gap-3.5 pt-2">
-                <!-- Кнопки вставляются динамически -->
+            <!-- Сердечки -->
+            <div class="flex items-center space-x-1 text-[#ff4b4b] font-black text-sm">
+                <span>❤️</span>
+                <span id="quiz-hearts">5</span>
             </div>
         </div>
 
-        <!-- Подсказка / Ошибка / Успех -->
-        <div id="quiz-footer" class="text-center h-12 flex items-center justify-center">
-            <div id="quiz-feedback" class="text-xs font-bold"></div>
-        </div>
-    </div>
-
-    <!-- ПОБЕДНОЕ ОКНО ФИНИША СПРИНТА -->
-    <div id="win-modal" class="fixed inset-0 bg-[#090d16]/95 z-50 p-6 flex flex-col items-center justify-center text-center hidden backdrop-blur-xl">
-        <div class="w-24 h-24 rounded-3xl bg-gradient-to-br from-orange-500 to-red-600 p-1 shadow-2xl shadow-orange-500/40 mb-4 flex items-center justify-center animate-bounce">
-            <img src="logo.png" onerror="this.src='logo_transparent.png'" alt="100" class="w-full h-full object-cover rounded-[22px]">
-        </div>
-        <h2 class="text-3xl font-black text-white mb-1">Спринт Закрыт! 🔥</h2>
-        <p class="text-xs text-gray-400 max-w-xs mb-6">Ты ответил на все задачи без единой ошибки и удержал свой ежедневный стрик.</p>
-
-        <div class="bg-white/5 border border-white/10 rounded-2xl p-4 w-full max-w-xs flex justify-around mb-8">
-            <div>
-                <div class="text-[10px] text-gray-400 uppercase font-bold">Получено</div>
-                <div class="text-lg font-black text-emerald-400">+50 XP 💎</div>
+        <!-- Центральный вопрос урока -->
+        <div class="flex-1 max-w-xl mx-auto w-full p-4 flex flex-col justify-center space-y-6">
+            <div class="space-y-1">
+                <span class="text-xs font-black uppercase text-[#1cb0f6] tracking-wider">Задание ОГЭ №7</span>
+                <h2 id="duo-q-title" class="text-2xl md:text-3xl font-black text-white leading-tight">
+                    Найдите корень линейного уравнения:
+                </h2>
             </div>
-            <div class="w-px bg-white/10"></div>
-            <div>
-                <div class="text-[10px] text-gray-400 uppercase font-bold">Стрик дня</div>
-                <div class="text-lg font-black text-orange-400">6 дней 🔥</div>
+
+            <!-- Карточка с примером -->
+            <div id="duo-q-box" class="bg-[#202f36] border-2 border-[#37464f] rounded-2xl p-6 text-center text-3xl font-black text-white shadow-inner">
+                3x - 12 = 15
+            </div>
+
+            <!-- Варианты ответов 3D -->
+            <div id="duo-options-grid" class="grid grid-cols-2 gap-3.5 pt-2">
+                <!-- Генерируются скриптом -->
             </div>
         </div>
 
-        <button onclick="finishSprint()" class="glow-btn w-full max-w-xs bg-gradient-to-r from-orange-500 to-red-600 text-white font-extrabold py-4 rounded-2xl text-center text-base tracking-wide">
-            Забрать награду 🚀
-        </button>
+        <!-- Нижняя шторка проверки Duolingo (Зеленая / Красная) -->
+        <div id="duo-bottom-drawer" class="w-full border-t-2 border-[#202f36] p-4 md:p-6 bg-[#131f24] transition-all">
+            <div class="max-w-xl mx-auto flex items-center justify-between">
+                <div id="duo-feedback-text" class="text-base font-black">
+                    <!-- Заполняется динамически -->
+                </div>
+                <button id="duo-action-btn" onclick="checkCurrentAnswer()" class="bg-[#58cc02] border-b-4 border-[#3b8700] text-white text-sm font-black uppercase tracking-wider py-3.5 px-8 rounded-2xl duo-btn transition">
+                    ПРОВЕРИТЬ
+                </button>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -378,152 +367,187 @@
         let tg = window.Telegram?.WebApp;
         if (tg) {
             tg.expand();
-            tg.setHeaderColor('#090d16');
-            tg.setBackgroundColor('#090d16');
+            tg.setHeaderColor('#131f24');
+            tg.setBackgroundColor('#131f24');
         }
 
-        let streak = 5;
-        let xp = 320;
+        // Данные пользователя
+        let userStreak = 5;
+        let userGems = 610;
+        let userHearts = 5;
 
-        // База реальных вопросов для спринта
-        const sprintQuestions = [
+        // Вопросы урока Duolingo
+        const duoQuestions = [
             {
-                subject: "Математика (ОГЭ)",
-                title: "Найдите корень уравнения:",
-                question: "5x - 15 = 20",
-                options: ["5", "7", "8", "10"],
-                correct: 1, // 7
-                explanation: "5x = 35 => x = 7"
+                title: "Найдите корень линейного уравнения:",
+                question: "3x - 12 = 15",
+                options: ["7", "9", "8", "6"],
+                correct: 1, // 9
+                explanation: "3x = 27 => x = 9"
             },
             {
-                subject: "Русский язык",
-                title: "В каком слове ударение падает на первый слог?",
-                question: "Выберите верный вариант:",
-                options: ["звонИт", "тОрты", "красИвее", "свеклА"],
-                correct: 1, // тОрты
-                explanation: "Правильно: тОрты (ударение всегда на первую букву О)"
+                title: "В каком слове ударение падает верно?",
+                question: "ОГЭ Русский язык:",
+                options: ["звонИт", "свеклА", "катАлог", "дОговор"],
+                correct: 0, // звонИт
+                explanation: "Всегда звонИт, звонИшь!"
             },
             {
-                subject: "Информатика",
-                title: "Перевод единиц информации:",
-                question: "Сколько бит содержится в 4 байтах?",
-                options: ["16", "24", "32", "64"],
-                correct: 2, // 32
-                explanation: "1 байт = 8 бит. 4 * 8 = 32 бита."
+                title: "Информатика: перевод систем",
+                question: "Сколько байт в 32 битах?",
+                options: ["2 байта", "4 байта", "8 байт", "16 байт"],
+                correct: 1, // 4 байта
+                explanation: "32 бита / 8 = 4 байта"
             }
         ];
 
-        let currentQuestionIdx = 0;
+        let currentQIndex = 0;
+        let selectedOption = null;
+        let isAnswerChecked = false;
 
-        // Переключение табов
-        function switchTab(tab) {
-            document.getElementById('tab-home').classList.add('hidden');
-            document.getElementById('tab-leaderboard').classList.add('hidden');
-            document.getElementById('tab-profile').classList.add('hidden');
-
-            document.getElementById('nav-home').className = "flex flex-col items-center space-y-1 text-gray-400 hover:text-white";
-            document.getElementById('nav-leaderboard').className = "flex flex-col items-center space-y-1 text-gray-400 hover:text-white";
-            document.getElementById('nav-profile').className = "flex flex-col items-center space-y-1 text-gray-400 hover:text-white";
-
-            document.getElementById(`tab-${tab}`).classList.remove('hidden');
-            document.getElementById(`nav-${tab}`).className = "flex flex-col items-center space-y-1 text-orange-500 font-black";
-
-            if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred("light");
-        }
-
-        // Запуск Дневного Спринта
-        function startDailySprint() {
-            currentQuestionIdx = 0;
-            loadQuestion();
-            document.getElementById('quiz-modal').classList.remove('hidden');
+        // Открытие экрана квиза
+        function openDuoLesson(level) {
+            currentQIndex = 0;
+            userHearts = 5;
+            document.getElementById('quiz-hearts').innerText = userHearts;
+            document.getElementById('duo-quiz-screen').classList.remove('hidden');
+            loadDuoQuestion();
             if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred("medium");
         }
 
-        function openTopic(title, code) {
-            startDailySprint();
-        }
-
-        function closeQuiz() {
-            document.getElementById('quiz-modal').classList.add('hidden');
+        function closeDuoLesson() {
+            document.getElementById('duo-quiz-screen').classList.add('hidden');
         }
 
         // Загрузка вопроса
-        function loadQuestion() {
-            const q = sprintQuestions[currentQuestionIdx];
-            document.getElementById('quiz-topic').innerText = q.subject;
-            document.getElementById('quiz-question-title').innerText = q.title;
-            document.getElementById('quiz-question-box').innerText = q.question;
-            document.getElementById('quiz-step').innerText = `${currentQuestionIdx + 1} / ${sprintQuestions.length}`;
-            document.getElementById('quiz-progress').style.width = `${((currentQuestionIdx + 1) / sprintQuestions.length) * 100}%`;
-            document.getElementById('quiz-feedback').innerHTML = '';
+        function loadDuoQuestion() {
+            selectedOption = null;
+            isAnswerChecked = false;
 
-            const optionsContainer = document.getElementById('quiz-options');
-            optionsContainer.innerHTML = '';
+            const q = duoQuestions[currentQIndex];
+            document.getElementById('duo-q-title').innerText = q.title;
+            document.getElementById('duo-q-box').innerText = q.question;
+
+            // Прогресс бар
+            const percent = ((currentQIndex + 1) / duoQuestions.length) * 100;
+            document.getElementById('duo-progress-bar').style.width = `${percent}%`;
+
+            // Сброс нижней панели
+            const drawer = document.getElementById('duo-bottom-drawer');
+            drawer.className = "w-full border-t-2 border-[#202f36] p-4 md:p-6 bg-[#131f24] transition-all";
+            document.getElementById('duo-feedback-text').innerHTML = '';
+            
+            const actionBtn = document.getElementById('duo-action-btn');
+            actionBtn.innerText = "ПРОВЕРИТЬ";
+            actionBtn.className = "bg-[#37464f] border-b-4 border-[#2b383f] text-[#84959f] text-sm font-black uppercase tracking-wider py-3.5 px-8 rounded-2xl duo-btn transition opacity-60 cursor-not-allowed";
+
+            // Опции
+            const grid = document.getElementById('duo-options-grid');
+            grid.innerHTML = '';
 
             q.options.forEach((opt, idx) => {
                 const btn = document.createElement('button');
-                btn.className = "glass-card p-4 rounded-2xl text-lg font-black text-white border border-white/10 hover:border-orange-500/50 active:scale-95 transition-all text-center";
+                btn.className = "bg-[#202f36] border-2 border-[#37464f] border-b-4 text-white text-lg font-black p-4 rounded-2xl duo-btn hover:bg-[#283842] transition text-center";
                 btn.innerText = opt;
-                btn.onclick = () => selectAnswer(btn, idx);
-                optionsContainer.appendChild(btn);
+                btn.onclick = () => chooseOption(btn, idx);
+                grid.appendChild(btn);
             });
         }
 
-        // Выбор ответа
-        function selectAnswer(btn, selectedIdx) {
-            const q = sprintQuestions[currentQuestionIdx];
-            const feedback = document.getElementById('quiz-feedback');
+        // Выбор варианта
+        function chooseOption(btn, idx) {
+            if (isAnswerChecked) return;
 
-            if (selectedIdx === q.correct) {
-                btn.className = "p-4 rounded-2xl text-lg font-black text-white bg-emerald-600 border border-emerald-400 shadow-lg shadow-emerald-600/30 transition-all";
-                feedback.innerHTML = `<span class="text-emerald-400 font-extrabold">🎉 Верно! +10 XP</span>`;
-                if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
+            // Сброс всех
+            const allBtns = document.getElementById('duo-options-grid').children;
+            for (let b of allBtns) {
+                b.className = "bg-[#202f36] border-2 border-[#37464f] border-b-4 text-white text-lg font-black p-4 rounded-2xl duo-btn hover:bg-[#283842] transition text-center";
+            }
 
-                xp += 10;
-                document.getElementById('xp-counter').innerText = xp;
+            // Выделение выбранного синим
+            btn.className = "bg-[#1cb0f6]/20 border-2 border-[#1cb0f6] border-b-4 text-[#1cb0f6] text-lg font-black p-4 rounded-2xl duo-btn transition text-center";
+            selectedOption = idx;
 
-                setTimeout(() => {
-                    if (currentQuestionIdx + 1 < sprintQuestions.length) {
-                        currentQuestionIdx++;
-                        loadQuestion();
-                    } else {
-                        // Победа в спринте!
-                        document.getElementById('quiz-modal').classList.add('hidden');
-                        document.getElementById('win-modal').classList.remove('hidden');
-                        triggerConfetti();
-                    }
-                }, 800);
+            // Активация кнопки Проверить
+            const actionBtn = document.getElementById('duo-action-btn');
+            actionBtn.className = "bg-[#58cc02] border-b-4 border-[#3b8700] text-white text-sm font-black uppercase tracking-wider py-3.5 px-8 rounded-2xl duo-btn transition cursor-pointer";
+            
+            if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred("light");
+        }
+
+        // Проверка ответа
+        function checkCurrentAnswer() {
+            if (selectedOption === null && !isAnswerChecked) return;
+
+            const q = duoQuestions[currentQIndex];
+            const drawer = document.getElementById('duo-bottom-drawer');
+            const feedback = document.getElementById('duo-feedback-text');
+            const actionBtn = document.getElementById('duo-action-btn');
+
+            if (!isAnswerChecked) {
+                isAnswerChecked = true;
+
+                if (selectedOption === q.correct) {
+                    // ПРАВИЛЬНО (Зеленый стиль Duolingo)
+                    drawer.className = "w-full border-t-2 border-[#58cc02] p-4 md:p-6 bg-[#1f3724] transition-all";
+                    feedback.innerHTML = `
+                        <div class="flex items-center space-x-2 text-[#58cc02]">
+                            <span class="text-2xl">🎉</span>
+                            <div>
+                                <div class="text-lg leading-tight">Отлично!</div>
+                                <div class="text-xs font-bold text-gray-300">${q.explanation}</div>
+                            </div>
+                        </div>
+                    `;
+                    actionBtn.className = "bg-[#58cc02] border-b-4 border-[#3b8700] text-white text-sm font-black uppercase tracking-wider py-3.5 px-8 rounded-2xl duo-btn transition";
+                    actionBtn.innerText = "ПРОДОЛЖИТЬ";
+
+                    if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
+                } else {
+                    // НЕПРАВИЛЬНО (Красный стиль Duolingo)
+                    userHearts--;
+                    document.getElementById('quiz-hearts').innerText = userHearts;
+
+                    drawer.className = "w-full border-t-2 border-[#ff4b4b] p-4 md:p-6 bg-[#372424] transition-all";
+                    feedback.innerHTML = `
+                        <div class="flex items-center space-x-2 text-[#ff4b4b]">
+                            <span class="text-2xl">❌</span>
+                            <div>
+                                <div class="text-lg leading-tight">Правильный ответ: ${q.options[q.correct]}</div>
+                                <div class="text-xs font-bold text-gray-300">${q.explanation}</div>
+                            </div>
+                        </div>
+                    `;
+                    actionBtn.className = "bg-[#ff4b4b] border-b-4 border-[#b92b2b] text-white text-sm font-black uppercase tracking-wider py-3.5 px-8 rounded-2xl duo-btn transition";
+                    actionBtn.innerText = "ПОНЯТНО";
+
+                    if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
+                }
             } else {
-                btn.className = "p-4 rounded-2xl text-lg font-black text-white bg-red-600 border border-red-400 shadow-lg shadow-red-600/30 transition-all";
-                feedback.innerHTML = `<span class="text-red-400 font-extrabold">❌ Неверно! Попробуй другой вариант</span>`;
-                if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
+                // Переход к следующему вопросу
+                if (currentQIndex + 1 < duoQuestions.length) {
+                    currentQIndex++;
+                    loadDuoQuestion();
+                } else {
+                    // Урок пройден
+                    closeDuoLesson();
+                    userGems += 50;
+                    document.getElementById('stat-gems').innerText = userGems;
+
+                    if (window.confetti) {
+                        confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
+                    }
+
+                    if (tg) {
+                        tg.sendData("win_10xp");
+                    }
+                    alert("Урок успешно завершен! +50 💎");
+                }
             }
         }
 
-        // Салют победителя
-        function triggerConfetti() {
-            if (window.confetti) {
-                confetti({
-                    particleCount: 80,
-                    spread: 70,
-                    origin: { y: 0.6 }
-                });
-            }
-        }
-
-        // Финиш
-        function finishSprint() {
-            streak += 1;
-            xp += 20; // бонус
-            document.getElementById('streak-counter').innerText = streak;
-            document.getElementById('xp-counter').innerText = xp;
-
-            document.getElementById('win-modal').classList.add('hidden');
-
-            if (tg) {
-                tg.sendData("win_10xp");
-                tg.close();
-            }
+        function switchDuoTab(tab) {
+            alert(`Вкладка ${tab} переключена!`);
         }
     </script>
 </body>

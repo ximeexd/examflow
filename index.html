@@ -313,8 +313,146 @@
         </div>
     </div>
 
-    <!-- МОДАЛЬНЫЙ ЭКРАН КАРТОЧЕК ДЛЯ ЗАПОМИНАНИЯ (ФЛЕШ-КАРТОЧКИ) -->
-    <div id="cards-screen" class="fixed inset-0 bg-[#121316] z-50 flex flex-col justify-between hidden p-5 max-w-md mx-auto">
+    <!-- МОДАЛЬНЫЙ ЭКРАН РЕГИСТРАЦИИ / ОНБОРДИНГА (ПРИ ПЕРВОМ ВХОДЕ) -->
+    <div id="onboarding-screen" class="fixed inset-0 bg-[#121316] z-50 flex flex-col justify-between p-5 max-w-md mx-auto hidden">
+        <!-- Верх: прогресс шагов -->
+        <div class="space-y-3 pt-2">
+            <div class="flex justify-between items-center text-xs font-black text-gray-400">
+                <span class="text-[#7c69ef] uppercase tracking-wider">Знакомство</span>
+                <span id="onboard-step-text">Шаг 1 из 3</span>
+            </div>
+            <div class="w-full bg-[#1c1d22] h-2 rounded-full overflow-hidden p-0.5 border border-white/5">
+                <div id="onboard-progress" class="bg-gradient-to-r from-[#7c69ef] to-[#f97316] h-full rounded-full transition-all duration-300" style="width: 33%"></div>
+            </div>
+        </div>
+
+        <!-- ШАГ 1: ИМЯ / НИКНЕЙМ -->
+        <div id="onboard-step-1" class="space-y-6 my-auto">
+            <div class="text-center space-y-2">
+                <div class="w-20 h-20 rounded-3xl bg-gradient-to-br from-[#f97316] to-[#ef4444] p-1 mx-auto shadow-xl shadow-orange-500/20 flex items-center justify-center">
+                    <img src="logo.png" onerror="this.src='logo_transparent.png'" class="w-full h-full object-cover rounded-[20px]">
+                </div>
+                <h2 class="text-2xl font-black text-white">Добро пожаловать в ExamFlow!</h2>
+                <p class="text-xs text-gray-400 font-bold">Твой персональный хаб подготовки к ОГЭ и ЕГЭ</p>
+            </div>
+
+            <div class="space-y-2">
+                <label class="text-xs font-black text-gray-300 uppercase tracking-wider">Как тебя называть?</label>
+                <input id="onboard-name-input" type="text" placeholder="Введи свой никнейм" value="Даниил" class="w-full bg-[#1c1d22] border-2 border-white/10 rounded-2xl p-4 text-white text-base font-black outline-none focus:border-[#7c69ef] transition">
+            </div>
+        </div>
+
+        <!-- ШАГ 2: ВЫБОР ЭКЗАМЕНА -->
+        <div id="onboard-step-2" class="space-y-4 my-auto hidden">
+            <div class="space-y-1">
+                <h2 class="text-2xl font-black text-white">К чему ты готовишься?</h2>
+                <p class="text-xs text-gray-400 font-bold">Мы подстроим базу заданий и тестов под твой класс</p>
+            </div>
+
+            <div class="space-y-3 pt-2">
+                <!-- ОГЭ -->
+                <div onclick="selectExam('ОГЭ 2026 (9 класс)', this)" class="exam-choice-card bg-[#1c1d22] border-2 border-[#7c69ef] p-4 rounded-2xl flex items-center justify-between cursor-pointer active:scale-98 transition">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-3xl">⚡️</span>
+                        <div>
+                            <div class="text-base font-black text-white">ОГЭ 2026</div>
+                            <div class="text-xs text-gray-400">9 класс • Основной госэкзамен</div>
+                        </div>
+                    </div>
+                    <span class="exam-check text-[#7c69ef] text-xl font-black">✓</span>
+                </div>
+
+                <!-- ЕГЭ 11 класс -->
+                <div onclick="selectExam('ЕГЭ 2026 (11 класс)', this)" class="exam-choice-card bg-[#1c1d22] border-2 border-white/5 p-4 rounded-2xl flex items-center justify-between cursor-pointer active:scale-98 transition">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-3xl">🎓</span>
+                        <div>
+                            <div class="text-base font-black text-white">ЕГЭ 2026</div>
+                            <div class="text-xs text-gray-400">11 класс • Поступление в вуз</div>
+                        </div>
+                    </div>
+                    <span class="exam-check text-[#7c69ef] text-xl font-black hidden">✓</span>
+                </div>
+
+                <!-- 10 класс -->
+                <div onclick="selectExam('10 класс (Заранее)', this)" class="exam-choice-card bg-[#1c1d22] border-2 border-white/5 p-4 rounded-2xl flex items-center justify-between cursor-pointer active:scale-98 transition">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-3xl">🚀</span>
+                        <div>
+                            <div class="text-base font-black text-white">10 класс</div>
+                            <div class="text-xs text-gray-400">Спокойная подготовка заранее</div>
+                        </div>
+                    </div>
+                    <span class="exam-check text-[#7c69ef] text-xl font-black hidden">✓</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ШАГ 3: ВЫБОР ПРЕДМЕТОВ -->
+        <div id="onboard-step-3" class="space-y-4 my-auto hidden">
+            <div class="space-y-1">
+                <h2 class="text-2xl font-black text-white">Какие предметы сдаешь?</h2>
+                <p class="text-xs text-gray-400 font-bold">Выбери один или несколько (можно изменить позже)</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2.5 pt-2 max-h-[340px] overflow-y-auto">
+                <button onclick="toggleSubject(this, 'Математика')" class="subj-btn bg-[#1c1d22] border-2 border-[#10b981] p-3 rounded-2xl flex items-center space-x-2 text-left active:scale-95 transition">
+                    <span class="text-xl">📐</span>
+                    <div>
+                        <div class="text-xs font-black text-white">Математика</div>
+                        <div class="text-[10px] text-emerald-400 font-bold">Выбрано ✓</div>
+                    </div>
+                </button>
+
+                <button onclick="toggleSubject(this, 'Русский язык')" class="subj-btn bg-[#1c1d22] border-2 border-[#10b981] p-3 rounded-2xl flex items-center space-x-2 text-left active:scale-95 transition">
+                    <span class="text-xl">📚</span>
+                    <div>
+                        <div class="text-xs font-black text-white">Русский язык</div>
+                        <div class="text-[10px] text-emerald-400 font-bold">Выбрано ✓</div>
+                    </div>
+                </button>
+
+                <button onclick="toggleSubject(this, 'Информатика')" class="subj-btn bg-[#1c1d22] border-2 border-[#10b981] p-3 rounded-2xl flex items-center space-x-2 text-left active:scale-95 transition">
+                    <span class="text-xl">💻</span>
+                    <div>
+                        <div class="text-xs font-black text-white">Информатика</div>
+                        <div class="text-[10px] text-emerald-400 font-bold">Выбрано ✓</div>
+                    </div>
+                </button>
+
+                <button onclick="toggleSubject(this, 'Обществознание')" class="subj-btn bg-[#1c1d22] border-2 border-white/10 p-3 rounded-2xl flex items-center space-x-2 text-left active:scale-95 transition">
+                    <span class="text-xl">🏛️</span>
+                    <div>
+                        <div class="text-xs font-black text-white">Общество</div>
+                        <div class="text-[10px] text-gray-400 font-bold">Нажми чтобы выбрать</div>
+                    </div>
+                </button>
+
+                <button onclick="toggleSubject(this, 'Физика')" class="subj-btn bg-[#1c1d22] border-2 border-white/10 p-3 rounded-2xl flex items-center space-x-2 text-left active:scale-95 transition">
+                    <span class="text-xl">🔬</span>
+                    <div>
+                        <div class="text-xs font-black text-white">Физика</div>
+                        <div class="text-[10px] text-gray-400 font-bold">Нажми чтобы выбрать</div>
+                    </div>
+                </button>
+
+                <button onclick="toggleSubject(this, 'Биология')" class="subj-btn bg-[#1c1d22] border-2 border-white/10 p-3 rounded-2xl flex items-center space-x-2 text-left active:scale-95 transition">
+                    <span class="text-xl">🧬</span>
+                    <div>
+                        <div class="text-xs font-black text-white">Биология</div>
+                        <div class="text-[10px] text-gray-400 font-bold">Нажми чтобы выбрать</div>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Нижняя кнопка продолжения онбординга -->
+        <div class="pt-4">
+            <button id="onboard-next-btn" onclick="nextOnboardStep()" class="w-full bg-[#7c69ef] hover:bg-[#6c58e5] text-white font-black text-base py-4 rounded-2xl tracking-wider active:scale-98 transition shadow-lg shadow-indigo-500/30">
+                ПРОДОЛЖИТЬ →
+            </button>
+        </div>
+    </div>
         <div class="flex justify-between items-center pt-2">
             <button onclick="document.getElementById('cards-screen').classList.add('hidden')" class="text-gray-400 text-sm font-bold bg-[#1c1d22] px-3 py-1.5 rounded-xl">✕ Назад</button>
             <span class="text-xs font-black text-emerald-400 uppercase tracking-wider">Термины обществознания</span>
@@ -358,6 +496,10 @@
         // БАЗА СОСТОЯНИЯ И ПРОГРЕССА
         // ==========================================
         const defaultState = {
+            nickname: "Даниил",
+            exam: "ОГЭ 2026 (9 класс)",
+            subjects: ["Математика", "Русский язык", "Информатика"],
+            onboarded: false,
             streak: 5,
             coins: 45,
             xp: 2689,
@@ -377,8 +519,78 @@
             document.getElementById('stat-coins').innerText = state.coins;
             document.getElementById('stat-xp').innerText = state.xp;
             document.getElementById('stat-rank').innerText = state.rank;
+            document.getElementById('user-display-name').innerText = state.nickname || "Даниил";
         }
         saveState();
+
+        // Проверка первого входа (Онбординг)
+        if (!state.onboarded) {
+            document.getElementById('onboarding-screen').classList.remove('hidden');
+            if (tg?.initDataUnsafe?.user?.first_name) {
+                document.getElementById('onboard-name-input').value = tg.initDataUnsafe.user.first_name;
+            }
+        }
+
+        let onboardStep = 1;
+
+        function selectExam(examName, el) {
+            state.exam = examName;
+            document.querySelectorAll('.exam-choice-card').forEach(c => {
+                c.classList.remove('border-[#7c69ef]');
+                c.classList.add('border-white/5');
+                c.querySelector('.exam-check').classList.add('hidden');
+            });
+            el.classList.add('border-[#7c69ef]');
+            el.classList.remove('border-white/5');
+            el.querySelector('.exam-check').classList.remove('hidden');
+            if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred("light");
+        }
+
+        function toggleSubject(btn, subj) {
+            if (!state.subjects) state.subjects = [];
+            const idx = state.subjects.indexOf(subj);
+            if (idx > -1) {
+                state.subjects.splice(idx, 1);
+                btn.className = "subj-btn bg-[#1c1d22] border-2 border-white/10 p-3 rounded-2xl flex items-center space-x-2 text-left active:scale-95 transition";
+                const badge = btn.querySelector('div div:last-child');
+                badge.className = "text-[10px] text-gray-400 font-bold";
+                badge.innerText = "Нажми чтобы выбрать";
+            } else {
+                state.subjects.push(subj);
+                btn.className = "subj-btn bg-[#1c1d22] border-2 border-[#10b981] p-3 rounded-2xl flex items-center space-x-2 text-left active:scale-95 transition";
+                const badge = btn.querySelector('div div:last-child');
+                badge.className = "text-[10px] text-emerald-400 font-bold";
+                badge.innerText = "Выбрано ✓";
+            }
+            if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred("light");
+        }
+
+        function nextOnboardStep() {
+            if (onboardStep === 1) {
+                const name = document.getElementById('onboard-name-input').value.trim();
+                if (name) state.nickname = name;
+                document.getElementById('onboard-step-1').classList.add('hidden');
+                document.getElementById('onboard-step-2').classList.remove('hidden');
+                onboardStep = 2;
+                document.getElementById('onboard-step-text').innerText = "Шаг 2 из 3";
+                document.getElementById('onboard-progress').style.width = "66%";
+            } else if (onboardStep === 2) {
+                document.getElementById('onboard-step-2').classList.add('hidden');
+                document.getElementById('onboard-step-3').classList.remove('hidden');
+                onboardStep = 3;
+                document.getElementById('onboard-step-text').innerText = "Шаг 3 из 3";
+                document.getElementById('onboard-progress').style.width = "100%";
+                document.getElementById('onboard-next-btn').innerText = "ПОГНАЛИ К СОТКЕ! 🚀";
+            } else if (onboardStep === 3) {
+                state.onboarded = true;
+                saveState();
+                document.getElementById('onboarding-screen').classList.add('hidden');
+                document.getElementById('user-display-name').innerText = state.nickname;
+                if (window.confetti) confetti({ particleCount: 120, spread: 80, origin: { y: 0.5 } });
+                if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
+            }
+            if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred("medium");
+        }
 
         // ==========================================
         // ЛОГИКА ТЕСТА

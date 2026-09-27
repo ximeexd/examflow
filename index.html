@@ -380,25 +380,43 @@
         <div class="stagger-2 p-2.5 rounded-2xl glass-card flex items-center justify-between text-xs font-black">
             <!-- Diamonds -->
             <div onclick="showToastMsg('Алмазы','Зарабатывай за безупречные тесты!','diamond')" class="flex items-center space-x-1.5 cursor-pointer active:scale-90 transition-transform">
-                <img src="icons/diamond.jpg" alt="diamond" class="w-6 h-6 object-contain" style="mix-blend-mode: screen; filter: drop-shadow(0 0 4px rgba(28,176,246,0.6));">
+                <svg width="26" height="26" viewBox="0 0 32 32" fill="none" class="drop-shadow-sm">
+                  <path d="M16 30.5L3.5 13.5L9.5 3.5H22.5L28.5 13.5L16 30.5Z" fill="#1CB0F6" stroke="#005C8A" stroke-width="2.5" stroke-linejoin="round"/>
+                  <path d="M9.5 3.5L16 13.5L22.5 3.5H9.5Z" fill="#78C8F9" stroke="#005C8A" stroke-width="2.5" stroke-linejoin="round"/>
+                  <path d="M3.5 13.5H28.5" stroke="#005C8A" stroke-width="2.5" stroke-linecap="round"/>
+                  <path d="M16 30.5V13.5" stroke="#005C8A" stroke-width="2.5" stroke-linecap="round"/>
+                  <path d="M9.5 3.5L3.5 13.5" stroke="#005C8A" stroke-width="2.5" stroke-linejoin="round"/>
+                  <path d="M22.5 3.5L28.5 13.5" stroke="#005C8A" stroke-width="2.5" stroke-linejoin="round"/>
+                </svg>
                 <span id="stat-rank" class="text-sm text-[#1cb0f6]">0</span>
             </div>
 
             <!-- Coins -->
             <div onclick="openModal('shop-modal')" class="flex items-center space-x-1.5 cursor-pointer active:scale-90 transition-transform">
-                <img src="icons/coin.jpg" alt="coin" class="w-6 h-6 object-contain" style="mix-blend-mode: screen; filter: drop-shadow(0 0 4px rgba(255,200,0,0.5));">
+                <svg width="26" height="26" viewBox="0 0 32 32" fill="none" class="drop-shadow-sm">
+                  <circle cx="16" cy="18" r="13" fill="#D98000" stroke="#8F4B00" stroke-width="2.5"/>
+                  <circle cx="16" cy="15" r="13" fill="#FFC800" stroke="#8F4B00" stroke-width="2.5"/>
+                  <circle cx="16" cy="15" r="9" stroke="#FFDF6D" stroke-width="2"/>
+                  <path d="M12.5 10H19.5V12.5H15.5V14H18.5V16.5H15.5V18H19.5V20.5H12.5V10Z" fill="#D98000"/>
+                </svg>
                 <span id="stat-coins" class="text-sm text-[#ffc800]">0</span>
             </div>
 
             <!-- XP -->
             <div onclick="showToastMsg('Опыт','Решай задания для прокачки!','xp')" class="flex items-center space-x-1.5 cursor-pointer active:scale-90 transition-transform">
-                <img src="icons/xp_star.jpg" alt="xp" class="w-6 h-6 object-contain" style="mix-blend-mode: screen; filter: drop-shadow(0 0 5px rgba(88,204,2,0.6));">
+                <svg width="26" height="26" viewBox="0 0 32 32" fill="none" class="drop-shadow-sm">
+                  <path d="M16 4.5L19.5 11.5L27 12.5L21.5 18L23 25.5L16 22L9 25.5L10.5 18L5 12.5L12.5 11.5L16 4.5Z" fill="#3D9900" stroke="#1F4700" stroke-width="2.5" stroke-linejoin="round" transform="translate(0, 3)"/>
+                  <path d="M16 2L19.5 9L27 10L21.5 15.5L23 23L16 19.5L9 23L10.5 15.5L5 10L12.5 9L16 2Z" fill="#58CC02" stroke="#1F4700" stroke-width="2.5" stroke-linejoin="round"/>
+                  <path d="M16 5.5L12.5 12.5L5.5 13.5" stroke="#A5ED6E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
                 <span id="stat-xp" class="text-sm text-[#58cc02]">0</span>
             </div>
 
             <!-- Streak -->
             <div onclick="showStreakModal()" class="flex items-center space-x-1 cursor-pointer active:scale-90 transition-transform">
-                <img id="flame-img" src="icons/flame.jpg" alt="streak" class="w-6 h-6 object-contain opacity-30 transition-all" style="mix-blend-mode: screen; filter: grayscale(1);">
+                <div id="flame-wrapper" class="w-[26px] h-[26px] flex items-center justify-center">
+                    <!-- Flame SVG injected by JS -->
+                </div>
                 <span id="stat-streak" class="text-sm font-black text-gray-500">0</span>
             </div>
         </div>
@@ -1268,18 +1286,24 @@
             const letter = $('user-avatar-letter');
             if (letter) letter.innerText = (state.nickname || 'У')[0].toUpperCase();
 
-            // Flame image (using generated img icon)
-            const flameImg = $('flame-img');
-            if (flameImg) {
+            // Flame SVG (Duolingo Vector Style)
+            const flameWrapper = $('flame-wrapper');
+            if (flameWrapper) {
                 if (state.streak > 0) {
-                    flameImg.style.filter = 'drop-shadow(0 0 8px rgba(255,150,0,0.8)) grayscale(0)';
-                    flameImg.style.opacity = '1';
-                    flameImg.style.animation = 'flame-dance 0.9s ease-in-out infinite';
+                    flameWrapper.innerHTML = `
+                        <svg width="26" height="26" viewBox="0 0 32 32" fill="none" class="drop-shadow-sm" style="animation: flame-dance 0.9s ease-in-out infinite; filter: drop-shadow(0 0 8px rgba(255,150,0,0.6));">
+                          <path d="M16 5C16 5 25 10 25 19C25 24 21 28 16 28C11 28 7 24 7 19C7 10 16 5 16 5Z" fill="#D94E00" stroke="#8F3000" stroke-width="2.5" stroke-linejoin="round" transform="translate(0, 2)"/>
+                          <path d="M16 2C16 2 25 7 25 16C25 21 21 25 16 25C11 25 7 21 7 16C7 7 16 2 16 2Z" fill="#FF9600" stroke="#8F3000" stroke-width="2.5" stroke-linejoin="round"/>
+                          <path d="M16 12C16 12 21 15 21 20C21 22.8 18.8 25 16 25C13.2 25 11 22.8 11 20C11 15 16 12 16 12Z" fill="#FFC800"/>
+                        </svg>`;
                     $('stat-streak').style.color = '#ff9600';
                 } else {
-                    flameImg.style.filter = 'grayscale(1)';
-                    flameImg.style.opacity = '0.3';
-                    flameImg.style.animation = 'none';
+                    flameWrapper.innerHTML = `
+                        <svg width="26" height="26" viewBox="0 0 32 32" fill="none" class="opacity-40 grayscale">
+                          <path d="M16 5C16 5 25 10 25 19C25 24 21 28 16 28C11 28 7 24 7 19C7 10 16 5 16 5Z" fill="#4A5568" stroke="#2D3748" stroke-width="2.5" stroke-linejoin="round" transform="translate(0, 2)"/>
+                          <path d="M16 2C16 2 25 7 25 16C25 21 21 25 16 25C11 25 7 21 7 16C7 7 16 2 16 2Z" fill="#718096" stroke="#2D3748" stroke-width="2.5" stroke-linejoin="round"/>
+                          <path d="M16 12C16 12 21 15 21 20C21 22.8 18.8 25 16 25C13.2 25 11 22.8 11 20C11 15 16 12 16 12Z" fill="#A0AEC0"/>
+                        </svg>`;
                     $('stat-streak').style.color = '#718096';
                 }
             }
@@ -1355,11 +1379,21 @@
 
             const streakFire = document.getElementById('streak-fire');
             if (state.streak > 0) {
-                streakFire.innerHTML = '<img src="icons/flame.jpg" alt="fire" class="w-16 h-16 object-contain" style="mix-blend-mode: screen; animation: flame-dance 0.9s ease-in-out infinite; filter: drop-shadow(0 0 16px rgba(255,150,0,0.7));">';
+                streakFire.innerHTML = `
+                    <svg width="64" height="64" viewBox="0 0 32 32" fill="none" class="drop-shadow-sm" style="animation: flame-dance 0.9s ease-in-out infinite; filter: drop-shadow(0 0 16px rgba(255,150,0,0.7));">
+                      <path d="M16 5C16 5 25 10 25 19C25 24 21 28 16 28C11 28 7 24 7 19C7 10 16 5 16 5Z" fill="#D94E00" stroke="#8F3000" stroke-width="2.5" stroke-linejoin="round" transform="translate(0, 2)"/>
+                      <path d="M16 2C16 2 25 7 25 16C25 21 21 25 16 25C11 25 7 21 7 16C7 7 16 2 16 2Z" fill="#FF9600" stroke="#8F3000" stroke-width="2.5" stroke-linejoin="round"/>
+                      <path d="M16 12C16 12 21 15 21 20C21 22.8 18.8 25 16 25C13.2 25 11 22.8 11 20C11 15 16 12 16 12Z" fill="#FFC800"/>
+                    </svg>`;
                 document.getElementById('streak-title').innerText = `${state.streak} ${state.streak === 1 ? 'день' : 'дней'} подряд!`;
                 document.getElementById('streak-desc').innerText = 'Так держать! Не прерывай серию.';
             } else {
-                streakFire.innerHTML = '<img src="icons/flame.jpg" alt="fire" class="w-16 h-16 object-contain opacity-25" style="mix-blend-mode: screen; filter: grayscale(1);">';
+                streakFire.innerHTML = `
+                    <svg width="64" height="64" viewBox="0 0 32 32" fill="none" class="opacity-30 grayscale">
+                      <path d="M16 5C16 5 25 10 25 19C25 24 21 28 16 28C11 28 7 24 7 19C7 10 16 5 16 5Z" fill="#4A5568" stroke="#2D3748" stroke-width="2.5" stroke-linejoin="round" transform="translate(0, 2)"/>
+                      <path d="M16 2C16 2 25 7 25 16C25 21 21 25 16 25C11 25 7 21 7 16C7 7 16 2 16 2Z" fill="#718096" stroke="#2D3748" stroke-width="2.5" stroke-linejoin="round"/>
+                      <path d="M16 12C16 12 21 15 21 20C21 22.8 18.8 25 16 25C13.2 25 11 22.8 11 20C11 15 16 12 16 12Z" fill="#A0AEC0"/>
+                    </svg>`;
                 document.getElementById('streak-title').innerText = 'Ударный режим';
                 document.getElementById('streak-desc').innerText = 'Реши задание сегодня, чтобы зажечь огонь!';
             }

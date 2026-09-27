@@ -371,10 +371,55 @@
             tg.setBackgroundColor('#131f24');
         }
 
-        // Данные пользователя
-        let userStreak = 5;
-        let userGems = 610;
-        let userHearts = 5;
+        // ==========================================
+        // СИСТЕМА СОХРАНЕНИЯ ПРОГРЕССА (LOCALSTORAGE + CLOUD)
+        // ==========================================
+        const defaultState = {
+            name: "Ученик",
+            streak: 5,
+            gems: 610,
+            hearts: 5,
+            completedLevels: [1], // уровень 1 сдан
+            currentLevel: 2       // текущий уровень 2
+        };
+
+        function loadUserState() {
+            const saved = localStorage.getItem('examflow_save_v1');
+            if (saved) {
+                try {
+                    return JSON.parse(saved);
+                } catch(e) {}
+            }
+            return defaultState;
+        }
+
+        let userState = loadUserState();
+
+        function saveUserState() {
+            localStorage.setItem('examflow_save_v1', JSON.stringify(userState));
+            // Если мы в Telegram WebApp - дублируем в защищенное облако Телеграма
+            if (window.Telegram?.WebApp?.CloudStorage) {
+                try {
+                    window.Telegram.WebApp.CloudStorage.setItem('examflow_save_v1', JSON.stringify(userState));
+                } catch(e) {}
+            }
+            renderStatsAndLevels();
+        }
+
+        // Обновление цифр и уровней на экране
+        function renderStatsAndLevels() {
+            document.getElementById('stat-streak').innerText = userState.streak;
+            document.getElementById('stat-gems').innerText = userState.gems;
+            document.getElementById('stat-hearts').innerText = userState.hearts;
+            
+            // Если в Телеграме есть имя пользователя - приветствуем лично
+            if (tg?.initDataUnsafe?.user?.first_name) {
+                userState.name = tg.initDataUnsafe.user.first_name;
+            }
+        }
+
+        // Запуск при старте страницы
+        renderStatsAndLevels();
 
         // Вопросы урока Duolingo
         const duoQuestions = [
@@ -531,8 +576,13 @@
                 } else {
                     // Урок пройден
                     closeDuoLesson();
-                    userGems += 50;
-                    document.getElementById('stat-gems').innerText = userGems;
+                    userState.gems += 50;
+                    userState.streak += 1;
+                    if (!userState.completedLevels.includes(userState.currentLevel)) {
+                        userState.completedLevels.push(userState.currentLevel);
+                        userState.currentLevel += 1;
+                    }
+                    saveUserState();
 
                     if (window.confetti) {
                         confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
@@ -541,7 +591,7 @@
                     if (tg) {
                         tg.sendData("win_10xp");
                     }
-                    alert("Урок успешно завершен! +50 💎");
+                    alert("🎉 Урок завершен! +50 💎 Прогресс надежно сохранен!");
                 }
             }
         }

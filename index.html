@@ -446,19 +446,19 @@
 
             <div class="space-y-2.5 pt-1">
                 <!-- Стиль 1 -->
-                <div onclick="setTheme('umschool')" class="theme-choice-card p-4 rounded-2xl bg-[#26262b] border-2 border-[#8b6af0] flex items-center justify-between cursor-pointer active:scale-98 transition">
+                <div id="theme-card-umschool" onclick="setTheme('umschool')" class="theme-choice-card p-4 rounded-2xl bg-[#26262b] border-2 border-[#8b6af0] flex items-center justify-between cursor-pointer active:scale-98 transition">
                     <div class="flex items-center space-x-3">
                         <span class="text-2xl">🎓</span>
                         <div>
-                            <div class="text-sm font-black text-white">Умскул Классик (Выбрано)</div>
+                            <div class="text-sm font-black text-white">Умскул Классик</div>
                             <div class="text-[11px] text-gray-400">Оригинальный интерфейс из твоего скриншота</div>
                         </div>
                     </div>
-                    <i data-lucide="check" class="w-5 h-5 text-[#8b6af0] font-black"></i>
+                    <span class="theme-check"><i data-lucide="check" class="w-5 h-5 text-[#8b6af0] font-black"></i></span>
                 </div>
 
                 <!-- Стиль 2 -->
-                <div onclick="setTheme('apple')" class="theme-choice-card p-4 rounded-2xl bg-[#26262b] border border-white/10 flex items-center justify-between cursor-pointer active:scale-98 transition">
+                <div id="theme-card-apple" onclick="setTheme('apple')" class="theme-choice-card p-4 rounded-2xl bg-[#26262b] border border-white/10 flex items-center justify-between cursor-pointer active:scale-98 transition">
                     <div class="flex items-center space-x-3">
                         <span class="text-2xl">🍏</span>
                         <div>
@@ -466,10 +466,11 @@
                             <div class="text-[11px] text-gray-400">Жидкое сапфировое стекло и глубокие градиенты</div>
                         </div>
                     </div>
+                    <span class="theme-check hidden"><i data-lucide="check" class="w-5 h-5 text-[#8b6af0] font-black"></i></span>
                 </div>
 
                 <!-- Стиль 3 -->
-                <div onclick="setTheme('stripe')" class="theme-choice-card p-4 rounded-2xl bg-[#26262b] border border-white/10 flex items-center justify-between cursor-pointer active:scale-98 transition">
+                <div id="theme-card-stripe" onclick="setTheme('stripe')" class="theme-choice-card p-4 rounded-2xl bg-[#26262b] border border-white/10 flex items-center justify-between cursor-pointer active:scale-98 transition">
                     <div class="flex items-center space-x-3">
                         <span class="text-2xl">⚡️</span>
                         <div>
@@ -477,10 +478,11 @@
                             <div class="text-[11px] text-gray-400">Минимализм Кремниевой долины, тонкие фаски</div>
                         </div>
                     </div>
+                    <span class="theme-check hidden"><i data-lucide="check" class="w-5 h-5 text-[#8b6af0] font-black"></i></span>
                 </div>
 
                 <!-- Стиль 4 -->
-                <div onclick="setTheme('duolingo')" class="theme-choice-card p-4 rounded-2xl bg-[#26262b] border border-white/10 flex items-center justify-between cursor-pointer active:scale-98 transition">
+                <div id="theme-card-duolingo" onclick="setTheme('duolingo')" class="theme-choice-card p-4 rounded-2xl bg-[#26262b] border border-white/10 flex items-center justify-between cursor-pointer active:scale-98 transition">
                     <div class="flex items-center space-x-3">
                         <span class="text-2xl">🕹</span>
                         <div>
@@ -488,6 +490,7 @@
                             <div class="text-[11px] text-gray-400">Объемные 3D-кнопки с физическим вдавливанием</div>
                         </div>
                     </div>
+                    <span class="theme-check hidden"><i data-lucide="check" class="w-5 h-5 text-[#8b6af0] font-black"></i></span>
                 </div>
             </div>
         </div>
@@ -938,7 +941,24 @@
             playWarmChime();
             document.body.className = `theme-${tName} min-h-screen flex flex-col pb-20 max-w-md mx-auto relative`;
             localStorage.setItem('examflow_active_theme_choice', tName);
-            document.getElementById('theme-btn-label').innerText = themesInfo[tName] || 'Стиль';
+            const labelEl = document.getElementById('theme-btn-label');
+            if (labelEl) labelEl.innerText = themesInfo[tName] || 'Стиль';
+            
+            // Обновляем карточки в модалке
+            ['umschool', 'apple', 'stripe', 'duolingo'].forEach(k => {
+                const card = document.getElementById(`theme-card-${k}`);
+                if (card) {
+                    const check = card.querySelector('.theme-check');
+                    if (k === tName) {
+                        card.className = "theme-choice-card p-4 rounded-2xl bg-[#26262b] border-2 border-[#8b6af0] flex items-center justify-between cursor-pointer active:scale-98 transition shadow-lg";
+                        if (check) check.classList.remove('hidden');
+                    } else {
+                        card.className = "theme-choice-card p-4 rounded-2xl bg-[#26262b] border border-white/10 flex items-center justify-between cursor-pointer active:scale-98 transition";
+                        if (check) check.classList.add('hidden');
+                    }
+                }
+            });
+
             closeThemePicker();
         }
 

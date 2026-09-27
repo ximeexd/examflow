@@ -350,7 +350,7 @@
                         <circle id="avatar-ring" class="progress-ring-circle" cx="24" cy="24" r="21" stroke="#58cc02" stroke-width="3" fill="none"
                             stroke-dasharray="131.95" stroke-dashoffset="131.95" stroke-linecap="round"/>
                     </svg>
-                    <div class="absolute inset-[4px] rounded-full bg-gradient-to-br from-purple-600 via-indigo-500 to-blue-600 flex items-center justify-center shadow-lg">
+                    <div id="user-avatar-container" class="absolute inset-[4px] rounded-full bg-gradient-to-br from-purple-600 via-indigo-500 to-blue-600 flex items-center justify-center shadow-lg overflow-hidden">
                         <span id="user-avatar-letter" class="text-sm font-black text-white" style="text-shadow: 0 1px 3px rgba(0,0,0,0.3);">У</span>
                     </div>
                     <div id="level-badge" class="absolute -bottom-0.5 -right-0.5 bg-[#58cc02] text-[8px] font-black text-slate-950 w-5 h-5 rounded-full flex items-center justify-center border-2 border-[#131f24] shadow">1</div>
@@ -720,7 +720,7 @@
 
             <div class="space-y-2">
                 <label class="text-[10px] font-black text-gray-500 uppercase tracking-wider">Предметы</label>
-                <div class="grid grid-cols-2 gap-2" id="subjects-list">
+                <div class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1 custom-scrollbar" id="subjects-list">
                     <button onclick="toggleUserSubject(this,'Математика')" data-subj="Математика" class="subj-chip p-3 rounded-2xl bg-[#58cc02]/20 text-[#58cc02] text-xs font-black flex items-center justify-between active:scale-95 transition-all border border-[#58cc02]/30">
                         <span>📐 Математика</span><span class="text-[#58cc02]">✓</span>
                     </button>
@@ -739,6 +739,21 @@
                     <button onclick="toggleUserSubject(this,'Биология')" data-subj="Биология" class="subj-chip p-3 rounded-2xl bg-white/[0.04] text-gray-400 text-xs font-black flex items-center justify-between active:scale-95 transition-all border border-transparent">
                         <span>🧬 Биология</span><span class="opacity-0">✓</span>
                     </button>
+                    <button onclick="toggleUserSubject(this,'Химия')" data-subj="Химия" class="subj-chip p-3 rounded-2xl bg-white/[0.04] text-gray-400 text-xs font-black flex items-center justify-between active:scale-95 transition-all border border-transparent">
+                        <span>🧪 Химия</span><span class="opacity-0">✓</span>
+                    </button>
+                    <button onclick="toggleUserSubject(this,'История')" data-subj="История" class="subj-chip p-3 rounded-2xl bg-white/[0.04] text-gray-400 text-xs font-black flex items-center justify-between active:scale-95 transition-all border border-transparent">
+                        <span>🏰 История</span><span class="opacity-0">✓</span>
+                    </button>
+                    <button onclick="toggleUserSubject(this,'География')" data-subj="География" class="subj-chip p-3 rounded-2xl bg-white/[0.04] text-gray-400 text-xs font-black flex items-center justify-between active:scale-95 transition-all border border-transparent">
+                        <span>🗺 География</span><span class="opacity-0">✓</span>
+                    </button>
+                    <button onclick="toggleUserSubject(this,'Литература')" data-subj="Литература" class="subj-chip p-3 rounded-2xl bg-white/[0.04] text-gray-400 text-xs font-black flex items-center justify-between active:scale-95 transition-all border border-transparent">
+                        <span>📚 Литература</span><span class="opacity-0">✓</span>
+                    </button>
+                    <button onclick="toggleUserSubject(this,'Английский')" data-subj="Английский" class="subj-chip p-3 rounded-2xl bg-white/[0.04] text-gray-400 text-xs font-black flex items-center justify-between active:scale-95 transition-all border border-transparent">
+                        <span>🇬🇧 Английский</span><span class="opacity-0">✓</span>
+                    </button>
                 </div>
             </div>
 
@@ -747,7 +762,13 @@
                 <input id="user-name-input" type="text" placeholder="Имя или никнейм" value="Ученик" class="w-full bg-white/[0.04] border border-white/[0.06] rounded-2xl p-3.5 text-white text-sm font-bold outline-none focus:border-[#58cc02]/50 transition-all">
             </div>
 
-            <button onclick="saveUserOnboarding()" class="w-full py-4 rounded-2xl font-black text-sm tracking-wider active:scale-[0.98] transition-all shadow-lg text-white" style="background: linear-gradient(135deg, #58cc02, #4cb300); border-bottom: 4px solid #3d9400;">
+            <div class="space-y-1.5">
+                <label class="text-[10px] font-black text-gray-500 uppercase tracking-wider">Телеграм (для аватарки)</label>
+                <input id="user-tg-input" type="text" placeholder="@username (необязательно)" class="w-full bg-white/[0.04] border border-white/[0.06] rounded-2xl p-3.5 text-white text-sm font-bold outline-none focus:border-[#1cb0f6]/50 transition-all">
+                <p class="text-[9px] text-gray-500 font-bold ml-1">Если укажешь ник, мы подгрузим твою аватарку из ТГ!</p>
+            </div>
+
+            <button onclick="saveUserOnboarding()" class="w-full py-4 mt-2 rounded-2xl font-black text-sm tracking-wider active:scale-[0.98] transition-all shadow-lg text-white" style="background: linear-gradient(135deg, #58cc02, #4cb300); border-bottom: 4px solid #3d9400;">
                 СОХРАНИТЬ
             </button>
         </div>
@@ -1281,6 +1302,9 @@
             $('bottom-status-name').innerText = `${state.statusText} ${state.exam.split(' ')[0]}`;
             $('active-exam-label').innerText = `${state.exam.split(' ')[0]} • ${state.statusText}`;
 
+            if ($('user-name-input')) $('user-name-input').value = state.nickname;
+            if ($('user-tg-input') && state.tgUsername) $('user-tg-input').value = state.tgUsername;
+
             // XP to next level
             const xpInLevel = state.xp % 100;
             const xpNeeded = 100 - xpInLevel;
@@ -1296,9 +1320,17 @@
                 ring.style.strokeDashoffset = circumference * (1 - progress);
             }
 
-            // Avatar letter
-            const letter = $('user-avatar-letter');
-            if (letter) letter.innerText = (state.nickname || 'У')[0].toUpperCase();
+            // Avatar letter or TG avatar
+            const avatarContainer = $('user-avatar-container');
+            if (avatarContainer) {
+                if (state.avatarUrl) {
+                    avatarContainer.innerHTML = `<img src="${state.avatarUrl}" alt="avatar" class="w-full h-full object-cover">`;
+                    avatarContainer.className = "absolute inset-[4px] rounded-full flex items-center justify-center shadow-lg overflow-hidden";
+                } else {
+                    avatarContainer.innerHTML = `<span id="user-avatar-letter" class="text-sm font-black text-white" style="text-shadow: 0 1px 3px rgba(0,0,0,0.3);">${(state.nickname || 'У')[0].toUpperCase()}</span>`;
+                    avatarContainer.className = "absolute inset-[4px] rounded-full bg-gradient-to-br from-purple-600 via-indigo-500 to-blue-600 flex items-center justify-center shadow-lg overflow-hidden";
+                }
+            }
 
             // Flame SVG (Duolingo Bubbly Style)
             const flameWrapper = $('flame-wrapper');
@@ -1428,9 +1460,16 @@
             tg.expand();
             tg.setHeaderColor('#131f24');
             tg.setBackgroundColor('#131f24');
-            if (tg.initDataUnsafe?.user?.first_name && !state.onboarded) {
-                state.nickname = tg.initDataUnsafe.user.first_name;
-                document.getElementById('user-name-input').value = state.nickname;
+            if (tg.initDataUnsafe?.user) {
+                if (tg.initDataUnsafe.user.first_name && !state.onboarded) {
+                    state.nickname = tg.initDataUnsafe.user.first_name;
+                }
+                if (tg.initDataUnsafe.user.username) {
+                    state.tgUsername = tg.initDataUnsafe.user.username;
+                }
+                if (tg.initDataUnsafe.user.photo_url) {
+                    state.avatarUrl = tg.initDataUnsafe.user.photo_url;
+                }
             }
         }
 
@@ -1476,6 +1515,31 @@
         function saveUserOnboarding() {
             const name = document.getElementById('user-name-input').value.trim();
             if (name) state.nickname = name;
+
+            const tgInput = document.getElementById('user-tg-input');
+            if (tgInput) {
+                let tgUser = tgInput.value.replace('@','').trim();
+                if (tgUser && tgUser !== state.tgUsername) {
+                    state.tgUsername = tgUser;
+                    // Async fetch avatar via allorigins and meta og:image
+                    fetch(`https://api.allorigins.win/get?url=${encodeURIComponent('https://t.me/' + tgUser)}`)
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.contents) {
+                                const match = data.contents.match(/<meta property="og:image" content="([^"]+)"/);
+                                if (match && match[1]) {
+                                    state.avatarUrl = match[1];
+                                    saveState();
+                                    showToastMsg('Аватарка', 'Успешно загружена из Telegram!', 'success');
+                                }
+                            }
+                        })
+                        .catch(e => console.log('Avatar fetch failed', e));
+                } else if (!tgUser) {
+                    state.tgUsername = '';
+                    state.avatarUrl = '';
+                }
+            }
 
             if (!state.onboarded) {
                 state.onboarded = true;

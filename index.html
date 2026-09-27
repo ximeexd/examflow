@@ -380,34 +380,25 @@
         <div class="stagger-2 p-2.5 rounded-2xl glass-card flex items-center justify-between text-xs font-black">
             <!-- Diamonds -->
             <div onclick="showToastMsg('Алмазы','Зарабатывай за безупречные тесты!','diamond')" class="flex items-center space-x-1.5 cursor-pointer active:scale-90 transition-transform">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                    <path d="M6 3h12l5 7-11 13L1 10z" fill="#1cb0f6" opacity="0.9"/>
-                    <path d="M6 3l6 17M18 3l-6 17M1 10h22M6 3l-5 7M18 3l5 7" stroke="rgba(255,255,255,0.3)" stroke-width="0.5"/>
-                    <path d="M8 6l4 4 4-4" fill="rgba(255,255,255,0.15)"/>
-                </svg>
+                <img src="icons/diamond.jpg" alt="diamond" class="w-6 h-6 rounded-md object-cover" style="filter: drop-shadow(0 0 4px rgba(28,176,246,0.6));">
                 <span id="stat-rank" class="text-sm text-[#1cb0f6]">0</span>
             </div>
 
             <!-- Coins -->
             <div onclick="openModal('shop-modal')" class="flex items-center space-x-1.5 cursor-pointer active:scale-90 transition-transform">
-                <div class="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black shadow-sm" style="background: linear-gradient(135deg, #ffd54f, #ffb300); color: #5d4037;">E</div>
+                <img src="icons/coin.jpg" alt="coin" class="w-6 h-6 rounded-full object-cover" style="filter: drop-shadow(0 0 4px rgba(255,200,0,0.5));">
                 <span id="stat-coins" class="text-sm text-[#ffc800]">0</span>
             </div>
 
             <!-- XP -->
             <div onclick="showToastMsg('Опыт','Решай задания для прокачки!','xp')" class="flex items-center space-x-1.5 cursor-pointer active:scale-90 transition-transform">
-                <svg width="16" height="16" viewBox="0 0 24 24">
-                    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" fill="#58cc02"/>
-                </svg>
+                <img src="icons/xp_star.jpg" alt="xp" class="w-6 h-6 rounded-md object-cover" style="filter: drop-shadow(0 0 5px rgba(88,204,2,0.6));">
                 <span id="stat-xp" class="text-sm text-[#58cc02]">0</span>
             </div>
 
             <!-- Streak -->
             <div onclick="showStreakModal()" class="flex items-center space-x-1 cursor-pointer active:scale-90 transition-transform">
-                <svg id="flame-icon" width="16" height="16" viewBox="0 0 24 24" class="transition-all">
-                    <path d="M12 2C8 7 4 11 4 15a8 8 0 0016 0c0-4-4-8-8-13z" fill="#4a5568"/>
-                    <path d="M12 12c-1 2-3 3-3 5a3 3 0 006 0c0-2-2-3-3-5z" fill="#718096" opacity="0.7"/>
-                </svg>
+                <img id="flame-img" src="icons/flame.jpg" alt="streak" class="w-6 h-6 rounded-md object-cover opacity-30 transition-all" style="filter: grayscale(1);">
                 <span id="stat-streak" class="text-sm font-black text-gray-500">0</span>
             </div>
         </div>
@@ -1277,18 +1268,18 @@
             const letter = $('user-avatar-letter');
             if (letter) letter.innerText = (state.nickname || 'У')[0].toUpperCase();
 
-            // Flame
-            const flame = $('flame-icon');
-            if (flame) {
+            // Flame image (using generated img icon)
+            const flameImg = $('flame-img');
+            if (flameImg) {
                 if (state.streak > 0) {
-                    flame.innerHTML = '<path d="M12 2C8 7 4 11 4 15a8 8 0 0016 0c0-4-4-8-8-13z" fill="#ff9600"/><path d="M12 12c-1 2-3 3-3 5a3 3 0 006 0c0-2-2-3-3-5z" fill="#ffc800" opacity="0.8"/>';
-                    flame.style.animation = 'flame-dance 0.8s ease-in-out infinite';
-                    flame.style.filter = 'drop-shadow(0 0 6px rgba(255,150,0,0.5))';
+                    flameImg.style.filter = 'drop-shadow(0 0 8px rgba(255,150,0,0.8)) grayscale(0)';
+                    flameImg.style.opacity = '1';
+                    flameImg.style.animation = 'flame-dance 0.9s ease-in-out infinite';
                     $('stat-streak').style.color = '#ff9600';
                 } else {
-                    flame.innerHTML = '<path d="M12 2C8 7 4 11 4 15a8 8 0 0016 0c0-4-4-8-8-13z" fill="#4a5568"/><path d="M12 12c-1 2-3 3-3 5a3 3 0 006 0c0-2-2-3-3-5z" fill="#718096" opacity="0.7"/>';
-                    flame.style.animation = 'none';
-                    flame.style.filter = 'none';
+                    flameImg.style.filter = 'grayscale(1)';
+                    flameImg.style.opacity = '0.3';
+                    flameImg.style.animation = 'none';
                     $('stat-streak').style.color = '#718096';
                 }
             }
@@ -1364,11 +1355,11 @@
 
             const streakFire = document.getElementById('streak-fire');
             if (state.streak > 0) {
-                streakFire.innerHTML = '<svg width="48" height="48" viewBox="0 0 24 24" style="animation: flame-dance 0.8s ease-in-out infinite; filter: drop-shadow(0 0 12px rgba(255,150,0,0.6));"><path d="M12 2C8 7 4 11 4 15a8 8 0 0016 0c0-4-4-8-8-13z" fill="#ff9600"/><path d="M12 12c-1 2-3 3-3 5a3 3 0 006 0c0-2-2-3-3-5z" fill="#ffc800"/></svg>';
+                streakFire.innerHTML = '<img src="icons/flame.jpg" alt="fire" class="w-16 h-16 rounded-2xl object-cover" style="animation: flame-dance 0.9s ease-in-out infinite; filter: drop-shadow(0 0 16px rgba(255,150,0,0.7));">';
                 document.getElementById('streak-title').innerText = `${state.streak} ${state.streak === 1 ? 'день' : 'дней'} подряд!`;
                 document.getElementById('streak-desc').innerText = 'Так держать! Не прерывай серию.';
             } else {
-                streakFire.innerHTML = '<svg width="48" height="48" viewBox="0 0 24 24"><path d="M12 2C8 7 4 11 4 15a8 8 0 0016 0c0-4-4-8-8-13z" fill="#4a5568"/><path d="M12 12c-1 2-3 3-3 5a3 3 0 006 0c0-2-2-3-3-5z" fill="#718096" opacity="0.7"/></svg>';
+                streakFire.innerHTML = '<img src="icons/flame.jpg" alt="fire" class="w-16 h-16 rounded-2xl object-cover opacity-25" style="filter: grayscale(1);">';
                 document.getElementById('streak-title').innerText = 'Ударный режим';
                 document.getElementById('streak-desc').innerText = 'Реши задание сегодня, чтобы зажечь огонь!';
             }

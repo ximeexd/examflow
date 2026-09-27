@@ -7,820 +7,1207 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>ExamFlow</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" defer></script>
-    
-    <!-- Google Fonts -->
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800;900&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
 
     <style>
-        /* Базовые стили */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
-            background-color: #121214;
+            background-color: #131f24;
             color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
             -webkit-tap-highlight-color: transparent;
             user-select: none;
             overflow-x: hidden;
-            transition: background-color 0.3s ease;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* ======================================================== */
-        /* СТИЛЬ 1: УМСКУЛ КЛАССИК (ОРИГИНАЛ ИЗ СКРИНШОТА)          */
-        /* ======================================================== */
-        body.theme-umschool {
-            background-color: #121214;
-            background-image: 
-                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-            background-size: 32px 32px;
-        }
-        body.theme-umschool .main-card {
-            background-color: #1c1c1f;
-            border-radius: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.04);
-        }
-        body.theme-umschool .tile-cards { background-color: #1eb885; }
-        body.theme-umschool .tile-subs { background-color: #8b6af0; }
-        body.theme-umschool .tile-shop { background-color: #ce55b3; }
-        body.theme-umschool .tile-textbook { background-color: #df6837; }
-        body.theme-umschool .tile-ai { background-color: #269de8; }
-        body.theme-umschool .tile-invite { background-color: #f59f1e; }
-        body.theme-umschool .tile-tasks { background-color: #4ea652; }
+        ::-webkit-scrollbar { display: none; }
 
-        /* ======================================================== */
-        /* ======================================================== */
-        /* СТИЛЬ 2: Т-БАНК BLACK (ПРЕМИАЛЬНЫЙ ТЁМНЫЙ ФИНТЕХ)       */
-        /* ======================================================== */
-        body.theme-apple {
-            background-color: #101114;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        /* ===== AMBIENT GRADIENT BACKGROUND ===== */
+        .ambient-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(ellipse 600px 400px at 20% 10%, rgba(88, 204, 2, 0.06) 0%, transparent 70%),
+                radial-gradient(ellipse 500px 500px at 80% 60%, rgba(28, 176, 246, 0.05) 0%, transparent 70%),
+                radial-gradient(ellipse 400px 300px at 50% 90%, rgba(206, 130, 255, 0.04) 0%, transparent 70%);
         }
-        body.theme-apple .main-card {
-            background: linear-gradient(145deg, #1b1c23 0%, #131418 100%);
-            border-radius: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-        body.theme-apple .um-tile {
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            background: #181a22;
-        }
-        body.theme-apple .tile-cards { border-top: 2px solid #10b981; }
-        body.theme-apple .tile-subs { border-top: 2px solid #ffd83a; }
-        body.theme-apple .tile-shop { border-top: 2px solid #f43f5e; }
-        body.theme-apple .tile-textbook { border-top: 2px solid #f97316; }
-        body.theme-apple .tile-ai { border-top: 2px solid #38bdf8; }
-        body.theme-apple .tile-invite { border-top: 2px solid #ffd83a; }
-        body.theme-apple .tile-tasks { border-top: 2px solid #10b981; }
 
-        /* ======================================================== */
-        /* СТИЛЬ 3: ЯНДЕКС ПРАКТИКУМ (АКАДЕМИЧЕСКИЙ ДАРК)          */
-        /* ======================================================== */
-        body.theme-stripe {
-            background-color: #0d0e12;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        /* ===== STAGGER ENTRANCE ANIMATIONS ===== */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(24px) scale(0.97); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
-        body.theme-stripe .main-card {
-            background-color: #16171f;
-            border-radius: 18px;
-            border: 1px solid rgba(255, 255, 255, 0.07);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
-        body.theme-stripe .um-tile {
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.07);
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
         }
-        body.theme-stripe .tile-cards { background-color: #12131a; border-left: 4px solid #10b981; }
-        body.theme-stripe .tile-subs { background-color: #12131a; border-left: 4px solid #8b5cf6; }
-        body.theme-stripe .tile-shop { background-color: #12131a; border-left: 4px solid #ec4899; }
-        body.theme-stripe .tile-textbook { background-color: #12131a; border-left: 4px solid #f97316; }
-        body.theme-stripe .tile-ai { background-color: #12131a; border-left: 4px solid #fc3f1d; }
-        body.theme-stripe .tile-invite { background-color: #12131a; border-left: 4px solid #ffcc00; }
-        body.theme-stripe .tile-tasks { background-color: #12131a; border-left: 4px solid #10b981; }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(88, 204, 2, 0.3); }
+            50% { box-shadow: 0 0 16px 4px rgba(88, 204, 2, 0.15); }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
+        }
+        @keyframes flame-dance {
+            0%, 100% { transform: scaleY(1) scaleX(1); }
+            25% { transform: scaleY(1.1) scaleX(0.95); }
+            50% { transform: scaleY(0.95) scaleX(1.05); }
+            75% { transform: scaleY(1.08) scaleX(0.97); }
+        }
+        @keyframes progress-fill {
+            from { width: 0%; }
+        }
+        @keyframes toast-in {
+            from { transform: translateY(100px) scale(0.9); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        @keyframes toast-out {
+            from { transform: translateY(0) scale(1); opacity: 1; }
+            to { transform: translateY(100px) scale(0.9); opacity: 0; }
+        }
+        @keyframes modal-slide-up {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        @keyframes modal-fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes bounce-in {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.15); }
+            70% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+        @keyframes xp-pop {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-40px) scale(1.3); opacity: 0; }
+        }
+        @keyframes ripple {
+            to { transform: scale(2.5); opacity: 0; }
+        }
+        @keyframes particle-float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
+        }
 
-        /* ======================================================== */
-        /* СТИЛЬ 4: DUOLINGO 3D TACTILE (ОБЪЕМНЫЕ КНОПКИ)          */
-        /* ======================================================== */
-        body.theme-duolingo {
-            background-color: #131f24;
-            font-family: 'Nunito', -apple-system, sans-serif;
-        }
-        body.theme-duolingo .main-card {
-            background-color: #202f36;
-            border-radius: 26px;
-            border: 2px solid #37464f;
-            border-bottom: 5px solid #2b3940;
-        }
-        body.theme-duolingo .um-tile {
-            border-radius: 24px;
-            border-bottom: 5px solid rgba(0, 0, 0, 0.35);
-        }
-        body.theme-duolingo .tile-cards { background-color: #58cc02; border-bottom-color: #46a302; }
-        body.theme-duolingo .tile-subs { background-color: #ce82ff; border-bottom-color: #a855f7; }
-        body.theme-duolingo .tile-shop { background-color: #ff4b4b; border-bottom-color: #d33131; }
-        body.theme-duolingo .tile-textbook { background-color: #ff9600; border-bottom-color: #e08500; }
-        body.theme-duolingo .tile-ai { background-color: #1cb0f6; border-bottom-color: #1899d6; }
-        body.theme-duolingo .tile-invite { background-color: #ffc800; color: #4b3200; border-bottom-color: #e5a500; }
-        body.theme-duolingo .tile-tasks { background-color: #58cc02; border-bottom-color: #46a302; }
+        .stagger-1 { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both; }
+        .stagger-2 { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both; }
+        .stagger-3 { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.19s both; }
+        .stagger-4 { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.26s both; }
+        .stagger-5 { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.33s both; }
+        .stagger-6 { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.40s both; }
 
-        /* ======================================================== */
-        /* DUOLINGO 3D TACTILE BUTTONS                             */
-        /* ======================================================== */
-        .bento-3d {
-            transition: all 0.08s ease;
+        /* ===== 3D TACTILE BUTTONS ===== */
+        .btn-3d {
+            transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
+            will-change: transform;
         }
-        .bento-3d:active {
-            transform: translateY(4px);
+        .btn-3d:active {
+            transform: translateY(3px);
+        }
+        .btn-3d:active .btn-3d-shadow {
+            height: 1px;
         }
 
-        .shadow-green { border-bottom: 5px solid #46a302; }
-        .shadow-green:active { border-bottom-width: 1px; }
+        /* ===== BENTO TILE ===== */
+        .bento-tile {
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform;
+        }
+        .bento-tile:active {
+            transform: translateY(3px) scale(0.98);
+        }
+        .bento-tile::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -50%; right: -50%; bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+            pointer-events: none;
+        }
+        .bento-tile:active::after {
+            transform: translateX(100%);
+        }
 
-        .shadow-purple { border-bottom: 5px solid #a855f7; }
-        .shadow-purple:active { border-bottom-width: 1px; }
+        /* ===== GLASS CARD ===== */
+        .glass-card {
+            background: rgba(32, 47, 54, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 20px;
+        }
 
-        .shadow-red { border-bottom: 5px solid #d33131; }
-        .shadow-red:active { border-bottom-width: 1px; }
+        /* ===== PROGRESS RING ===== */
+        .progress-ring-circle {
+            transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
 
-        .shadow-orange { border-bottom: 5px solid #e08500; }
-        .shadow-orange:active { border-bottom-width: 1px; }
+        /* ===== TOAST NOTIFICATION ===== */
+        .toast-container {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            width: 90%;
+            max-width: 380px;
+            pointer-events: none;
+        }
+        .toast-item {
+            animation: toast-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            pointer-events: auto;
+        }
+        .toast-item.leaving {
+            animation: toast-out 0.3s ease forwards;
+        }
 
-        .shadow-blue { border-bottom: 5px solid #1899d6; }
-        .shadow-blue:active { border-bottom-width: 1px; }
+        /* ===== MODAL TRANSITIONS ===== */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0);
+            backdrop-filter: blur(0px);
+            z-index: 50;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            transition: all 0.35s ease;
+            pointer-events: none;
+            opacity: 0;
+        }
+        .modal-overlay.active {
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(12px);
+            pointer-events: auto;
+            opacity: 1;
+        }
+        .modal-sheet {
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            max-height: 92vh;
+            overflow-y: auto;
+        }
+        .modal-overlay.active .modal-sheet {
+            transform: translateY(0);
+        }
 
-        ::-webkit-scrollbar {
-            display: none;
+        /* ===== FULLSCREEN MODAL ===== */
+        .fullscreen-modal {
+            position: fixed; inset: 0;
+            z-index: 50;
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            opacity: 0;
+        }
+        .fullscreen-modal.active {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* ===== FLOATING PARTICLES ===== */
+        .particle {
+            position: fixed;
+            width: 4px; height: 4px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+            animation: particle-float linear infinite;
+        }
+
+        /* ===== NAV PILL ===== */
+        .nav-pill {
+            position: absolute;
+            height: 3px;
+            border-radius: 2px;
+            background: #58cc02;
+            bottom: 0;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* ===== XP POPUP ===== */
+        .xp-popup {
+            position: fixed;
+            z-index: 99;
+            font-weight: 900;
+            font-size: 18px;
+            color: #58cc02;
+            animation: xp-pop 1s ease-out forwards;
+            pointer-events: none;
+            text-shadow: 0 2px 8px rgba(88, 204, 2, 0.4);
+        }
+
+        /* ===== RIPPLE ===== */
+        .ripple-effect {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+        }
+
+        /* ===== STREAK CALENDAR ===== */
+        .streak-day {
+            width: 28px; height: 28px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 800;
+            transition: all 0.2s ease;
+        }
+        .streak-day.active {
+            background: #58cc02;
+            color: #1a2e00;
+        }
+        .streak-day.today {
+            border: 2px solid #58cc02;
+            color: #58cc02;
+        }
+        .streak-day.inactive {
+            background: rgba(255,255,255,0.04);
+            color: rgba(255,255,255,0.2);
+        }
+
+        /* ===== LEVEL UP SCREEN ===== */
+        .level-up-screen {
+            position: fixed; inset: 0;
+            z-index: 200;
+            background: radial-gradient(ellipse at center, #1a3a20 0%, #0d1a10 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+        .level-up-screen.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* ===== SKELETON ===== */
+        .skeleton {
+            background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 12px;
         }
     </style>
 </head>
-<body class="theme-duolingo min-h-screen flex flex-col pb-20 max-w-md mx-auto relative bg-[#131f24] font-['Nunito',sans-serif]">
+<body class="min-h-screen flex flex-col pb-20 max-w-md mx-auto relative">
 
-    <!-- ПЛАВАЮЩИЙ ПЕРЕКЛЮЧАТЕЛЬ ДИЗАЙНОВ -->
-    <div class="fixed top-2 right-4 z-50">
-        <button onclick="openThemePicker()" class="bg-[#202f36]/95 hover:bg-[#2b3e47] text-white text-[11px] font-black px-3 py-1.5 rounded-full border border-white/10 shadow-xl flex items-center space-x-1.5 active:scale-95 transition backdrop-blur-md">
-            <span>🎨</span>
-            <span id="theme-btn-label">Стиль: Duolingo 3D</span>
-            <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-gray-400"></i>
-        </button>
-    </div>
+    <!-- AMBIENT BACKGROUND -->
+    <div class="ambient-bg"></div>
 
-    <!-- ВЕРХНИЙ БЛОК: ПРОФИЛЬ И СТАТИСТИКА (DUOLINGO 3D) -->
-    <header class="p-4 pt-3 space-y-3 sticky top-0 z-30 bg-[#131f24]/95 backdrop-blur-xl border-b border-[#202f36]">
+    <!-- FLOATING PARTICLES (injected via JS) -->
+    <div id="particles-container"></div>
+
+    <!-- TOAST CONTAINER -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- ========================================= -->
+    <!-- HEADER                                     -->
+    <!-- ========================================= -->
+    <header class="p-4 pt-3 space-y-3 sticky top-0 z-30 stagger-1" style="background: linear-gradient(180deg, rgba(19,31,36,0.98) 0%, rgba(19,31,36,0.92) 80%, rgba(19,31,36,0) 100%); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);">
         <div class="flex justify-between items-center">
             <div class="flex items-center space-x-3">
-                <div class="relative cursor-pointer" onclick="openSubjectModal()">
-                    <div id="user-avatar-duo" class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-500 border-2 border-purple-400 flex items-center justify-center text-base font-black text-white shadow-md">
-                        <span id="user-avatar-letter">У</span>
+                <!-- AVATAR with progress ring -->
+                <div class="relative cursor-pointer" onclick="openModal('subject-modal')">
+                    <svg class="w-12 h-12" viewBox="0 0 48 48">
+                        <circle cx="24" cy="24" r="21" stroke="rgba(255,255,255,0.08)" stroke-width="3" fill="none"/>
+                        <circle id="avatar-ring" class="progress-ring-circle" cx="24" cy="24" r="21" stroke="#58cc02" stroke-width="3" fill="none"
+                            stroke-dasharray="131.95" stroke-dashoffset="131.95" stroke-linecap="round"/>
+                    </svg>
+                    <div class="absolute inset-[4px] rounded-full bg-gradient-to-br from-purple-600 via-indigo-500 to-blue-600 flex items-center justify-center shadow-lg">
+                        <span id="user-avatar-letter" class="text-sm font-black text-white" style="text-shadow: 0 1px 3px rgba(0,0,0,0.3);">У</span>
                     </div>
+                    <div id="level-badge" class="absolute -bottom-0.5 -right-0.5 bg-[#58cc02] text-[8px] font-black text-slate-950 w-5 h-5 rounded-full flex items-center justify-center border-2 border-[#131f24] shadow">1</div>
                 </div>
+
                 <div>
-                    <div class="flex items-center space-x-1.5">
-                        <span id="user-display-name" class="text-base font-black text-white tracking-tight">Ученик</span>
-                        <!-- Значок уровня Duolingo -->
-                        <span id="user-lvl-badge" class="px-2 py-0.5 rounded-full bg-[#58cc02] text-slate-950 text-[10px] font-black">LVL 1</span>
+                    <div class="flex items-center space-x-2">
+                        <span id="user-display-name" class="text-[15px] font-black text-white tracking-tight">Ученик</span>
                     </div>
-                    <div id="user-status-text" class="text-xs text-gray-400 font-bold flex items-center space-x-1">
-                        <span id="active-exam-label">ОГЭ • Новичок</span>
-                        <span onclick="openSubjectModal()" class="text-[#58cc02] text-[11px] font-black underline ml-1 cursor-pointer">изменить</span>
+                    <div class="flex items-center space-x-1.5 mt-0.5">
+                        <span id="active-exam-label" class="text-[11px] text-gray-400 font-bold">ОГЭ • Новичок</span>
+                        <span onclick="openModal('subject-modal')" class="text-[10px] text-[#58cc02] font-black cursor-pointer hover:underline">изменить</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Иконка сообщений / куратора -->
-            <button onclick="openNotifSheet()" class="w-10 h-10 rounded-2xl bg-[#202f36] border-2 border-[#2b3e47] border-b-4 flex items-center justify-center text-gray-300 hover:text-white active:translate-y-1 active:border-b-2 transition mr-28">
-                <i data-lucide="message-circle" class="w-5 h-5 text-[#1cb0f6]"></i>
+            <button onclick="openNotifSheet()" class="w-10 h-10 rounded-2xl glass-card flex items-center justify-center text-gray-400 hover:text-[#1cb0f6] active:scale-90 transition-all relative">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                <span id="notif-dot" class="absolute top-2 right-2 w-2 h-2 bg-[#ff4b4b] rounded-full hidden" style="box-shadow: 0 0 6px rgba(255,75,75,0.6);"></span>
             </button>
         </div>
 
-        <!-- СТРОКА ВАЛЮТ DUOLINGO 3D (СТРОГО С НУЛЯ) -->
-        <div class="p-2.5 rounded-2xl bg-[#202f36] border-2 border-[#2b3e47] border-b-4 flex items-center justify-between text-xs font-black shadow-md">
-            <!-- 1. Синий алмаз Duolingo -->
-            <div onclick="showToast('Алмазы', 'Зарабатывай алмазы за безупречное решение тестов!')" class="flex items-center space-x-1.5 text-[#1cb0f6] cursor-pointer active:scale-95 transition">
-                <span class="text-base">💎</span>
-                <span id="stat-rank" class="text-sm font-black">0</span>
-            </div>
-
-            <!-- 2. Золотая монета «У» -->
-            <div onclick="openShopModal()" class="flex items-center space-x-1.5 text-[#ffc800] cursor-pointer active:scale-95 transition">
-                <div class="w-5 h-5 rounded-full bg-[#ffc800] flex items-center justify-center text-slate-950 text-[10px] font-black shadow-sm">
-                    У
-                </div>
-                <span id="stat-coins" class="text-sm font-black">0</span>
-            </div>
-
-            <!-- 3. Зеленая звезда XP -->
-            <div onclick="showToast('Опыт (XP)', 'Решай задачи для прокачки уровня!')" class="flex items-center space-x-1.5 text-[#58cc02] cursor-pointer active:scale-95 transition">
-                <span class="text-base">⭐</span>
-                <span id="stat-xp" class="text-sm font-black">0 XP</span>
-            </div>
-
-            <!-- 4. Огонь стрика (Серый при 0) -->
-            <div onclick="showToast('Ударный режим', 'Реши задание сегодня, чтобы зажечь огонь!')" class="flex items-center space-x-1 text-gray-500 cursor-pointer active:scale-95 transition">
-                <svg id="flame-icon" class="w-4 h-4" viewBox="0 0 24 24" fill="#8e8e93">
-                    <path d="M12 2C8 7 4 11 4 15C4 19.4 7.6 23 12 23C16.4 23 20 19.4 20 15C20 9 15 5 12 2Z"/>
+        <!-- CURRENCY BAR -->
+        <div class="stagger-2 p-2.5 rounded-2xl glass-card flex items-center justify-between text-xs font-black">
+            <!-- Diamonds -->
+            <div onclick="showToastMsg('Алмазы','Зарабатывай за безупречные тесты!','diamond')" class="flex items-center space-x-1.5 cursor-pointer active:scale-90 transition-transform">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M6 3h12l5 7-11 13L1 10z" fill="#1cb0f6" opacity="0.9"/>
+                    <path d="M6 3l6 17M18 3l-6 17M1 10h22M6 3l-5 7M18 3l5 7" stroke="rgba(255,255,255,0.3)" stroke-width="0.5"/>
+                    <path d="M8 6l4 4 4-4" fill="rgba(255,255,255,0.15)"/>
                 </svg>
-                <span id="stat-streak" class="text-sm font-black text-gray-400">0</span>
+                <span id="stat-rank" class="text-sm text-[#1cb0f6]">0</span>
             </div>
+
+            <!-- Coins -->
+            <div onclick="openModal('shop-modal')" class="flex items-center space-x-1.5 cursor-pointer active:scale-90 transition-transform">
+                <div class="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black shadow-sm" style="background: linear-gradient(135deg, #ffd54f, #ffb300); color: #5d4037;">E</div>
+                <span id="stat-coins" class="text-sm text-[#ffc800]">0</span>
+            </div>
+
+            <!-- XP -->
+            <div onclick="showToastMsg('Опыт','Решай задания для прокачки!','xp')" class="flex items-center space-x-1.5 cursor-pointer active:scale-90 transition-transform">
+                <svg width="16" height="16" viewBox="0 0 24 24">
+                    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" fill="#58cc02"/>
+                </svg>
+                <span id="stat-xp" class="text-sm text-[#58cc02]">0</span>
+            </div>
+
+            <!-- Streak -->
+            <div onclick="showStreakModal()" class="flex items-center space-x-1 cursor-pointer active:scale-90 transition-transform">
+                <svg id="flame-icon" width="16" height="16" viewBox="0 0 24 24" class="transition-all">
+                    <path d="M12 2C8 7 4 11 4 15a8 8 0 0016 0c0-4-4-8-8-13z" fill="#4a5568"/>
+                    <path d="M12 12c-1 2-3 3-3 5a3 3 0 006 0c0-2-2-3-3-5z" fill="#718096" opacity="0.7"/>
+                </svg>
+                <span id="stat-streak" class="text-sm font-black text-gray-500">0</span>
+            </div>
+        </div>
+
+        <!-- XP TO NEXT LEVEL BAR -->
+        <div class="stagger-3 flex items-center space-x-2">
+            <div class="flex-1 bg-white/[0.04] h-2 rounded-full overflow-hidden relative">
+                <div id="xp-level-bar" class="h-full rounded-full transition-all duration-700" style="width: 0%; background: linear-gradient(90deg, #58cc02, #7ce83a);"></div>
+            </div>
+            <span id="xp-level-text" class="text-[10px] font-black text-gray-500 whitespace-nowrap">0 / 100 XP</span>
         </div>
     </header>
 
-    <!-- ОСНОВНОЙ КОНТЕНТ ХАБА (DUOLINGO 3D PROGRESS) -->
-    <main class="flex-grow p-4 space-y-4 pt-1">
+    <!-- ========================================= -->
+    <!-- MAIN CONTENT                               -->
+    <!-- ========================================= -->
+    <main class="flex-grow p-4 space-y-4 pt-1 relative z-10">
 
-        <!-- 1. ЦЕЛИ НА СЕГОДНЯ (3D КАРТОЧКА) -->
-        <div class="p-3.5 rounded-2xl bg-[#202f36] border-2 border-[#2b3e47] border-b-4 space-y-2.5 shadow-md">
-            <div class="text-[11px] font-black text-gray-400 uppercase tracking-wider flex justify-between">
-                <span>Цели на сегодня</span>
-                <span id="quests-counter" class="text-[#58cc02]">0/2 выполнено</span>
+        <!-- DAILY QUESTS -->
+        <div class="stagger-3 p-4 rounded-2xl glass-card space-y-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#58cc02" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 11 12 14 22 4"/>
+                        <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+                    </svg>
+                    <span class="text-[11px] font-black text-gray-300 uppercase tracking-wider">Цели на сегодня</span>
+                </div>
+                <span id="quests-counter" class="text-[10px] font-black text-[#58cc02] bg-green-500/10 px-2 py-0.5 rounded-lg">0/3</span>
             </div>
 
-            <div onclick="toggleQuest(1)" id="quest-1" class="flex items-center justify-between cursor-pointer py-1 active:translate-x-1 transition border-b border-white/5 pb-2">
-                <div class="flex items-center space-x-2.5">
-                    <span id="quest-check-1" class="w-5 h-5 rounded-full border-2 border-gray-500 flex items-center justify-center text-[10px]"></span>
-                    <span class="text-xs font-black text-gray-200">Выбрать предметы ОГЭ</span>
+            <div class="space-y-2">
+                <div onclick="toggleQuest(1)" id="quest-1" class="flex items-center justify-between cursor-pointer py-2 px-3 rounded-xl hover:bg-white/[0.03] active:bg-white/[0.06] transition-colors group">
+                    <div class="flex items-center space-x-3">
+                        <span id="quest-check-1" class="w-6 h-6 rounded-lg border-2 border-gray-600 flex items-center justify-center text-[10px] transition-all group-hover:border-gray-400"></span>
+                        <div>
+                            <div class="text-[13px] font-extrabold text-gray-200">Выбрать предметы</div>
+                            <div class="text-[10px] text-gray-500 font-bold">Настрой подготовку под себя</div>
+                        </div>
+                    </div>
+                    <span class="text-[10px] text-[#ffc800] font-black bg-amber-500/10 px-2.5 py-1 rounded-lg">+5</span>
                 </div>
-                <span class="text-[10px] text-[#ffc800] font-black bg-amber-500/10 px-2 py-0.5 rounded-lg">+5 монет</span>
-            </div>
 
-            <div onclick="toggleQuest(2)" id="quest-2" class="flex items-center justify-between cursor-pointer py-1 active:translate-x-1 transition">
-                <div class="flex items-center space-x-2.5">
-                    <span id="quest-check-2" class="w-5 h-5 rounded-full border-2 border-gray-500 flex items-center justify-center text-[10px]"></span>
-                    <span class="text-xs font-black text-gray-200">Решить 5 заданий ФИПИ</span>
+                <div onclick="toggleQuest(2)" id="quest-2" class="flex items-center justify-between cursor-pointer py-2 px-3 rounded-xl hover:bg-white/[0.03] active:bg-white/[0.06] transition-colors group">
+                    <div class="flex items-center space-x-3">
+                        <span id="quest-check-2" class="w-6 h-6 rounded-lg border-2 border-gray-600 flex items-center justify-center text-[10px] transition-all group-hover:border-gray-400"></span>
+                        <div>
+                            <div class="text-[13px] font-extrabold text-gray-200">Пройти мини-тест</div>
+                            <div class="text-[10px] text-gray-500 font-bold">Реши 3 задания по математике</div>
+                        </div>
+                    </div>
+                    <span class="text-[10px] text-[#58cc02] font-black bg-green-500/10 px-2.5 py-1 rounded-lg">+25 XP</span>
                 </div>
-                <span class="text-[10px] text-[#58cc02] font-black bg-green-500/10 px-2 py-0.5 rounded-lg">+25 XP</span>
+
+                <div onclick="toggleQuest(3)" id="quest-3" class="flex items-center justify-between cursor-pointer py-2 px-3 rounded-xl hover:bg-white/[0.03] active:bg-white/[0.06] transition-colors group">
+                    <div class="flex items-center space-x-3">
+                        <span id="quest-check-3" class="w-6 h-6 rounded-lg border-2 border-gray-600 flex items-center justify-center text-[10px] transition-all group-hover:border-gray-400"></span>
+                        <div>
+                            <div class="text-[13px] font-extrabold text-gray-200">Выучить 5 терминов</div>
+                            <div class="text-[10px] text-gray-500 font-bold">Повтори ключевые определения</div>
+                        </div>
+                    </div>
+                    <span class="text-[10px] text-[#1cb0f6] font-black bg-blue-500/10 px-2.5 py-1 rounded-lg">+30 XP</span>
+                </div>
             </div>
         </div>
 
-        <!-- 2. СОЧНАЯ BENTO-СЕТКА 3D С ПРОГРЕСС-БАРАМИ -->
-        <div class="space-y-3">
+        <!-- BENTO GRID -->
+        <div class="space-y-3 stagger-4">
             <div class="grid grid-cols-2 gap-3">
-                
-                <!-- Плитка 1: Карточки -->
-                <div onclick="openFlashcards()" class="bento-3d shadow-green bg-[#58cc02] text-white p-3.5 rounded-2xl flex flex-col justify-between h-24 cursor-pointer shadow-md">
+                <!-- Flashcards tile -->
+                <div onclick="openFlashcards()" class="bento-tile cursor-pointer h-[120px] p-4 flex flex-col justify-between shadow-lg" style="background: linear-gradient(135deg, #58cc02 0%, #4cb300 100%); border-bottom: 5px solid #3d9400;">
                     <div class="flex justify-between items-start">
                         <div>
-                            <div class="text-xs font-black leading-tight">Флеш-карточки</div>
-                            <div class="text-[10px] text-green-950 font-extrabold">Термины ОГЭ</div>
+                            <div class="text-[13px] font-black text-white leading-tight">Карточки</div>
+                            <div class="text-[10px] font-extrabold text-green-950/70 mt-0.5">Термины ОГЭ</div>
                         </div>
-                        <span class="text-xl">🗂</span>
+                        <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="4" width="20" height="16" rx="2"/>
+                                <path d="M2 8h20"/>
+                            </svg>
+                        </div>
                     </div>
                     <div class="space-y-1">
-                        <div class="flex justify-between text-[9px] font-black text-green-950">
+                        <div class="flex justify-between text-[9px] font-black text-green-950/70">
                             <span>Выучено</span>
                             <span id="cards-prog-text">0/50</span>
                         </div>
-                        <div class="w-full bg-black/20 h-1.5 rounded-full overflow-hidden">
-                            <div id="cards-prog-bar" class="bg-white h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                        <div class="w-full bg-black/15 h-[5px] rounded-full overflow-hidden">
+                            <div id="cards-prog-bar" class="bg-white/80 h-full rounded-full transition-all duration-700" style="width: 0%"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Плитка 2: Тренажер -->
-                <div onclick="startDuoQuiz()" class="bento-3d shadow-purple bg-[#ce82ff] text-white p-3.5 rounded-2xl flex flex-col justify-between h-24 cursor-pointer shadow-md">
+                <!-- Quiz tile -->
+                <div onclick="startDuoQuiz()" class="bento-tile cursor-pointer h-[120px] p-4 flex flex-col justify-between shadow-lg" style="background: linear-gradient(135deg, #ce82ff 0%, #b35eff 100%); border-bottom: 5px solid #9645e0;">
                     <div class="flex justify-between items-start">
                         <div>
-                            <div class="text-xs font-black leading-tight">Тренажёр ФИПИ</div>
-                            <div class="text-[10px] text-purple-950 font-extrabold">Тесты и баллы</div>
+                            <div class="text-[13px] font-black text-white leading-tight">Тренажёр</div>
+                            <div class="text-[10px] font-extrabold text-purple-950/70 mt-0.5">Тесты ФИПИ</div>
                         </div>
-                        <span class="text-xl">📝</span>
+                        <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 20h9"/>
+                                <path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4z"/>
+                            </svg>
+                        </div>
                     </div>
                     <div class="space-y-1">
-                        <div class="flex justify-between text-[9px] font-black text-purple-950">
+                        <div class="flex justify-between text-[9px] font-black text-purple-950/70">
                             <span>Решено</span>
                             <span id="quiz-prog-text">0%</span>
                         </div>
-                        <div class="w-full bg-black/20 h-1.5 rounded-full overflow-hidden">
-                            <div id="quiz-prog-bar" class="bg-white h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                        <div class="w-full bg-black/15 h-[5px] rounded-full overflow-hidden">
+                            <div id="quiz-prog-bar" class="bg-white/80 h-full rounded-full transition-all duration-700" style="width: 0%"></div>
                         </div>
                     </div>
                 </div>
-
             </div>
 
             <div class="grid grid-cols-2 gap-3">
-
-                <!-- Плитка 3: Магазин -->
-                <div onclick="openShopModal()" class="bento-3d shadow-red bg-[#ff4b4b] text-white p-3.5 rounded-2xl flex flex-col justify-between h-24 cursor-pointer shadow-md">
+                <!-- Shop tile -->
+                <div onclick="openModal('shop-modal')" class="bento-tile cursor-pointer h-[120px] p-4 flex flex-col justify-between shadow-lg" style="background: linear-gradient(135deg, #ff4b4b 0%, #e03030 100%); border-bottom: 5px solid #c02020;">
                     <div class="flex justify-between items-start">
                         <div>
-                            <div class="text-xs font-black leading-tight">Магазин наград</div>
-                            <div class="text-[10px] text-rose-950 font-extrabold">Бустеры и мерч</div>
+                            <div class="text-[13px] font-black text-white leading-tight">Магазин</div>
+                            <div class="text-[10px] font-extrabold text-rose-950/70 mt-0.5">Бустеры и награды</div>
                         </div>
-                        <span class="text-xl">🛍</span>
+                        <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+                                <line x1="3" y1="6" x2="21" y2="6"/>
+                                <path d="M16 10a4 4 0 01-8 0"/>
+                            </svg>
+                        </div>
                     </div>
-                    <span class="text-[9px] font-black bg-black/25 px-2 py-0.5 rounded-full w-fit">2 акции дня</span>
+                    <div class="flex items-center space-x-1.5">
+                        <span class="text-[9px] font-black bg-black/20 text-white/90 px-2.5 py-1 rounded-lg backdrop-blur-sm">2 акции дня</span>
+                    </div>
                 </div>
 
-                <!-- Плитка 4: Шпаргалки -->
-                <div onclick="openTextbookModal()" class="bento-3d shadow-orange bg-[#ff9600] text-white p-3.5 rounded-2xl flex flex-col justify-between h-24 cursor-pointer shadow-md">
+                <!-- Cheat sheets tile -->
+                <div onclick="openModal('textbook-modal')" class="bento-tile cursor-pointer h-[120px] p-4 flex flex-col justify-between shadow-lg" style="background: linear-gradient(135deg, #ff9600 0%, #e08500 100%); border-bottom: 5px solid #c07000;">
                     <div class="flex justify-between items-start">
                         <div>
-                            <div class="text-xs font-black leading-tight">Шпаргалки</div>
-                            <div class="text-[10px] text-amber-950 font-extrabold">Формулы и схемы</div>
+                            <div class="text-[13px] font-black text-white leading-tight">Шпаргалки</div>
+                            <div class="text-[10px] font-extrabold text-amber-950/70 mt-0.5">Формулы и схемы</div>
                         </div>
-                        <span class="text-xl">📖</span>
+                        <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+                            </svg>
+                        </div>
                     </div>
-                    <span class="text-[9px] font-black bg-black/25 px-2 py-0.5 rounded-full w-fit">12 разделов</span>
+                    <div class="flex items-center space-x-1.5">
+                        <span class="text-[9px] font-black bg-black/20 text-white/90 px-2.5 py-1 rounded-lg backdrop-blur-sm">12 разделов</span>
+                    </div>
                 </div>
-
             </div>
 
-            <!-- Плитка во всю ширину: Онлайн-куратор -->
-            <div onclick="openAiTutorModal()" class="bento-3d shadow-blue bg-[#1cb0f6] text-white p-3.5 rounded-2xl flex items-center justify-between cursor-pointer shadow-md">
+            <!-- AI Tutor full-width tile -->
+            <div onclick="openModal('ai-modal')" class="bento-tile cursor-pointer p-4 flex items-center justify-between shadow-lg" style="background: linear-gradient(135deg, #1cb0f6 0%, #0d8ecf 100%); border-bottom: 5px solid #0a6fa3;">
                 <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl">
-                        🤖
+                    <div class="w-11 h-11 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 8V4H8"/>
+                            <rect x="2" y="8" width="20" height="8" rx="2"/>
+                            <path d="M6 20h4"/>
+                            <path d="M14 20h4"/>
+                            <circle cx="8" cy="12" r="1" fill="white"/>
+                            <circle cx="16" cy="12" r="1" fill="white"/>
+                        </svg>
                     </div>
                     <div>
-                        <div class="text-xs font-black">Онлайн-куратор Умскул</div>
-                        <div class="text-[10px] text-sky-950 font-bold">Ответит на любой вопрос за 1 минуту</div>
+                        <div class="text-[13px] font-black text-white">Онлайн-куратор</div>
+                        <div class="text-[10px] font-bold text-sky-950/70">Ответит на любой вопрос за минуту</div>
                     </div>
                 </div>
-                <button class="bg-white text-slate-900 text-[11px] font-black px-3.5 py-2 rounded-xl shadow active:scale-95 transition">Спросить</button>
+                <div class="bg-white text-slate-900 text-[11px] font-black px-4 py-2.5 rounded-xl shadow-md active:scale-95 transition-transform">Спросить</div>
             </div>
         </div>
 
-        <!-- 3. КАРТОЧКА УРОВНЯ ВНИЗУ (DUOLINGO 3D) -->
-        <div class="p-4 rounded-2xl bg-[#202f36] border-2 border-[#2b3e47] border-b-4 flex items-center space-x-4 shadow-md">
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 flex items-center justify-center p-1.5 shrink-0 border-2 border-amber-300 shadow">
-                <span class="text-2xl">🏆</span>
+        <!-- LEVEL CARD -->
+        <div class="stagger-5 p-4 rounded-2xl glass-card flex items-center space-x-4">
+            <div class="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 relative" style="background: linear-gradient(135deg, #ffc800, #ff9600);">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2l3 6h7l-5.5 4.5L18 19l-6-4-6 4 1.5-6.5L2 8h7z" fill="white" opacity="0.9"/>
+                </svg>
+                <div class="absolute -top-1 -right-1 bg-[#58cc02] text-[7px] font-black text-slate-950 w-4 h-4 rounded-full flex items-center justify-center border border-[#131f24]" id="lvl-star">1</div>
             </div>
             <div>
-                <span id="bottom-lvl-badge" class="bg-[#58cc02] text-slate-950 text-[10px] font-black px-2.5 py-0.5 rounded-full inline-block">Уровень 1</span>
-                <div id="bottom-status-name" class="text-base font-black text-white mt-1">Новичок ОГЭ</div>
+                <span id="bottom-lvl-badge" class="text-[10px] font-black text-[#58cc02]">Уровень 1</span>
+                <div id="bottom-status-name" class="text-base font-black text-white mt-0.5">Новичок ОГЭ</div>
+                <div id="bottom-xp-info" class="text-[10px] text-gray-500 font-bold mt-0.5">0 XP до следующего уровня</div>
             </div>
+        </div>
+
+        <!-- INVITE CARD -->
+        <div class="stagger-6 p-4 rounded-2xl glass-card flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, rgba(255,200,0,0.15), rgba(255,150,0,0.15));">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffc800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                        <circle cx="8.5" cy="7" r="4"/>
+                        <line x1="20" y1="8" x2="20" y2="14"/>
+                        <line x1="23" y1="11" x2="17" y2="11"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="text-[12px] font-black text-white">Пригласи друга</div>
+                    <div class="text-[10px] text-gray-500 font-bold">Получи 50 монет за каждого</div>
+                </div>
+            </div>
+            <button onclick="shareWithFriends()" class="text-[11px] font-black text-[#ffc800] bg-amber-500/10 px-4 py-2.5 rounded-xl active:scale-95 transition-transform hover:bg-amber-500/20">Позвать</button>
         </div>
 
     </main>
 
-    <!-- НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ (DUOLINGO 3D) -->
-    <nav class="fixed bottom-0 left-0 right-0 h-16 bg-[#131f24] border-t-2 border-[#202f36] flex justify-around items-center z-40 max-w-md mx-auto px-2 shadow-2xl">
-        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="flex flex-col items-center text-[#58cc02] active:scale-95 transition">
-            <span class="text-xl">🏠</span>
-            <span class="text-[10px] font-black mt-0.5">Главная</span>
-        </button>
+    <!-- ========================================= -->
+    <!-- BOTTOM NAV                                 -->
+    <!-- ========================================= -->
+    <nav class="fixed bottom-0 left-0 right-0 h-[60px] z-40 max-w-md mx-auto" style="background: linear-gradient(180deg, rgba(19,31,36,0) 0%, rgba(19,31,36,1) 15%);">
+        <div class="bg-[#131f24] border-t border-white/[0.06] h-full flex justify-around items-center px-4 relative">
+            <div class="nav-pill" id="nav-pill" style="width: 40px; left: calc(12.5% - 20px);"></div>
 
-        <button onclick="startDuoQuiz()" class="flex flex-col items-center text-gray-500 hover:text-white active:scale-95 transition">
-            <span class="text-xl">📚</span>
-            <span class="text-[10px] font-black mt-0.5">Задания</span>
-        </button>
+            <button onclick="navTo(0)" class="nav-btn flex flex-col items-center active:scale-90 transition-transform relative z-10" data-idx="0">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#58cc02" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                </svg>
+                <span class="text-[9px] font-black mt-1 text-[#58cc02]">Главная</span>
+            </button>
 
-        <button onclick="openShopModal()" class="flex flex-col items-center text-gray-500 hover:text-white active:scale-95 transition">
-            <span class="text-xl">🏆</span>
-            <span class="text-[10px] font-black mt-0.5">Лиги</span>
-        </button>
+            <button onclick="navTo(1)" class="nav-btn flex flex-col items-center active:scale-90 transition-transform relative z-10" data-idx="1">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/>
+                    <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/>
+                </svg>
+                <span class="text-[9px] font-black mt-1 text-gray-500">Задания</span>
+            </button>
 
-        <button onclick="openSubjectModal()" class="flex flex-col items-center text-gray-500 hover:text-white active:scale-95 transition">
-            <span class="text-xl">👤</span>
-            <span class="text-[10px] font-black mt-0.5">Профиль</span>
-        </button>
+            <button onclick="navTo(2)" class="nav-btn flex flex-col items-center active:scale-90 transition-transform relative z-10" data-idx="2">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 9H4.5a2.5 2.5 0 010-5C7 4 7 8 12 8s5-4 7.5-4a2.5 2.5 0 010 5H18"/>
+                    <path d="M4 22V12a2 2 0 012-2h12a2 2 0 012 2v10"/>
+                    <line x1="2" y1="22" x2="22" y2="22"/>
+                </svg>
+                <span class="text-[9px] font-black mt-1 text-gray-500">Лиги</span>
+            </button>
+
+            <button onclick="navTo(3)" class="nav-btn flex flex-col items-center active:scale-90 transition-transform relative z-10" data-idx="3">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span class="text-[9px] font-black mt-1 text-gray-500">Профиль</span>
+            </button>
+        </div>
     </nav>
 
-    <!-- ======================================================== -->
-    <!-- МОДАЛЬНЫЙ ЭКРАН: ВЫБОР ДИЗАЙНА (4 СТИЛЯ С ДОРОГИХ САЙТОВ) -->
-    <!-- ======================================================== -->
-    <div id="theme-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-end justify-center hidden">
-        <div class="bg-[#1c1c1f] border-t border-white/10 rounded-t-[32px] p-6 w-full max-w-md space-y-4">
+    <!-- ========================================= -->
+    <!-- MODALS                                     -->
+    <!-- ========================================= -->
+
+    <!-- SUBJECT MODAL -->
+    <div id="subject-modal" class="modal-overlay" onclick="if(event.target===this)closeModal('subject-modal')">
+        <div class="modal-sheet bg-[#1a2228] rounded-t-[28px] p-5 w-full max-w-md space-y-4">
+            <div class="w-10 h-1 rounded-full bg-white/10 mx-auto mb-2"></div>
             <div class="flex justify-between items-center">
                 <div>
-                    <h3 class="text-lg font-black text-white">Выбор стиля дизайна</h3>
-                    <p class="text-xs text-gray-400">Переключай и выбери тот, который нравится</p>
+                    <h3 class="text-lg font-black text-white">Настрой подготовку</h3>
+                    <p class="text-[11px] text-gray-500 font-bold mt-0.5">Выбери экзамен и предметы</p>
                 </div>
-                <button onclick="closeThemePicker()" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white">
-                    <i data-lucide="x" class="w-4 h-4"></i>
+                <button onclick="closeModal('subject-modal')" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white active:scale-90 transition-all">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
                 </button>
             </div>
 
-            <div class="space-y-2.5 pt-1">
-                <!-- Стиль 1 -->
-                <div id="theme-card-umschool" onclick="setTheme('umschool')" class="theme-choice-card p-4 rounded-2xl bg-[#26262b] border-2 border-[#8b6af0] flex items-center justify-between cursor-pointer active:scale-98 transition">
-                    <div class="flex items-center space-x-3">
-                        <span class="text-2xl">🎓</span>
-                        <div>
-                            <div class="text-sm font-black text-white">Умскул Классик</div>
-                            <div class="text-[11px] text-gray-400">Оригинальный интерфейс из твоего скриншота</div>
-                        </div>
-                    </div>
-                    <span class="theme-check"><i data-lucide="check" class="w-5 h-5 text-[#8b6af0] font-black"></i></span>
-                </div>
-
-                <!-- Стиль 2 -->
-                <div id="theme-card-apple" onclick="setTheme('apple')" class="theme-choice-card p-4 rounded-2xl bg-[#26262b] border border-white/10 flex items-center justify-between cursor-pointer active:scale-98 transition">
-                    <div class="flex items-center space-x-3">
-                        <span class="text-2xl">🟡</span>
-                        <div>
-                            <div class="text-sm font-black text-white">Т-Банк Black (Премиум)</div>
-                            <div class="text-[11px] text-gray-400">Глубокий матовый чёрный и благородный золотистый акцент</div>
-                        </div>
-                    </div>
-                    <span class="theme-check hidden"><i data-lucide="check" class="w-5 h-5 text-[#ffd83a] font-black"></i></span>
-                </div>
-
-                <!-- Стиль 3 -->
-                <div id="theme-card-stripe" onclick="setTheme('stripe')" class="theme-choice-card p-4 rounded-2xl bg-[#26262b] border border-white/10 flex items-center justify-between cursor-pointer active:scale-98 transition">
-                    <div class="flex items-center space-x-3">
-                        <span class="text-2xl">🔴</span>
-                        <div>
-                            <div class="text-sm font-black text-white">Яндекс Практикум</div>
-                            <div class="text-[11px] text-gray-400">Академический темный стиль, фокус на учёбе и конспектах</div>
-                        </div>
-                    </div>
-                    <span class="theme-check hidden"><i data-lucide="check" class="w-5 h-5 text-[#fc3f1d] font-black"></i></span>
-                </div>
-
-                <!-- Стиль 4 -->
-                <div id="theme-card-duolingo" onclick="setTheme('duolingo')" class="theme-choice-card p-4 rounded-2xl bg-[#26262b] border border-white/10 flex items-center justify-between cursor-pointer active:scale-98 transition">
-                    <div class="flex items-center space-x-3">
-                        <span class="text-2xl">🕹</span>
-                        <div>
-                            <div class="text-sm font-black text-white">Duolingo 3D Tactile</div>
-                            <div class="text-[11px] text-gray-400">Объемные 3D-кнопки с физическим вдавливанием</div>
-                        </div>
-                    </div>
-                    <span class="theme-check hidden"><i data-lucide="check" class="w-5 h-5 text-[#8b6af0] font-black"></i></span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ======================================================== -->
-    <!-- МОДАЛЬНЫЙ ЭКРАН: ВЫБОР ПРЕДМЕТОВ                         -->
-    <!-- ======================================================== -->
-    <div id="subject-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-end justify-center hidden">
-        <div class="bg-[#1c1c1f] border-t border-white/10 rounded-t-[32px] p-6 w-full max-w-md space-y-4 max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h3 class="text-lg font-black text-white">Выбор предметов</h3>
-                    <p class="text-xs text-gray-400">Настрой экзамен и предметы подготовки</p>
-                </div>
-                <button onclick="closeSubjectModal()" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white">
-                    <i data-lucide="x" class="w-4 h-4"></i>
-                </button>
-            </div>
-
-            <!-- Экзамен -->
-            <div class="space-y-2 pt-1">
-                <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Экзамен</label>
+            <div class="space-y-2">
+                <label class="text-[10px] font-black text-gray-500 uppercase tracking-wider">Экзамен</label>
                 <div class="grid grid-cols-2 gap-2">
-                    <button id="exam-btn-oge" onclick="selectExamType('ОГЭ 2026')" class="p-3 rounded-2xl bg-[#8b6af0] text-white text-xs font-black border border-white/10 active:scale-95 transition">
-                        ОГЭ (9 класс)
-                    </button>
-                    <button id="exam-btn-ege" onclick="selectExamType('ЕГЭ 2026')" class="p-3 rounded-2xl bg-[#26262b] text-gray-300 text-xs font-black border border-white/5 active:scale-95 transition">
-                        ЕГЭ (11 класс)
-                    </button>
+                    <button id="exam-btn-oge" onclick="selectExamType('ОГЭ 2026')" class="p-3.5 rounded-2xl bg-[#58cc02] text-slate-950 text-xs font-black active:scale-95 transition-all shadow-md">ОГЭ (9 класс)</button>
+                    <button id="exam-btn-ege" onclick="selectExamType('ЕГЭ 2026')" class="p-3.5 rounded-2xl bg-white/[0.06] text-gray-400 text-xs font-black active:scale-95 transition-all hover:bg-white/[0.08]">ЕГЭ (11 класс)</button>
                 </div>
             </div>
 
-            <!-- Список предметов -->
-            <div class="space-y-2 pt-2">
-                <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Предметы для подготовки</label>
+            <div class="space-y-2">
+                <label class="text-[10px] font-black text-gray-500 uppercase tracking-wider">Предметы</label>
                 <div class="grid grid-cols-2 gap-2" id="subjects-list">
-                    <button onclick="toggleUserSubject(this, 'Математика')" class="subj-chip p-3 rounded-2xl bg-[#1eb885] text-white text-xs font-black flex items-center justify-between active:scale-95 transition">
-                        <span>📐 Математика</span>
-                        <span>✓</span>
+                    <button onclick="toggleUserSubject(this,'Математика')" data-subj="Математика" class="subj-chip p-3 rounded-2xl bg-[#58cc02]/20 text-[#58cc02] text-xs font-black flex items-center justify-between active:scale-95 transition-all border border-[#58cc02]/30">
+                        <span>📐 Математика</span><span class="text-[#58cc02]">✓</span>
                     </button>
-                    <button onclick="toggleUserSubject(this, 'Русский язык')" class="subj-chip p-3 rounded-2xl bg-[#1eb885] text-white text-xs font-black flex items-center justify-between active:scale-95 transition">
-                        <span>📖 Русский</span>
-                        <span>✓</span>
+                    <button onclick="toggleUserSubject(this,'Русский язык')" data-subj="Русский язык" class="subj-chip p-3 rounded-2xl bg-[#58cc02]/20 text-[#58cc02] text-xs font-black flex items-center justify-between active:scale-95 transition-all border border-[#58cc02]/30">
+                        <span>📖 Русский</span><span class="text-[#58cc02]">✓</span>
                     </button>
-                    <button onclick="toggleUserSubject(this, 'Информатика')" class="subj-chip p-3 rounded-2xl bg-[#26262b] text-gray-300 text-xs font-black flex items-center justify-between active:scale-95 transition">
-                        <span>💻 Информатика</span>
-                        <span class="opacity-0">✓</span>
+                    <button onclick="toggleUserSubject(this,'Информатика')" data-subj="Информатика" class="subj-chip p-3 rounded-2xl bg-white/[0.04] text-gray-400 text-xs font-black flex items-center justify-between active:scale-95 transition-all border border-transparent">
+                        <span>💻 Информатика</span><span class="opacity-0">✓</span>
                     </button>
-                    <button onclick="toggleUserSubject(this, 'Обществознание')" class="subj-chip p-3 rounded-2xl bg-[#26262b] text-gray-300 text-xs font-black flex items-center justify-between active:scale-95 transition">
-                        <span>🏛 Общество</span>
-                        <span class="opacity-0">✓</span>
+                    <button onclick="toggleUserSubject(this,'Обществознание')" data-subj="Обществознание" class="subj-chip p-3 rounded-2xl bg-white/[0.04] text-gray-400 text-xs font-black flex items-center justify-between active:scale-95 transition-all border border-transparent">
+                        <span>🏛 Общество</span><span class="opacity-0">✓</span>
                     </button>
-                    <button onclick="toggleUserSubject(this, 'Физика')" class="subj-chip p-3 rounded-2xl bg-[#26262b] text-gray-300 text-xs font-black flex items-center justify-between active:scale-95 transition">
-                        <span>⚡️ Физика</span>
-                        <span class="opacity-0">✓</span>
+                    <button onclick="toggleUserSubject(this,'Физика')" data-subj="Физика" class="subj-chip p-3 rounded-2xl bg-white/[0.04] text-gray-400 text-xs font-black flex items-center justify-between active:scale-95 transition-all border border-transparent">
+                        <span>⚡ Физика</span><span class="opacity-0">✓</span>
                     </button>
-                    <button onclick="toggleUserSubject(this, 'Биология')" class="subj-chip p-3 rounded-2xl bg-[#26262b] text-gray-300 text-xs font-black flex items-center justify-between active:scale-95 transition">
-                        <span>🌱 Биология</span>
-                        <span class="opacity-0">✓</span>
+                    <button onclick="toggleUserSubject(this,'Биология')" data-subj="Биология" class="subj-chip p-3 rounded-2xl bg-white/[0.04] text-gray-400 text-xs font-black flex items-center justify-between active:scale-95 transition-all border border-transparent">
+                        <span>🧬 Биология</span><span class="opacity-0">✓</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Имя -->
-            <div class="space-y-1.5 pt-2">
-                <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Как тебя зовут?</label>
-                <input id="user-name-input" type="text" placeholder="Твое имя или никнейм" value="Ученик" class="w-full bg-[#26262b] border border-white/10 rounded-2xl p-3.5 text-white text-sm font-bold outline-none focus:border-[#8b6af0] transition">
+            <div class="space-y-1.5">
+                <label class="text-[10px] font-black text-gray-500 uppercase tracking-wider">Как тебя зовут?</label>
+                <input id="user-name-input" type="text" placeholder="Имя или никнейм" value="Ученик" class="w-full bg-white/[0.04] border border-white/[0.06] rounded-2xl p-3.5 text-white text-sm font-bold outline-none focus:border-[#58cc02]/50 transition-all">
             </div>
 
-            <div class="pt-3">
-                <button onclick="saveUserOnboarding()" class="w-full bg-[#8b6af0] hover:bg-[#7a57e3] text-white font-black text-sm py-4 rounded-2xl tracking-wider active:scale-98 transition shadow-lg">
-                    СОХРАНИТЬ ВЫБОР
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ======================================================== -->
-    <!-- МОДАЛЬНЫЙ ЭКРАН: ТРЕНАЖЁР-КВИЗ                           -->
-    <!-- ======================================================== -->
-    <div id="quiz-screen" class="fixed inset-0 bg-[#121214] z-50 flex flex-col justify-between hidden p-5 max-w-md mx-auto">
-        <div class="flex items-center space-x-3 pt-2">
-            <button onclick="closeQuizScreen()" class="w-10 h-10 rounded-2xl bg-[#1c1c1f] flex items-center justify-center text-gray-400 hover:text-white active:scale-90 transition">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-            <div class="flex-1 bg-[#1c1c1f] h-3 rounded-full overflow-hidden p-0.5">
-                <div id="quiz-progress-bar" class="bg-[#1eb885] h-full rounded-full transition-all duration-300" style="width: 33%"></div>
-            </div>
-            <span id="quiz-step-text" class="text-xs font-bold text-gray-400">1/3</span>
-        </div>
-
-        <div class="flex-1 flex flex-col justify-center space-y-5 my-auto">
-            <div class="space-y-1">
-                <span id="q-category-badge" class="text-[11px] font-black uppercase text-[#df6837] tracking-wider bg-orange-500/10 px-3 py-1 rounded-xl">ОГЭ Математика • Задание 6</span>
-                <h2 id="q-title" class="text-xl font-black text-white leading-tight">Найдите корень уравнения:</h2>
-            </div>
-
-            <div id="q-box" class="main-card p-6 text-center text-3xl font-black text-white shadow-xl">
-                4x - 16 = 24
-            </div>
-
-            <div id="q-options" class="grid grid-cols-2 gap-3 pt-2"></div>
-        </div>
-
-        <div id="quiz-drawer" class="w-full border-t border-white/10 p-4 bg-[#1c1c1f] rounded-3xl transition-all">
-            <div class="flex items-center justify-between">
-                <div id="quiz-feedback" class="text-xs font-black pr-2"></div>
-                <button id="quiz-action-btn" onclick="checkAnswer()" class="bg-[#8b6af0] text-white text-xs font-black uppercase tracking-wider py-4 px-7 rounded-2xl transition whitespace-nowrap active:scale-95 shadow">
-                    ПРОВЕРИТЬ
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ======================================================== -->
-    <!-- МОДАЛЬНЫЙ ЭКРАН: ФЛЕШ-КАРТОЧКИ                          -->
-    <!-- ======================================================== -->
-    <div id="cards-screen" class="fixed inset-0 bg-[#121214] z-50 flex flex-col justify-between hidden p-5 max-w-md mx-auto">
-        <div class="flex justify-between items-center pt-2">
-            <button onclick="document.getElementById('cards-screen').classList.add('hidden')" class="text-gray-300 text-xs font-black bg-[#1c1c1f] px-3.5 py-2 rounded-2xl flex items-center space-x-1.5 active:scale-95 transition">
-                <i data-lucide="chevron-left" class="w-4 h-4"></i>
-                <span>Назад</span>
-            </button>
-            <span class="text-xs font-black text-[#1eb885] uppercase tracking-wider">Термины обществознания</span>
-            <span id="flashcard-counter" class="text-xs font-black text-gray-400">1/3</span>
-        </div>
-
-        <div onclick="flipCard()" id="flashcard" class="main-card p-8 flex flex-col items-center justify-center text-center my-auto min-h-[320px] cursor-pointer shadow-xl relative">
-            <span class="text-[10px] font-black uppercase text-gray-400 mb-4 bg-white/5 px-3 py-1 rounded-xl">Нажми для переворота</span>
-            <h3 id="card-term" class="text-3xl font-black text-white mb-2">Инфляция</h3>
-            <p id="card-desc" class="text-sm text-gray-300 font-extrabold hidden leading-relaxed">Долговременный процесс обесценивания денег, приводящий к снижению их покупательской способности.</p>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3.5">
-            <button onclick="nextCard(false)" class="p-4 rounded-2xl bg-rose-500/20 text-rose-400 font-black text-sm flex items-center justify-center space-x-2 active:scale-95 transition">
-                <i data-lucide="x" class="w-4 h-4"></i>
-                <span>Не знал</span>
-            </button>
-            <button onclick="nextCard(true)" class="p-4 rounded-2xl bg-[#1eb885] text-white font-black text-sm flex items-center justify-center space-x-2 active:scale-95 transition shadow-lg">
-                <i data-lucide="check" class="w-4 h-4"></i>
-                <span>Знал отлично</span>
+            <button onclick="saveUserOnboarding()" class="w-full py-4 rounded-2xl font-black text-sm tracking-wider active:scale-[0.98] transition-all shadow-lg text-white" style="background: linear-gradient(135deg, #58cc02, #4cb300); border-bottom: 4px solid #3d9400;">
+                СОХРАНИТЬ
             </button>
         </div>
     </div>
 
-    <!-- ======================================================== -->
-    <!-- МОДАЛЬНЫЙ ЭКРАН: ПОДПИСКИ (PRO)                         -->
-    <!-- ======================================================== -->
-    <div id="pro-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-end justify-center hidden">
-        <div class="bg-[#1c1c1f] border-t border-white/10 rounded-t-[36px] p-6 w-full max-w-md space-y-4">
-            <div class="flex justify-between items-center">
-                <span class="text-xs bg-[#8b6af0] text-white font-black px-3 py-1 rounded-xl">ПОДПИСКА PRO</span>
-                <button onclick="closeProModal()" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white">
-                    <i data-lucide="x" class="w-4 h-4"></i>
-                </button>
-            </div>
-
-            <div class="text-center space-y-1.5 py-1">
-                <h3 class="text-2xl font-black text-white">Сдай экзамен на максимум</h3>
-                <p class="text-xs text-gray-400 font-extrabold">Полный доступ ко всей базе заданий ФИПИ и кураторам</p>
-            </div>
-
-            <div class="space-y-2.5">
-                <div class="bg-[#26262b] p-3.5 rounded-2xl flex items-center space-x-3">
-                    <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
-                        <i data-lucide="infinity" class="w-5 h-5"></i>
-                    </div>
-                    <div class="text-xs font-black text-gray-200">Безлимитная проверка домашек экспертами</div>
-                </div>
-                <div class="bg-[#26262b] p-3.5 rounded-2xl flex items-center space-x-3">
-                    <div class="w-8 h-8 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center shrink-0">
-                        <i data-lucide="bot" class="w-5 h-5"></i>
-                    </div>
-                    <div class="text-xs font-black text-gray-200">Круглосуточный персональный куратор</div>
-                </div>
-            </div>
-
-            <div class="pt-2">
-                <button onclick="buyProSubscription()" class="w-full bg-[#8b6af0] py-4 rounded-2xl font-black text-base text-white tracking-wider flex items-center justify-center space-x-2 shadow-lg active:scale-98 transition">
-                    <span>ОФОРМИТЬ ЗА 249 ЗВЕЗД</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ======================================================== -->
-    <!-- МОДАЛЬНЫЙ ЭКРАН: МАГАЗИН                                 -->
-    <!-- ======================================================== -->
-    <div id="shop-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-end justify-center hidden">
-        <div class="bg-[#1c1c1f] border-t border-white/10 rounded-t-[36px] p-6 w-full max-w-md space-y-4 max-h-[85vh] overflow-y-auto">
+    <!-- SHOP MODAL -->
+    <div id="shop-modal" class="modal-overlay" onclick="if(event.target===this)closeModal('shop-modal')">
+        <div class="modal-sheet bg-[#1a2228] rounded-t-[28px] p-5 w-full max-w-md space-y-4">
+            <div class="w-10 h-1 rounded-full bg-white/10 mx-auto mb-2"></div>
             <div class="flex justify-between items-center">
                 <span class="text-base font-black text-white">Магазин наград</span>
                 <div class="flex items-center space-x-2">
-                    <div class="bg-[#26262b] px-3 py-1.5 rounded-2xl flex items-center space-x-1.5 text-amber-400 font-black text-xs">
-                        <span>🪙</span>
+                    <div class="bg-white/[0.06] px-3 py-1.5 rounded-xl flex items-center space-x-1.5 text-[#ffc800] font-black text-xs">
+                        <div class="w-4 h-4 rounded-full" style="background: linear-gradient(135deg, #ffd54f, #ffb300);"></div>
                         <span id="shop-coins-counter">0</span>
                     </div>
-                    <button onclick="closeShopModal()" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white">
-                        <i data-lucide="x" class="w-4 h-4"></i>
+                    <button onclick="closeModal('shop-modal')" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white active:scale-90 transition-all">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
                     </button>
                 </div>
             </div>
 
-            <div class="space-y-3 pt-1">
-                <div class="bg-[#26262b] rounded-2xl p-4 flex items-center justify-between">
-                    <div>
-                        <div class="text-xs font-black text-white">Заморозка стрика</div>
-                        <div class="text-[10px] text-gray-400 font-extrabold">Сохранит стрик если пропустишь 1 день</div>
+            <div class="space-y-2.5">
+                <div class="bg-white/[0.04] rounded-2xl p-4 flex items-center justify-between hover:bg-white/[0.06] transition-colors">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-blue-500/15 flex items-center justify-center">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1cb0f6" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                        </div>
+                        <div>
+                            <div class="text-[12px] font-black text-white">Заморозка стрика</div>
+                            <div class="text-[10px] text-gray-500 font-bold">Сохранит стрик на 1 день</div>
+                        </div>
                     </div>
-                    <button onclick="buyShopItem('Заморозка стрика', 15)" class="px-4 py-2 rounded-2xl bg-[#f59f1e] text-slate-950 font-black text-xs active:scale-95 transition">
-                        15 монет
-                    </button>
+                    <button onclick="buyShopItem('Заморозка стрика', 15)" class="px-4 py-2.5 rounded-xl text-[11px] font-black active:scale-95 transition-all" style="background: linear-gradient(135deg, #ffc800, #ffb300); color: #5d4037;">15</button>
                 </div>
 
-                <div class="bg-[#26262b] rounded-2xl p-4 flex items-center justify-between">
-                    <div>
-                        <div class="text-xs font-black text-white">Бустер XP (x2 на 24ч)</div>
-                        <div class="text-[10px] text-gray-400 font-extrabold">Удвой весь опыт за решение тестов</div>
+                <div class="bg-white/[0.04] rounded-2xl p-4 flex items-center justify-between hover:bg-white/[0.06] transition-colors">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-purple-500/15 flex items-center justify-center">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ce82ff" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                        </div>
+                        <div>
+                            <div class="text-[12px] font-black text-white">Бустер XP x2</div>
+                            <div class="text-[10px] text-gray-500 font-bold">Удвой опыт на 24 часа</div>
+                        </div>
                     </div>
-                    <button onclick="buyShopItem('Бустер XP x2', 30)" class="px-4 py-2 rounded-2xl bg-[#f59f1e] text-slate-950 font-black text-xs active:scale-95 transition">
-                        30 монет
-                    </button>
+                    <button onclick="buyShopItem('Бустер XP x2', 30)" class="px-4 py-2.5 rounded-xl text-[11px] font-black active:scale-95 transition-all" style="background: linear-gradient(135deg, #ffc800, #ffb300); color: #5d4037;">30</button>
+                </div>
+
+                <div class="bg-white/[0.04] rounded-2xl p-4 flex items-center justify-between hover:bg-white/[0.06] transition-colors">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-green-500/15 flex items-center justify-center">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#58cc02" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg>
+                        </div>
+                        <div>
+                            <div class="text-[12px] font-black text-white">Подсказка эксперта</div>
+                            <div class="text-[10px] text-gray-500 font-bold">Раскроет правильный ответ</div>
+                        </div>
+                    </div>
+                    <button onclick="buyShopItem('Подсказка', 20)" class="px-4 py-2.5 rounded-xl text-[11px] font-black active:scale-95 transition-all" style="background: linear-gradient(135deg, #ffc800, #ffb300); color: #5d4037;">20</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ======================================================== -->
-    <!-- МОДАЛЬНЫЙ ЭКРАН: ОНЛАЙН-КУРАТОР                          -->
-    <!-- ======================================================== -->
-    <div id="ai-modal" class="fixed inset-0 bg-[#121214] z-50 flex flex-col justify-between hidden p-4 max-w-md mx-auto">
-        <div class="flex items-center justify-between border-b border-white/10 pb-3">
+    <!-- TEXTBOOK MODAL -->
+    <div id="textbook-modal" class="fullscreen-modal bg-[#131f24] flex flex-col p-5 max-w-md mx-auto">
+        <div class="flex items-center justify-between pb-4">
             <div class="flex items-center space-x-2.5">
-                <button onclick="closeAiModal()" class="w-9 h-9 rounded-2xl bg-[#1c1c1f] flex items-center justify-center text-gray-400 active:scale-95">
-                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                <button onclick="closeFullscreen('textbook-modal')" class="w-9 h-9 rounded-2xl glass-card flex items-center justify-center text-gray-400 active:scale-90 transition-all">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                </button>
+                <h3 class="text-sm font-black text-white">Справочник ФИПИ</h3>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto space-y-3 pb-4">
+            <div class="glass-card p-4 space-y-2">
+                <div class="text-[11px] font-black text-[#ff9600] uppercase tracking-wider">Формулы сокращенного умножения</div>
+                <div class="text-xs text-gray-300 font-mono bg-black/30 p-3 rounded-xl space-y-1.5">
+                    <div>• (a + b)² = a² + 2ab + b²</div>
+                    <div>• (a - b)² = a² - 2ab + b²</div>
+                    <div>• a² - b² = (a - b)(a + b)</div>
+                    <div>• (a + b)³ = a³ + 3a²b + 3ab² + b³</div>
+                </div>
+            </div>
+
+            <div class="glass-card p-4 space-y-2">
+                <div class="text-[11px] font-black text-[#58cc02] uppercase tracking-wider">Свойства степеней</div>
+                <div class="text-xs text-gray-300 font-mono bg-black/30 p-3 rounded-xl space-y-1.5">
+                    <div>• aⁿ · aᵐ = aⁿ⁺ᵐ</div>
+                    <div>• aⁿ / aᵐ = aⁿ⁻ᵐ</div>
+                    <div>• (aⁿ)ᵐ = aⁿᵐ</div>
+                    <div>• a⁰ = 1 (a ≠ 0)</div>
+                </div>
+            </div>
+
+            <div class="glass-card p-4 space-y-2">
+                <div class="text-[11px] font-black text-[#1cb0f6] uppercase tracking-wider">Орфоэпический минимум</div>
+                <div class="text-xs text-gray-300 bg-black/30 p-3 rounded-xl space-y-1.5">
+                    <div>• т<span class="text-[#58cc02] font-black">О</span>рты (не тортЫ)</div>
+                    <div>• звон<span class="text-[#58cc02] font-black">И</span>т (не звОнит)</div>
+                    <div>• кварт<span class="text-[#58cc02] font-black">А</span>л (не квАртал)</div>
+                    <div>• катал<span class="text-[#58cc02] font-black">О</span>г (не каталОг)</div>
+                </div>
+            </div>
+
+            <div class="glass-card p-4 space-y-2">
+                <div class="text-[11px] font-black text-[#ce82ff] uppercase tracking-wider">Теорема Пифагора</div>
+                <div class="text-xs text-gray-300 bg-black/30 p-3 rounded-xl space-y-1.5">
+                    <div>В прямоугольном треугольнике:</div>
+                    <div class="text-center text-base font-black text-white py-1">c² = a² + b²</div>
+                    <div>где c — гипотенуза, a и b — катеты</div>
+                </div>
+            </div>
+        </div>
+
+        <button onclick="closeFullscreen('textbook-modal')" class="w-full py-3.5 rounded-2xl glass-card text-white font-black text-xs active:scale-[0.98] transition-all">ЗАКРЫТЬ</button>
+    </div>
+
+    <!-- AI MODAL -->
+    <div id="ai-modal" class="fullscreen-modal bg-[#131f24] flex flex-col p-4 max-w-md mx-auto">
+        <div class="flex items-center justify-between pb-3 border-b border-white/[0.06]">
+            <div class="flex items-center space-x-2.5">
+                <button onclick="closeFullscreen('ai-modal')" class="w-9 h-9 rounded-2xl glass-card flex items-center justify-center text-gray-400 active:scale-90 transition-all">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                 </button>
                 <div>
                     <div class="text-sm font-black text-white flex items-center space-x-1.5">
-                        <span>Онлайн-куратор Умскул</span>
-                        <span class="w-2 h-2 rounded-full bg-[#1eb885]"></span>
+                        <span>Куратор ExamFlow</span>
+                        <span class="w-2 h-2 rounded-full bg-[#58cc02]" style="box-shadow: 0 0 6px rgba(88,204,2,0.5);"></span>
                     </div>
-                    <div class="text-[10px] text-gray-400 font-bold">Ответит на любой вопрос по задаче</div>
+                    <div class="text-[10px] text-gray-500 font-bold">Онлайн — отвечает мгновенно</div>
                 </div>
             </div>
         </div>
 
         <div id="ai-chat-messages" class="flex-1 overflow-y-auto py-4 space-y-3">
             <div class="flex items-start space-x-2">
-                <div class="bg-[#1c1c1f] rounded-2xl p-3.5 max-w-[85%] text-xs font-bold text-gray-200 leading-relaxed">
-                    Привет! Я твой онлайн-куратор. Напиши номер задания или вопрос по формуле, и я подробно разберу решение!
+                <div class="w-7 h-7 rounded-full bg-[#1cb0f6]/20 flex items-center justify-center shrink-0 mt-1">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1cb0f6" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg>
+                </div>
+                <div class="glass-card p-3.5 max-w-[85%] text-[12px] font-bold text-gray-200 leading-relaxed">
+                    Привет! Я куратор ExamFlow. Напиши номер задания или вопрос по формуле — разберу подробно!
                 </div>
             </div>
         </div>
 
         <div class="flex items-center space-x-2 pt-2">
-            <input id="ai-input" type="text" placeholder="Напиши вопрос куратору..." class="flex-1 bg-[#1c1c1f] border border-white/10 rounded-2xl px-4 py-3.5 text-xs text-white font-bold outline-none focus:border-[#269de8] transition" onkeydown="if(event.key==='Enter') sendAiMessage()">
-            <button onclick="sendAiMessage()" class="bg-[#269de8] w-11 h-11 rounded-2xl text-white flex items-center justify-center shrink-0 active:scale-95">
-                <i data-lucide="send" class="w-4 h-4"></i>
+            <input id="ai-input" type="text" placeholder="Напиши вопрос..." class="flex-1 bg-white/[0.04] border border-white/[0.06] rounded-2xl px-4 py-3.5 text-xs text-white font-bold outline-none focus:border-[#1cb0f6]/40 transition-all" onkeydown="if(event.key==='Enter') sendAiMessage()">
+            <button onclick="sendAiMessage()" class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 active:scale-90 transition-all" style="background: linear-gradient(135deg, #1cb0f6, #0d8ecf);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
         </div>
     </div>
 
-    <!-- ======================================================== -->
-    <!-- МОДАЛЬНЫЙ ЭКРАН: УЧЕБНИК                                 -->
-    <!-- ======================================================== -->
-    <div id="textbook-modal" class="fixed inset-0 bg-[#121214] z-50 flex flex-col justify-between hidden p-5 max-w-md mx-auto">
-        <div class="flex items-center justify-between border-b border-white/10 pb-3">
-            <div class="flex items-center space-x-2.5">
-                <button onclick="closeTextbookModal()" class="w-9 h-9 rounded-2xl bg-[#1c1c1f] flex items-center justify-center text-gray-400 active:scale-95">
-                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                </button>
-                <h3 class="text-sm font-black text-white">Учебник и справочник ФИПИ</h3>
+    <!-- QUIZ SCREEN -->
+    <div id="quiz-screen" class="fullscreen-modal bg-[#131f24] flex flex-col justify-between p-5 max-w-md mx-auto">
+        <div class="flex items-center space-x-3 pt-2">
+            <button onclick="closeFullscreen('quiz-screen')" class="w-10 h-10 rounded-2xl glass-card flex items-center justify-center text-gray-400 hover:text-white active:scale-90 transition-all">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+            <div class="flex-1 bg-white/[0.04] h-3 rounded-full overflow-hidden">
+                <div id="quiz-progress-bar" class="h-full rounded-full transition-all duration-500" style="width: 0%; background: linear-gradient(90deg, #58cc02, #7ce83a);"></div>
             </div>
+            <span id="quiz-step-text" class="text-xs font-bold text-gray-400">1/5</span>
         </div>
 
-        <div class="flex-1 overflow-y-auto py-4 space-y-3">
-            <div class="main-card p-4 space-y-2">
-                <div class="text-xs font-black text-[#df6837]">Формулы сокращенного умножения</div>
-                <div class="text-xs text-gray-300 font-mono bg-black/40 p-3 rounded-2xl space-y-1">
-                    <div>• (a + b)² = a² + 2ab + b²</div>
-                    <div>• (a - b)² = a² - 2ab + b²</div>
-                    <div>• a² - b² = (a - b)(a + b)</div>
-                </div>
+        <div class="flex-1 flex flex-col justify-center space-y-5 my-auto">
+            <div class="space-y-2">
+                <span id="q-category-badge" class="text-[10px] font-black uppercase tracking-wider bg-white/[0.06] px-3 py-1.5 rounded-xl text-gray-400">ОГЭ Математика</span>
+                <h2 id="q-title" class="text-xl font-black text-white leading-tight mt-2">Найдите корень уравнения:</h2>
             </div>
 
-            <div class="main-card p-4 space-y-2">
-                <div class="text-xs font-black text-[#1eb885]">Орфоэпический минимум</div>
-                <div class="text-xs text-gray-300 bg-black/40 p-3 rounded-2xl space-y-1">
-                    <div>• т<span class="text-emerald-400 font-black">О</span>рты (не тортЫ)</div>
-                    <div>• звон<span class="text-emerald-400 font-black">И</span>т (не звОнит)</div>
-                </div>
-            </div>
+            <div id="q-box" class="glass-card p-6 text-center text-2xl font-black text-white shadow-xl">4x - 16 = 24</div>
+            <div id="q-options" class="grid grid-cols-2 gap-3"></div>
         </div>
 
-        <button onclick="closeTextbookModal()" class="w-full bg-[#1c1c1f] text-white font-black text-xs py-4 rounded-2xl active:scale-95">
-            ЗАКРЫТЬ
+        <div id="quiz-drawer" class="w-full p-4 glass-card rounded-2xl">
+            <div class="flex items-center justify-between">
+                <div id="quiz-feedback" class="text-xs font-black pr-2"></div>
+                <button id="quiz-action-btn" onclick="checkAnswer()" class="bg-gray-700 text-gray-400 text-xs font-black uppercase tracking-wider py-4 px-7 rounded-2xl cursor-not-allowed opacity-50 transition-all">ПРОВЕРИТЬ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FLASHCARDS SCREEN -->
+    <div id="cards-screen" class="fullscreen-modal bg-[#131f24] flex flex-col justify-between p-5 max-w-md mx-auto">
+        <div class="flex justify-between items-center pt-2">
+            <button onclick="closeFullscreen('cards-screen')" class="glass-card text-gray-300 text-xs font-black px-3.5 py-2.5 rounded-2xl flex items-center space-x-1.5 active:scale-95 transition-all">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                <span>Назад</span>
+            </button>
+            <span class="text-xs font-black text-[#58cc02] uppercase tracking-wider">Термины</span>
+            <span id="flashcard-counter" class="text-xs font-black text-gray-400">1/8</span>
+        </div>
+
+        <div onclick="flipCard()" id="flashcard" class="glass-card p-8 flex flex-col items-center justify-center text-center my-auto min-h-[300px] cursor-pointer shadow-xl relative" style="transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);">
+            <span class="text-[10px] font-black uppercase text-gray-500 mb-4 bg-white/[0.04] px-3 py-1 rounded-xl">Нажми для ответа</span>
+            <h3 id="card-term" class="text-3xl font-black text-white mb-2">Инфляция</h3>
+            <p id="card-desc" class="text-sm text-gray-300 font-bold hidden leading-relaxed max-w-[280px]">Устойчивый рост общего уровня цен, приводящий к снижению покупательной способности денег.</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3.5">
+            <button onclick="nextCard(false)" class="p-4 rounded-2xl font-black text-sm flex items-center justify-center space-x-2 active:scale-95 transition-all" style="background: rgba(255,75,75,0.12); color: #ff6b6b; border: 1px solid rgba(255,75,75,0.15);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                <span>Не знал</span>
+            </button>
+            <button onclick="nextCard(true)" class="p-4 rounded-2xl font-black text-sm flex items-center justify-center space-x-2 active:scale-95 transition-all shadow-lg" style="background: linear-gradient(135deg, #58cc02, #4cb300); color: white; border-bottom: 3px solid #3d9400;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Знал</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- STREAK MODAL -->
+    <div id="streak-modal" class="modal-overlay" onclick="if(event.target===this)closeModal('streak-modal')">
+        <div class="modal-sheet bg-[#1a2228] rounded-t-[28px] p-5 w-full max-w-md space-y-4">
+            <div class="w-10 h-1 rounded-full bg-white/10 mx-auto mb-2"></div>
+            <div class="text-center space-y-2">
+                <div id="streak-fire" class="text-5xl mx-auto w-16 h-16 flex items-center justify-center">
+                    <svg width="48" height="48" viewBox="0 0 24 24">
+                        <path d="M12 2C8 7 4 11 4 15a8 8 0 0016 0c0-4-4-8-8-13z" fill="#4a5568"/>
+                        <path d="M12 12c-1 2-3 3-3 5a3 3 0 006 0c0-2-2-3-3-5z" fill="#718096" opacity="0.7"/>
+                    </svg>
+                </div>
+                <h3 id="streak-title" class="text-2xl font-black text-white">Ударный режим</h3>
+                <p id="streak-desc" class="text-xs text-gray-400 font-bold">Реши задание сегодня, чтобы зажечь огонь!</p>
+            </div>
+
+            <div class="flex justify-center space-x-1.5 py-2" id="streak-calendar">
+                <!-- Generated by JS -->
+            </div>
+
+            <button onclick="closeModal('streak-modal')" class="w-full py-3.5 rounded-2xl glass-card text-white font-black text-xs active:scale-[0.98] transition-all">ПОНЯТНО</button>
+        </div>
+    </div>
+
+    <!-- LEVEL UP SCREEN -->
+    <div id="level-up-screen" class="level-up-screen">
+        <div style="animation: bounce-in 0.6s cubic-bezier(0.16,1,0.3,1) 0.2s both;">
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2l3 6h7l-5.5 4.5L18 19l-6-4-6 4 1.5-6.5L2 8h7z" fill="#ffc800" style="filter: drop-shadow(0 0 20px rgba(255,200,0,0.5));"/>
+            </svg>
+        </div>
+        <h2 id="lvlup-title" class="text-3xl font-black text-white mt-4" style="animation: slideUp 0.5s cubic-bezier(0.16,1,0.3,1) 0.4s both;">Уровень 2!</h2>
+        <p id="lvlup-subtitle" class="text-sm text-gray-300 font-bold mt-2" style="animation: slideUp 0.5s cubic-bezier(0.16,1,0.3,1) 0.5s both;">Теперь ты «Стажер»</p>
+        <button onclick="closeLevelUp()" class="mt-8 px-8 py-4 rounded-2xl font-black text-sm text-white active:scale-95 transition-all shadow-lg" style="background: linear-gradient(135deg, #58cc02, #4cb300); border-bottom: 4px solid #3d9400; animation: slideUp 0.5s cubic-bezier(0.16,1,0.3,1) 0.6s both;">
+            ПРОДОЛЖИТЬ
         </button>
     </div>
 
-    <!-- ======================================================== -->
-    <!-- СКРИПТ: ПРИЯТНЫЙ ЗВУКОВОЙ ДВИЖОК И ДИНАМИЧЕСКИЙ ПРОГРЕСС -->
-    <!-- ======================================================== -->
+    <!-- ========================================= -->
+    <!-- SCRIPT ENGINE                              -->
+    <!-- ========================================= -->
     <script>
         // ==========================================
-        // МЯГКИЙ ОРГАНИЧЕСКИЙ ЗВУКОВОЙ ДВИЖОК
+        // SOUND ENGINE (Web Audio — warm organic)
         // ==========================================
         let audioCtx = null;
+        function getAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            return audioCtx;
+        }
 
         function playSoftTap() {
             try {
-                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-
-                const t = audioCtx.currentTime;
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                const filter = audioCtx.createBiquadFilter();
+                const ctx = getAudio();
+                const t = ctx.currentTime;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                const filter = ctx.createBiquadFilter();
 
                 filter.type = 'lowpass';
-                filter.frequency.setValueAtTime(500, t);
+                filter.frequency.setValueAtTime(800, t);
+                filter.Q.setValueAtTime(0.7, t);
 
                 osc.type = 'sine';
-                osc.frequency.setValueAtTime(160, t);
-                osc.frequency.exponentialRampToValueAtTime(45, t + 0.045);
+                osc.frequency.setValueAtTime(220, t);
+                osc.frequency.exponentialRampToValueAtTime(80, t + 0.06);
 
-                gain.gain.setValueAtTime(0.09, t);
-                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.045);
+                gain.gain.setValueAtTime(0.06, t);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
 
                 osc.connect(filter);
                 filter.connect(gain);
-                gain.connect(audioCtx.destination);
+                gain.connect(ctx.destination);
 
                 osc.start(t);
-                osc.stop(t + 0.05);
+                osc.stop(t + 0.07);
             } catch(e) {}
         }
 
         function playWarmChime() {
             try {
-                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const ctx = getAudio();
+                const t = ctx.currentTime;
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                const convolver = ctx.createConvolver();
 
-                const t = audioCtx.currentTime;
-                const chord = [523.25, 659.25, 783.99, 1046.50];
-                chord.forEach((freq, idx) => {
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
+                notes.forEach((freq, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    const filter = ctx.createBiquadFilter();
+
+                    filter.type = 'lowpass';
+                    filter.frequency.setValueAtTime(2000, t);
 
                     osc.type = 'sine';
-                    osc.frequency.setValueAtTime(freq, t + idx * 0.07);
+                    osc.frequency.setValueAtTime(freq, t + i * 0.08);
 
-                    gain.gain.setValueAtTime(0, t + idx * 0.07);
-                    gain.gain.linearRampToValueAtTime(0.07, t + idx * 0.07 + 0.015);
-                    gain.gain.exponentialRampToValueAtTime(0.0001, t + idx * 0.07 + 0.45);
+                    gain.gain.setValueAtTime(0, t + i * 0.08);
+                    gain.gain.linearRampToValueAtTime(0.05, t + i * 0.08 + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, t + i * 0.08 + 0.6);
 
-                    osc.connect(gain);
-                    gain.connect(audioCtx.destination);
+                    osc.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(ctx.destination);
 
-                    osc.start(t + idx * 0.07);
-                    osc.stop(t + idx * 0.07 + 0.5);
+                    osc.start(t + i * 0.08);
+                    osc.stop(t + i * 0.08 + 0.65);
                 });
             } catch(e) {}
         }
 
+        function playSuccess() {
+            try {
+                const ctx = getAudio();
+                const t = ctx.currentTime;
+                [392, 523.25, 659.25].forEach((freq, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, t + i * 0.12);
+                    gain.gain.setValueAtTime(0, t + i * 0.12);
+                    gain.gain.linearRampToValueAtTime(0.06, t + i * 0.12 + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, t + i * 0.12 + 0.4);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(t + i * 0.12);
+                    osc.stop(t + i * 0.12 + 0.45);
+                });
+            } catch(e) {}
+        }
+
+        function playError() {
+            try {
+                const ctx = getAudio();
+                const t = ctx.currentTime;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(200, t);
+                osc.frequency.linearRampToValueAtTime(150, t + 0.2);
+                gain.gain.setValueAtTime(0.06, t);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(t);
+                osc.stop(t + 0.3);
+            } catch(e) {}
+        }
+
         // ==========================================
-        // ЖЕСТКИЙ СБРОС СТАРЫХ КЭШЕЙ (ГАРАНТИЯ 0)
+        // PARTICLES
         // ==========================================
-        const resetKey = 'examflow_zero_v3_force';
+        function initParticles() {
+            const container = document.getElementById('particles-container');
+            const colors = ['rgba(88,204,2,0.3)', 'rgba(28,176,246,0.2)', 'rgba(206,130,255,0.2)', 'rgba(255,200,0,0.2)'];
+            for (let i = 0; i < 8; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.width = (2 + Math.random() * 3) + 'px';
+                p.style.height = p.style.width;
+                p.style.background = colors[Math.floor(Math.random() * colors.length)];
+                p.style.animationDuration = (15 + Math.random() * 20) + 's';
+                p.style.animationDelay = (Math.random() * 15) + 's';
+                container.appendChild(p);
+            }
+        }
+
+        // ==========================================
+        // TOAST NOTIFICATIONS (replaces alert)
+        // ==========================================
+        function showToastMsg(title, desc, type = 'info') {
+            playSoftTap();
+            const container = document.getElementById('toast-container');
+            const colors = {
+                info: '#1cb0f6', success: '#58cc02', error: '#ff4b4b',
+                diamond: '#1cb0f6', xp: '#58cc02', coin: '#ffc800'
+            };
+            const color = colors[type] || colors.info;
+
+            const toast = document.createElement('div');
+            toast.className = 'toast-item';
+            toast.innerHTML = `
+                <div class="glass-card p-4 flex items-center space-x-3 shadow-2xl" style="border-left: 3px solid ${color};">
+                    <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style="background: ${color}20;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                    </div>
+                    <div>
+                        <div class="text-[12px] font-black text-white">${title}</div>
+                        <div class="text-[10px] text-gray-400 font-bold">${desc}</div>
+                    </div>
+                </div>`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('leaving');
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
+        }
+
+        // ==========================================
+        // XP POPUP ANIMATION
+        // ==========================================
+        function showXpPopup(amount, x, y) {
+            const el = document.createElement('div');
+            el.className = 'xp-popup';
+            el.textContent = `+${amount} XP`;
+            el.style.left = (x || window.innerWidth / 2 - 30) + 'px';
+            el.style.top = (y || window.innerHeight / 2) + 'px';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1000);
+        }
+
+        // ==========================================
+        // MODAL MANAGEMENT
+        // ==========================================
+        function openModal(id) {
+            playSoftTap();
+            document.getElementById(id).classList.add('active');
+        }
+        function closeModal(id) {
+            playSoftTap();
+            document.getElementById(id).classList.remove('active');
+        }
+        function openFullscreen(id) {
+            playSoftTap();
+            document.getElementById(id).classList.add('active');
+        }
+        function closeFullscreen(id) {
+            playSoftTap();
+            document.getElementById(id).classList.remove('active');
+        }
+
+        // ==========================================
+        // NAV
+        // ==========================================
+        let activeNav = 0;
+        function navTo(idx) {
+            playSoftTap();
+            activeNav = idx;
+            const btns = document.querySelectorAll('.nav-btn');
+            const pill = document.getElementById('nav-pill');
+            btns.forEach((b, i) => {
+                const svgs = b.querySelectorAll('svg');
+                const label = b.querySelector('span');
+                if (i === idx) {
+                    svgs.forEach(s => s.setAttribute('stroke', '#58cc02'));
+                    if (label) { label.style.color = '#58cc02'; }
+                } else {
+                    svgs.forEach(s => s.setAttribute('stroke', 'rgba(255,255,255,0.3)'));
+                    if (label) { label.style.color = 'rgba(255,255,255,0.35)'; }
+                }
+            });
+            const positions = [12.5, 37.5, 62.5, 87.5];
+            pill.style.left = `calc(${positions[idx]}% - 20px)`;
+
+            if (idx === 0) window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (idx === 1) startDuoQuiz();
+            if (idx === 2) showToastMsg('Лиги', 'Набери 100 XP, чтобы попасть в таблицу лидеров!', 'info');
+            if (idx === 3) openModal('subject-modal');
+        }
+
+        // ==========================================
+        // STATE
+        // ==========================================
+        const resetKey = 'examflow_v4_reset';
         if (!localStorage.getItem(resetKey)) {
-            // Очищаем старые кэши браузера пользователя
-            ['examflow_umschool_state', 'examflow_duo_state', 'examflow_clean_state_v1'].forEach(k => localStorage.removeItem(k));
+            ['examflow_umschool_state','examflow_duo_state','examflow_clean_state_v1','examflow_zero_v3_state','examflow_zero_v3_force'].forEach(k => localStorage.removeItem(k));
             localStorage.setItem(resetKey, 'true');
         }
 
@@ -835,129 +1222,162 @@
             xp: 0,
             streak: 0,
             onboarded: false,
-            questsDone: []
+            questsDone: [],
+            cardsLearned: 0,
+            quizzesDone: 0
         };
 
         function loadState() {
-            const saved = localStorage.getItem('examflow_zero_v3_state');
-            return saved ? JSON.parse(saved) : freshState;
+            const s = localStorage.getItem('examflow_v4_state');
+            return s ? { ...freshState, ...JSON.parse(s) } : { ...freshState };
         }
 
         let state = loadState();
+        let prevLevel = state.level;
 
         function saveState() {
+            const prevLvl = state.level;
             state.level = Math.floor(state.xp / 100) + 1;
-            if (state.level === 1) state.statusText = "Новичок";
-            else if (state.level === 2) state.statusText = "Стажер";
-            else if (state.level >= 3) state.statusText = "Уже шарю";
 
-            localStorage.setItem('examflow_zero_v3_state', JSON.stringify(state));
+            const statusNames = { 1: 'Новичок', 2: 'Стажер', 3: 'Боец', 4: 'Знаток', 5: 'Эксперт' };
+            state.statusText = statusNames[Math.min(state.level, 5)] || 'Мастер';
 
-            document.getElementById('stat-streak').innerText = state.streak;
-            document.getElementById('stat-coins').innerText = state.coins;
-            document.getElementById('stat-xp').innerText = state.xp;
-            document.getElementById('stat-rank').innerText = state.rank;
-            document.getElementById('shop-coins-counter').innerText = state.coins;
+            localStorage.setItem('examflow_v4_state', JSON.stringify(state));
 
-            document.getElementById('user-display-name').innerText = state.nickname;
-            document.getElementById('user-lvl-badge').innerText = state.level;
-            document.getElementById('bottom-lvl-badge').innerText = `Уровень ${state.level}`;
-            document.getElementById('bottom-status-name').innerText = state.statusText;
-            document.getElementById('active-exam-label').innerText = `${state.exam.split(' ')[0]} • ${state.statusText}`;
+            // Update UI
+            const $ = id => document.getElementById(id);
+            $('stat-streak').innerText = state.streak;
+            $('stat-coins').innerText = state.coins;
+            $('stat-xp').innerText = state.xp;
+            $('stat-rank').innerText = state.rank;
+            $('shop-coins-counter').innerText = state.coins;
+            $('user-display-name').innerText = state.nickname;
+            $('level-badge').innerText = state.level;
+            $('lvl-star').innerText = state.level;
+            $('bottom-lvl-badge').innerText = `Уровень ${state.level}`;
+            $('bottom-status-name').innerText = `${state.statusText} ${state.exam.split(' ')[0]}`;
+            $('active-exam-label').innerText = `${state.exam.split(' ')[0]} • ${state.statusText}`;
 
-            const flame = document.getElementById('flame-icon');
+            // XP to next level
+            const xpInLevel = state.xp % 100;
+            const xpNeeded = 100 - xpInLevel;
+            $('xp-level-bar').style.width = xpInLevel + '%';
+            $('xp-level-text').innerText = `${xpInLevel} / 100 XP`;
+            $('bottom-xp-info').innerText = `${xpNeeded} XP до следующего уровня`;
+
+            // Avatar progress ring
+            const ring = $('avatar-ring');
+            if (ring) {
+                const circumference = 131.95;
+                const progress = xpInLevel / 100;
+                ring.style.strokeDashoffset = circumference * (1 - progress);
+            }
+
+            // Avatar letter
+            const letter = $('user-avatar-letter');
+            if (letter) letter.innerText = (state.nickname || 'У')[0].toUpperCase();
+
+            // Flame
+            const flame = $('flame-icon');
             if (flame) {
                 if (state.streak > 0) {
-                    flame.setAttribute('fill', '#f97316');
-                    flame.parentElement.className = "flex items-center space-x-1 text-[#f97316] cursor-pointer active:scale-95 transition";
+                    flame.innerHTML = '<path d="M12 2C8 7 4 11 4 15a8 8 0 0016 0c0-4-4-8-8-13z" fill="#ff9600"/><path d="M12 12c-1 2-3 3-3 5a3 3 0 006 0c0-2-2-3-3-5z" fill="#ffc800" opacity="0.8"/>';
+                    flame.style.animation = 'flame-dance 0.8s ease-in-out infinite';
+                    flame.style.filter = 'drop-shadow(0 0 6px rgba(255,150,0,0.5))';
+                    $('stat-streak').style.color = '#ff9600';
                 } else {
-                    flame.setAttribute('fill', '#8e8e93');
-                    flame.parentElement.className = "flex items-center space-x-1 text-gray-500 cursor-pointer active:scale-95 transition";
+                    flame.innerHTML = '<path d="M12 2C8 7 4 11 4 15a8 8 0 0016 0c0-4-4-8-8-13z" fill="#4a5568"/><path d="M12 12c-1 2-3 3-3 5a3 3 0 006 0c0-2-2-3-3-5z" fill="#718096" opacity="0.7"/>';
+                    flame.style.animation = 'none';
+                    flame.style.filter = 'none';
+                    $('stat-streak').style.color = '#718096';
                 }
             }
 
-            const userLetter = document.getElementById('user-avatar-letter');
-            if (userLetter) userLetter.innerText = (state.nickname || 'У')[0].toUpperCase();
-
-            const questsDone = (state.questsDone || []).length;
-            const qCounter = document.getElementById('quests-counter');
-            if (qCounter) qCounter.innerText = `${questsDone}/2 выполнено`;
-
-            // Обновляем чекбоксы выполненных квестов
+            // Quests
+            const qDone = (state.questsDone || []).length;
+            $('quests-counter').innerText = `${qDone}/3`;
             (state.questsDone || []).forEach(num => {
-                const check = document.getElementById(`quest-check-${num}`);
+                const check = $(`quest-check-${num}`);
                 if (check) {
-                    check.className = "w-5 h-5 rounded-full bg-[#58cc02] text-slate-950 flex items-center justify-center font-black text-xs shadow-sm";
-                    check.innerText = "✓";
+                    check.className = "w-6 h-6 rounded-lg bg-[#58cc02] text-slate-950 flex items-center justify-center font-black text-[11px]";
+                    check.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
                 }
             });
 
-            // Обновляем прогресс-бары Duolingo
-            const qProgBar = document.getElementById('quiz-prog-bar');
-            const qProgText = document.getElementById('quiz-prog-text');
+            // Progress bars
+            const qProgBar = $('quiz-prog-bar');
+            const qProgText = $('quiz-prog-text');
             if (qProgBar && qProgText) {
-                const qDone = (state.questsDone || []).includes(2) || state.streak > 0;
-                const pct = qDone ? 100 : Math.min(90, state.xp > 0 ? 33 : 0);
-                qProgBar.style.width = `${pct}%`;
-                qProgText.innerText = `${pct}%`;
+                const pct = Math.min(100, (state.quizzesDone || 0) * 20);
+                qProgBar.style.width = pct + '%';
+                qProgText.innerText = pct + '%';
             }
-
-            const cProgBar = document.getElementById('cards-prog-bar');
-            const cProgText = document.getElementById('cards-prog-text');
+            const cProgBar = $('cards-prog-bar');
+            const cProgText = $('cards-prog-text');
             if (cProgBar && cProgText) {
-                const count = state.cardsLearned || ((state.questsDone || []).includes(3) ? 15 : 0);
-                cProgBar.style.width = `${Math.min(100, Math.round((count / 50) * 100))}%`;
+                const count = state.cardsLearned || 0;
+                cProgBar.style.width = Math.min(100, Math.round((count / 50) * 100)) + '%';
                 cProgText.innerText = `${count}/50`;
             }
+
+            // Level up check
+            if (state.level > prevLvl && prevLvl > 0) {
+                showLevelUp(state.level);
+            }
         }
 
         // ==========================================
-        // ПЕРЕКЛЮЧЕНИЕ ТЕМ ДИЗАЙНА
+        // LEVEL UP
         // ==========================================
-        const themesInfo = {
-            'umschool': 'Стиль: Умскул',
-            'apple': 'Стиль: Т-Банк Black',
-            'stripe': 'Стиль: Яндекс Практикум',
-            'duolingo': 'Стиль: Duolingo 3D'
-        };
-
-        function openThemePicker() {
-            playSoftTap();
-            document.getElementById('theme-modal').classList.remove('hidden');
-            refreshIcons();
+        function showLevelUp(lvl) {
+            const statusNames = { 1: 'Новичок', 2: 'Стажер', 3: 'Боец', 4: 'Знаток', 5: 'Эксперт' };
+            document.getElementById('lvlup-title').innerText = `Уровень ${lvl}!`;
+            document.getElementById('lvlup-subtitle').innerText = `Теперь ты «${statusNames[Math.min(lvl, 5)] || 'Мастер'}»`;
+            document.getElementById('level-up-screen').classList.add('active');
+            playSuccess();
+            if (window.confetti) {
+                confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
+                setTimeout(() => confetti({ particleCount: 80, spread: 60, origin: { y: 0.5 } }), 300);
+            }
         }
-        function closeThemePicker() {
+        function closeLevelUp() {
             playSoftTap();
-            document.getElementById('theme-modal').classList.add('hidden');
+            document.getElementById('level-up-screen').classList.remove('active');
         }
 
-        function setTheme(tName) {
-            playWarmChime();
-            document.body.className = `theme-${tName} min-h-screen flex flex-col pb-20 max-w-md mx-auto relative bg-[#131f24] font-['Nunito',sans-serif]`;
-            localStorage.setItem('examflow_active_theme_choice', tName);
-            const labelEl = document.getElementById('theme-btn-label');
-            if (labelEl) labelEl.innerText = themesInfo[tName] || 'Стиль';
-            
-            // Обновляем карточки в модалке
-            ['umschool', 'apple', 'stripe', 'duolingo'].forEach(k => {
-                const card = document.getElementById(`theme-card-${k}`);
-                if (card) {
-                    const check = card.querySelector('.theme-check');
-                    if (k === tName) {
-                        card.className = "theme-choice-card p-4 rounded-2xl bg-[#26262b] border-2 border-[#58cc02] flex items-center justify-between cursor-pointer active:scale-98 transition shadow-lg";
-                        if (check) check.classList.remove('hidden');
-                    } else {
-                        card.className = "theme-choice-card p-4 rounded-2xl bg-[#26262b] border border-white/10 flex items-center justify-between cursor-pointer active:scale-98 transition";
-                        if (check) check.classList.add('hidden');
-                    }
-                }
+        // ==========================================
+        // STREAK MODAL
+        // ==========================================
+        function showStreakModal() {
+            playSoftTap();
+            const cal = document.getElementById('streak-calendar');
+            const days = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+            const today = new Date().getDay();
+            const todayIdx = today === 0 ? 6 : today - 1;
+            cal.innerHTML = '';
+            days.forEach((d, i) => {
+                const div = document.createElement('div');
+                div.className = 'streak-day ' + (i < todayIdx && state.streak > (todayIdx - i) ? 'active' : i === todayIdx ? (state.streak > 0 ? 'active' : 'today') : 'inactive');
+                div.innerHTML = `<div class="text-center"><div class="text-[8px] opacity-60 mb-0.5">${d}</div><div>${i < todayIdx && state.streak > (todayIdx - i) ? '✓' : i === todayIdx ? (state.streak > 0 ? '✓' : '·') : '·'}</div></div>`;
+                cal.appendChild(div);
             });
 
-            closeThemePicker();
+            const streakFire = document.getElementById('streak-fire');
+            if (state.streak > 0) {
+                streakFire.innerHTML = '<svg width="48" height="48" viewBox="0 0 24 24" style="animation: flame-dance 0.8s ease-in-out infinite; filter: drop-shadow(0 0 12px rgba(255,150,0,0.6));"><path d="M12 2C8 7 4 11 4 15a8 8 0 0016 0c0-4-4-8-8-13z" fill="#ff9600"/><path d="M12 12c-1 2-3 3-3 5a3 3 0 006 0c0-2-2-3-3-5z" fill="#ffc800"/></svg>';
+                document.getElementById('streak-title').innerText = `${state.streak} ${state.streak === 1 ? 'день' : 'дней'} подряд!`;
+                document.getElementById('streak-desc').innerText = 'Так держать! Не прерывай серию.';
+            } else {
+                streakFire.innerHTML = '<svg width="48" height="48" viewBox="0 0 24 24"><path d="M12 2C8 7 4 11 4 15a8 8 0 0016 0c0-4-4-8-8-13z" fill="#4a5568"/><path d="M12 12c-1 2-3 3-3 5a3 3 0 006 0c0-2-2-3-3-5z" fill="#718096" opacity="0.7"/></svg>';
+                document.getElementById('streak-title').innerText = 'Ударный режим';
+                document.getElementById('streak-desc').innerText = 'Реши задание сегодня, чтобы зажечь огонь!';
+            }
+
+            openModal('streak-modal');
         }
 
         // ==========================================
-        // ИНИЦИАЛИЗАЦИЯ
+        // INIT
         // ==========================================
         let tg = window.Telegram?.WebApp;
         if (tg) {
@@ -970,52 +1390,28 @@
             }
         }
 
-        function refreshIcons() {
-            if (window.lucide) lucide.createIcons();
-        }
-
         document.addEventListener("DOMContentLoaded", () => {
-            // Восстанавливаем выбранную тему (по умолчанию Duolingo 3D!)
-            const savedTheme = localStorage.getItem('examflow_active_theme_choice') || 'duolingo';
-            setTheme(savedTheme);
-
+            initParticles();
             saveState();
-            refreshIcons();
-
             if (!state.onboarded) {
-                setTimeout(openSubjectModal, 400);
+                setTimeout(() => openModal('subject-modal'), 500);
             }
         });
 
-        function showToast(title, desc) {
-            playSoftTap();
-            alert(`${title}\n${desc}`);
-        }
-
         // ==========================================
-        // ВЫБОР ПРЕДМЕТОВ
+        // SUBJECT SELECTION
         // ==========================================
-        function openSubjectModal() {
-            playSoftTap();
-            document.getElementById('subject-modal').classList.remove('hidden');
-            refreshIcons();
-        }
-        function closeSubjectModal() {
-            playSoftTap();
-            document.getElementById('subject-modal').classList.add('hidden');
-        }
-
         function selectExamType(exam) {
             playSoftTap();
             state.exam = exam;
             const bOge = document.getElementById('exam-btn-oge');
             const bEge = document.getElementById('exam-btn-ege');
             if (exam.includes('ОГЭ')) {
-                bOge.className = "p-3 rounded-2xl bg-[#8b6af0] text-white text-xs font-black border border-white/10 active:scale-95 transition";
-                bEge.className = "p-3 rounded-2xl bg-[#26262b] text-gray-300 text-xs font-black border border-white/5 active:scale-95 transition";
+                bOge.className = "p-3.5 rounded-2xl bg-[#58cc02] text-slate-950 text-xs font-black active:scale-95 transition-all shadow-md";
+                bEge.className = "p-3.5 rounded-2xl bg-white/[0.06] text-gray-400 text-xs font-black active:scale-95 transition-all hover:bg-white/[0.08]";
             } else {
-                bEge.className = "p-3 rounded-2xl bg-[#8b6af0] text-white text-xs font-black border border-white/10 active:scale-95 transition";
-                bOge.className = "p-3 rounded-2xl bg-[#26262b] text-gray-300 text-xs font-black border border-white/5 active:scale-95 transition";
+                bEge.className = "p-3.5 rounded-2xl bg-[#58cc02] text-slate-950 text-xs font-black active:scale-95 transition-all shadow-md";
+                bOge.className = "p-3.5 rounded-2xl bg-white/[0.06] text-gray-400 text-xs font-black active:scale-95 transition-all hover:bg-white/[0.08]";
             }
         }
 
@@ -1024,108 +1420,132 @@
             const check = btn.querySelector('span:last-child');
             if (state.subjects.includes(name)) {
                 state.subjects = state.subjects.filter(s => s !== name);
-                btn.className = "subj-chip p-3 rounded-2xl bg-[#26262b] text-gray-300 text-xs font-black flex items-center justify-between active:scale-95 transition";
+                btn.className = "subj-chip p-3 rounded-2xl bg-white/[0.04] text-gray-400 text-xs font-black flex items-center justify-between active:scale-95 transition-all border border-transparent";
                 check.className = "opacity-0";
             } else {
                 state.subjects.push(name);
-                btn.className = "subj-chip p-3 rounded-2xl bg-[#1eb885] text-white text-xs font-black flex items-center justify-between active:scale-95 transition";
-                check.className = "opacity-100";
+                btn.className = "subj-chip p-3 rounded-2xl bg-[#58cc02]/20 text-[#58cc02] text-xs font-black flex items-center justify-between active:scale-95 transition-all border border-[#58cc02]/30";
+                check.className = "text-[#58cc02]";
             }
         }
 
         function saveUserOnboarding() {
             const name = document.getElementById('user-name-input').value.trim();
             if (name) state.nickname = name;
-            
+
             if (!state.onboarded) {
                 state.onboarded = true;
                 state.xp += 20;
                 state.coins += 5;
                 toggleQuest(1, true);
-                if (window.confetti) confetti({ particleCount: 100, spread: 80 });
+                if (window.confetti) confetti({ particleCount: 100, spread: 80, origin: { y: 0.7 } });
                 playWarmChime();
+                showToastMsg('Добро пожаловать!', `Привет, ${state.nickname}! Начни с решения заданий.`, 'success');
             } else {
-                playSoftTap();
+                showToastMsg('Сохранено', 'Настройки обновлены', 'success');
             }
 
             saveState();
-            closeSubjectModal();
+            closeModal('subject-modal');
         }
 
         // ==========================================
-        // ЧЕК-ЛИСТ ЗАДАНИЙ
+        // QUESTS
         // ==========================================
         function toggleQuest(num, silent = false) {
-            if (state.questsDone.includes(num)) return;
+            if ((state.questsDone || []).includes(num)) return;
+            state.questsDone = state.questsDone || [];
+            state.questsDone.push(num);
+
             const check = document.getElementById(`quest-check-${num}`);
             if (check) {
-                check.className = "w-5 h-5 rounded-full bg-[#58cc02] text-slate-950 flex items-center justify-center font-black text-xs shadow-sm";
-                check.innerText = "✓";
+                check.className = "w-6 h-6 rounded-lg bg-[#58cc02] text-slate-950 flex items-center justify-center font-black text-[11px]";
+                check.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+                check.style.animation = 'bounce-in 0.4s cubic-bezier(0.16,1,0.3,1)';
             }
 
-            state.questsDone.push(num);
-            state.xp += 25;
-            state.coins += 3;
+            if (num === 1) { state.coins += 5; }
+            if (num === 2) { state.xp += 25; }
+            if (num === 3) { state.xp += 30; }
+
             saveState();
 
             if (!silent) {
                 playWarmChime();
-                if (window.confetti) confetti({ particleCount: 60, spread: 60 });
+                if (window.confetti) confetti({ particleCount: 60, spread: 50, origin: { y: 0.7 } });
                 if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
+                showXpPopup(num === 1 ? 5 : num === 2 ? 25 : 30);
             }
         }
 
         // ==========================================
-        // КВИЗ-ТРЕНАЖЕР
+        // QUIZ ENGINE (10 questions)
         // ==========================================
         const testQuestions = [
-            { q: "4x - 16 = 24", opts: ["8", "10", "12", "14"], ans: 1, exp: "4x = 40 => x = 10" },
-            { q: "√64 + √36 = ?", opts: ["10", "14", "100", "48"], ans: 1, exp: "8 + 6 = 14" },
-            { q: "Сколько бит в 2 байтах?", opts: ["8", "12", "16", "24"], ans: 2, exp: "1 байт = 8 бит. 2 * 8 = 16" }
+            { q: "4x - 16 = 24", title: "Найдите корень уравнения:", cat: "ОГЭ Математика • Задание 6", opts: ["8", "10", "12", "14"], ans: 1, exp: "4x = 40 → x = 10" },
+            { q: "√64 + √36 = ?", title: "Вычислите:", cat: "ОГЭ Математика • Задание 1", opts: ["10", "14", "100", "48"], ans: 1, exp: "8 + 6 = 14" },
+            { q: "2 байта = ? бит", title: "Переведите:", cat: "ОГЭ Информатика • Задание 3", opts: ["8", "12", "16", "24"], ans: 2, exp: "1 байт = 8 бит → 2 × 8 = 16" },
+            { q: "(a + b)² = ?", title: "Раскройте скобки:", cat: "ОГЭ Математика • Задание 4", opts: ["a² + b²", "a² + 2ab + b²", "a² - b²", "2(a + b)"], ans: 1, exp: "Формула квадрата суммы" },
+            { q: "15% от 200 = ?", title: "Найдите процент:", cat: "ОГЭ Математика • Задание 2", opts: ["25", "30", "35", "40"], ans: 1, exp: "200 × 0.15 = 30" },
+            { q: "НОД(12, 18) = ?", title: "Найдите НОД:", cat: "ОГЭ Математика • Задание 1", opts: ["3", "6", "12", "36"], ans: 1, exp: "12 = 2²×3, 18 = 2×3² → НОД = 6" },
+            { q: "3⁴ = ?", title: "Вычислите степень:", cat: "ОГЭ Математика • Задание 5", opts: ["12", "27", "81", "64"], ans: 2, exp: "3 × 3 × 3 × 3 = 81" },
+            { q: "S = πr², r = 3", title: "Найдите площадь круга:", cat: "ОГЭ Математика • Задание 16", opts: ["6π", "9π", "12π", "3π"], ans: 1, exp: "S = π × 3² = 9π" },
+            { q: "0.125 → дробь = ?", title: "Переведите в дробь:", cat: "ОГЭ Математика • Задание 1", opts: ["1/4", "1/8", "1/5", "1/10"], ans: 1, exp: "0.125 = 125/1000 = 1/8" },
+            { q: "|-7| + |3| = ?", title: "Вычислите модуль:", cat: "ОГЭ Математика • Задание 1", opts: ["4", "-4", "10", "-10"], ans: 2, exp: "|-7| = 7, |3| = 3 → 7 + 3 = 10" }
         ];
         let qIdx = 0;
+        let quizBatch = [];
         let selected = null;
         let checked = false;
+        const QUIZ_SIZE = 5;
 
         function startDuoQuiz() {
             playSoftTap();
             qIdx = 0;
-            document.getElementById('quiz-screen').classList.remove('hidden');
+            selected = null;
+            checked = false;
+            // Shuffle and pick 5
+            quizBatch = [...testQuestions].sort(() => Math.random() - 0.5).slice(0, QUIZ_SIZE);
+            openFullscreen('quiz-screen');
             renderQ();
-            refreshIcons();
-        }
-        function closeQuizScreen() {
-            playSoftTap();
-            document.getElementById('quiz-screen').classList.add('hidden');
         }
 
         function renderQ() {
             selected = null;
             checked = false;
-            const cur = testQuestions[qIdx];
+            const cur = quizBatch[qIdx];
             document.getElementById('q-box').innerText = cur.q;
-            document.getElementById('quiz-step-text').innerText = `${qIdx + 1}/${testQuestions.length}`;
-            document.getElementById('quiz-progress-bar').style.width = `${((qIdx + 1) / testQuestions.length) * 100}%`;
+            document.getElementById('q-title').innerText = cur.title;
+            document.getElementById('q-category-badge').innerText = cur.cat;
+            document.getElementById('quiz-step-text').innerText = `${qIdx + 1}/${QUIZ_SIZE}`;
+            document.getElementById('quiz-progress-bar').style.width = `${((qIdx + 1) / QUIZ_SIZE) * 100}%`;
             document.getElementById('quiz-feedback').innerHTML = '';
 
             const btn = document.getElementById('quiz-action-btn');
             btn.innerText = "ПРОВЕРИТЬ";
-            btn.className = "bg-gray-700 text-gray-400 text-xs font-black uppercase tracking-wider py-4 px-7 rounded-2xl cursor-not-allowed opacity-50";
+            btn.className = "bg-gray-700 text-gray-400 text-xs font-black uppercase tracking-wider py-4 px-7 rounded-2xl cursor-not-allowed opacity-50 transition-all";
 
             const container = document.getElementById('q-options');
             container.innerHTML = '';
 
             cur.opts.forEach((opt, idx) => {
                 const b = document.createElement('button');
-                b.className = "main-card p-4 text-center text-lg font-black text-white hover:bg-[#25252b] active:scale-95 transition";
+                b.className = "glass-card p-4 text-center text-lg font-black text-white hover:bg-white/[0.06] active:scale-95 transition-all";
                 b.innerText = opt;
                 b.onclick = () => {
                     if (checked) return;
                     playSoftTap();
-                    for (let c of container.children) c.className = "main-card p-4 text-center text-lg font-black text-white transition";
-                    b.className = "main-card p-4 text-center text-lg font-black text-white bg-[#8b6af0] border border-[#8b6af0] transition";
+                    for (let c of container.children) {
+                        c.className = "glass-card p-4 text-center text-lg font-black text-white transition-all";
+                    }
+                    b.className = "glass-card p-4 text-center text-lg font-black text-white transition-all border-2 border-[#58cc02]";
+                    b.style.background = 'rgba(88,204,2,0.1)';
                     selected = idx;
-                    btn.className = "bg-[#8b6af0] text-white text-xs font-black uppercase tracking-wider py-4 px-7 rounded-2xl cursor-pointer active:scale-95 transition shadow";
+                    btn.className = "text-white text-xs font-black uppercase tracking-wider py-4 px-7 rounded-2xl active:scale-95 transition-all shadow-lg";
+                    btn.style.background = 'linear-gradient(135deg, #58cc02, #4cb300)';
+                    btn.style.borderBottom = '3px solid #3d9400';
+                    btn.style.cursor = 'pointer';
+                    btn.style.opacity = '1';
                 };
                 container.appendChild(b);
             });
@@ -1133,119 +1553,154 @@
 
         function checkAnswer() {
             if (selected === null && !checked) return;
-            const cur = testQuestions[qIdx];
+            const cur = quizBatch[qIdx];
             const btn = document.getElementById('quiz-action-btn');
             const feed = document.getElementById('quiz-feedback');
 
             if (!checked) {
                 checked = true;
+                const options = document.getElementById('q-options').children;
                 if (selected === cur.ans) {
-                    playWarmChime();
-                    feed.innerHTML = `<span class="text-emerald-400 font-black">Верно! ${cur.exp}</span>`;
-                    btn.className = "bg-[#1eb885] text-white text-xs font-black uppercase tracking-wider py-4 px-7 rounded-2xl active:scale-95 transition";
+                    playSuccess();
+                    options[selected].style.background = 'rgba(88,204,2,0.2)';
+                    options[selected].style.borderColor = '#58cc02';
+                    feed.innerHTML = `<span class="text-[#58cc02] font-black">${cur.exp}</span>`;
+                    btn.style.background = 'linear-gradient(135deg, #58cc02, #4cb300)';
                     btn.innerText = "ДАЛЬШЕ →";
                     if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
+                    showXpPopup(10);
                 } else {
-                    playSoftTap();
-                    feed.innerHTML = `<span class="text-rose-400 font-black">Неверно! ${cur.exp}</span>`;
-                    btn.className = "bg-rose-600 text-white text-xs font-black uppercase tracking-wider py-4 px-7 rounded-2xl active:scale-95 transition";
+                    playError();
+                    if (options[selected]) {
+                        options[selected].style.background = 'rgba(255,75,75,0.2)';
+                        options[selected].style.borderColor = '#ff4b4b';
+                        options[selected].className += ' border-2';
+                    }
+                    if (options[cur.ans]) {
+                        options[cur.ans].style.background = 'rgba(88,204,2,0.15)';
+                        options[cur.ans].style.borderColor = '#58cc02';
+                        options[cur.ans].className += ' border-2';
+                    }
+                    feed.innerHTML = `<span class="text-[#ff6b6b] font-black">${cur.exp}</span>`;
+                    btn.style.background = 'linear-gradient(135deg, #ff4b4b, #e03030)';
+                    btn.style.borderBottom = '3px solid #c02020';
                     btn.innerText = "ПОНЯТНО →";
                     if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
                 }
             } else {
-                if (qIdx + 1 < testQuestions.length) {
+                if (qIdx + 1 < QUIZ_SIZE) {
                     qIdx++;
                     renderQ();
                 } else {
-                    closeQuizScreen();
+                    closeFullscreen('quiz-screen');
                     state.xp += 50;
                     state.coins += 10;
                     state.rank += 5;
-                    state.streak = Math.max(1, state.streak + 1);
+                    state.streak = Math.max(1, (state.streak || 0) + 1);
+                    state.quizzesDone = (state.quizzesDone || 0) + 1;
                     toggleQuest(2, true);
                     saveState();
-                    playWarmChime();
-                    if (window.confetti) confetti({ particleCount: 110, spread: 80 });
-                    alert("Отличная работа!\n+50 XP получено\n+10 монет начислено\nСтрик зажжен: 1 день!");
+                    playSuccess();
+                    if (window.confetti) {
+                        confetti({ particleCount: 120, spread: 90, origin: { y: 0.6 } });
+                        setTimeout(() => confetti({ particleCount: 60, spread: 50, origin: { y: 0.5 } }), 200);
+                    }
+                    showToastMsg('Тест пройден!', '+50 XP • +10 монет • Стрик зажжён!', 'success');
+                    showXpPopup(50);
                 }
             }
         }
 
         // ==========================================
-        // ФЛЕШ-КАРТОЧКИ
+        // FLASHCARDS (8 terms)
         // ==========================================
         const cardsData = [
-            { term: "Инфляция", desc: "Долговременный процесс обесценивания денег, приводящий к снижению их покупательской способности." },
-            { term: "ВВП", desc: "Рыночная стоимость всех конечных товаров и услуг, произведенных на территории страны за год." }
+            { term: "Инфляция", desc: "Устойчивый рост общего уровня цен, приводящий к снижению покупательной способности денег." },
+            { term: "ВВП", desc: "Рыночная стоимость всех конечных товаров и услуг, произведенных на территории страны за год." },
+            { term: "Конституция", desc: "Основной закон государства, обладающий высшей юридической силой." },
+            { term: "Демократия", desc: "Политический режим, при котором власть принадлежит народу и осуществляется через выборы." },
+            { term: "Дефицит бюджета", desc: "Ситуация, когда расходы государства превышают его доходы за определённый период." },
+            { term: "Правовое государство", desc: "Государство, где верховенство закона распространяется на все ветви власти и граждан." },
+            { term: "Социализация", desc: "Процесс усвоения человеком норм и ценностей общества на протяжении жизни." },
+            { term: "Монополия", desc: "Рыночная ситуация, когда единственный производитель контролирует весь объём выпуска товара." }
         ];
         let cardIdx = 0;
         let isFlipped = false;
+        let cardBatch = [];
 
         function openFlashcards() {
             playSoftTap();
             cardIdx = 0;
+            isFlipped = false;
+            cardBatch = [...cardsData].sort(() => Math.random() - 0.5);
             showCard();
-            document.getElementById('cards-screen').classList.remove('hidden');
-            refreshIcons();
+            openFullscreen('cards-screen');
         }
+
         function showCard() {
             isFlipped = false;
-            const c = cardsData[cardIdx];
+            const c = cardBatch[cardIdx];
             document.getElementById('card-term').innerText = c.term;
             document.getElementById('card-desc').innerText = c.desc;
             document.getElementById('card-desc').classList.add('hidden');
-            document.getElementById('flashcard-counter').innerText = `${cardIdx + 1}/${cardsData.length}`;
+            document.getElementById('flashcard-counter').innerText = `${cardIdx + 1}/${cardBatch.length}`;
+            const card = document.getElementById('flashcard');
+            card.style.transform = 'scale(0.95)';
+            requestAnimationFrame(() => { card.style.transform = 'scale(1)'; });
         }
+
         function flipCard() {
             playSoftTap();
             isFlipped = !isFlipped;
-            if (isFlipped) document.getElementById('card-desc').classList.remove('hidden');
-            else document.getElementById('card-desc').classList.add('hidden');
+            const card = document.getElementById('flashcard');
+            if (isFlipped) {
+                document.getElementById('card-desc').classList.remove('hidden');
+                card.style.transform = 'scale(1.02)';
+                setTimeout(() => { card.style.transform = 'scale(1)'; }, 150);
+            } else {
+                document.getElementById('card-desc').classList.add('hidden');
+            }
         }
+
         function nextCard(known) {
             playSoftTap();
-            if (cardIdx + 1 < cardsData.length) {
+            if (known) state.cardsLearned = Math.min(50, (state.cardsLearned || 0) + 1);
+
+            if (cardIdx + 1 < cardBatch.length) {
                 cardIdx++;
                 showCard();
             } else {
-                document.getElementById('cards-screen').classList.add('hidden');
+                closeFullscreen('cards-screen');
                 state.xp += 30;
-                state.cardsLearned = 50;
+                state.cardsLearned = Math.min(50, (state.cardsLearned || 0) + 2);
+                toggleQuest(3, true);
                 saveState();
                 playWarmChime();
-                alert("Карточки повторены! +30 XP заработано!");
+                if (window.confetti) confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } });
+                showToastMsg('Карточки пройдены!', '+30 XP • Отличное повторение!', 'success');
+                showXpPopup(30);
             }
         }
 
         // ==========================================
-        // МОДАЛКИ
+        // SHOP
         // ==========================================
-        function openProModal() { playSoftTap(); document.getElementById('pro-modal').classList.remove('hidden'); refreshIcons(); }
-        function closeProModal() { playSoftTap(); document.getElementById('pro-modal').classList.add('hidden'); }
-        function buyProSubscription() {
-            playWarmChime();
-            closeProModal();
-            state.xp += 100;
-            saveState();
-            if (window.confetti) confetti({ particleCount: 120, spread: 80 });
-            alert("Подписка PRO активирована!");
-        }
-
-        function openShopModal() { playSoftTap(); document.getElementById('shop-modal').classList.remove('hidden'); refreshIcons(); }
-        function closeShopModal() { playSoftTap(); document.getElementById('shop-modal').classList.add('hidden'); }
         function buyShopItem(name, cost) {
             if (state.coins < cost) {
-                showToast("Недостаточно монет", `Нужно ${cost} монет. Решай задания, чтобы заработать!`);
+                showToastMsg('Недостаточно монет', `Нужно ${cost}. Решай задания!`, 'error');
+                playError();
                 return;
             }
             state.coins -= cost;
             saveState();
             playWarmChime();
-            alert(`Куплено: ${name}!`);
+            showToastMsg('Куплено!', name, 'success');
+            if (window.confetti) confetti({ particleCount: 40, spread: 40, origin: { y: 0.8 } });
         }
 
-        function openAiTutorModal() { playSoftTap(); document.getElementById('ai-modal').classList.remove('hidden'); refreshIcons(); }
-        function closeAiModal() { playSoftTap(); document.getElementById('ai-modal').classList.add('hidden'); }
+        // ==========================================
+        // AI TUTOR
+        // ==========================================
         function sendAiMessage() {
             const input = document.getElementById('ai-input');
             const q = input.value.trim();
@@ -1253,35 +1708,58 @@
             input.value = '';
             playSoftTap();
             const chat = document.getElementById('ai-chat-messages');
+
             const u = document.createElement('div');
             u.className = "flex justify-end";
-            u.innerHTML = `<div class="bg-[#269de8] text-white rounded-2xl p-3 text-xs font-bold max-w-[85%]">${q}</div>`;
+            u.style.animation = "slideUp 0.3s cubic-bezier(0.16,1,0.3,1)";
+            u.innerHTML = `<div class="p-3.5 rounded-2xl max-w-[85%] text-[12px] font-bold text-white" style="background: linear-gradient(135deg, #1cb0f6, #0d8ecf);">${q}</div>`;
             chat.appendChild(u);
+            chat.scrollTop = chat.scrollHeight;
+
+            // Typing indicator
+            const typing = document.createElement('div');
+            typing.className = "flex items-start space-x-2";
+            typing.id = "typing-indicator";
+            typing.innerHTML = `<div class="w-7 h-7 rounded-full bg-[#1cb0f6]/20 flex items-center justify-center shrink-0 mt-1">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1cb0f6" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+            </div>
+            <div class="glass-card p-3.5 text-[12px] text-gray-400 font-bold"><span class="inline-flex space-x-1"><span class="w-1.5 h-1.5 bg-gray-400 rounded-full" style="animation: pulse-glow 1s infinite;"></span><span class="w-1.5 h-1.5 bg-gray-400 rounded-full" style="animation: pulse-glow 1s 0.2s infinite;"></span><span class="w-1.5 h-1.5 bg-gray-400 rounded-full" style="animation: pulse-glow 1s 0.4s infinite;"></span></span></div>`;
+            chat.appendChild(typing);
+            chat.scrollTop = chat.scrollHeight;
+
             setTimeout(() => {
-                playSoftTap();
+                typing.remove();
                 const b = document.createElement('div');
-                b.className = "flex justify-start";
-                b.innerHTML = `<div class="bg-[#1c1c1f] text-gray-200 rounded-2xl p-3 text-xs font-bold max-w-[85%]">Отличный вопрос! Чтобы не ошибиться на экзамене: проверь знаки и условия задачи.</div>`;
+                b.className = "flex items-start space-x-2";
+                b.style.animation = "slideUp 0.3s cubic-bezier(0.16,1,0.3,1)";
+                b.innerHTML = `<div class="w-7 h-7 rounded-full bg-[#1cb0f6]/20 flex items-center justify-center shrink-0 mt-1">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1cb0f6" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg>
+                </div>
+                <div class="glass-card p-3.5 max-w-[85%] text-[12px] font-bold text-gray-200 leading-relaxed">Отличный вопрос! Обрати внимание на условие задачи — проверь знаки и единицы измерения. Если нужен подробный разбор, напиши номер задания из ФИПИ.</div>`;
                 chat.appendChild(b);
                 chat.scrollTop = chat.scrollHeight;
-            }, 500);
+                playSoftTap();
+            }, 1200);
         }
 
-        function openTextbookModal() { playSoftTap(); document.getElementById('textbook-modal').classList.remove('hidden'); refreshIcons(); }
-        function closeTextbookModal() { playSoftTap(); document.getElementById('textbook-modal').classList.add('hidden'); }
-
+        // ==========================================
+        // NOTIFICATIONS
+        // ==========================================
         function openNotifSheet() {
-            playSoftTap();
-            alert("Уведомления:\nДобро пожаловать в ExamFlow! Начни с решения 1 задания.");
+            showToastMsg('Уведомления', 'Добро пожаловать в ExamFlow! Реши первое задание.', 'info');
         }
 
+        // ==========================================
+        // SHARE
+        // ==========================================
         function shareWithFriends() {
             playSoftTap();
             state.coins += 50;
             saveState();
-            playWarmChime();
-            if (window.confetti) confetti({ particleCount: 70, spread: 60 });
-            alert("Реферальная ссылка скопирована! +50 монет начислено на твой баланс!");
+            playSuccess();
+            if (window.confetti) confetti({ particleCount: 80, spread: 70, origin: { y: 0.7 } });
+            showToastMsg('Ссылка скопирована!', '+50 монет начислено', 'coin');
+            showXpPopup(50);
         }
     </script>
 </body>

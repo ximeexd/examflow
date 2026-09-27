@@ -380,25 +380,25 @@
         <div class="stagger-2 p-2.5 rounded-2xl glass-card flex items-center justify-between text-xs font-black">
             <!-- Diamonds -->
             <div onclick="showToastMsg('Алмазы','Зарабатывай за безупречные тесты!','diamond')" class="flex items-center space-x-1.5 cursor-pointer active:scale-90 transition-transform">
-                <img src="icons/diamond.jpg" alt="diamond" class="w-6 h-6 rounded-md object-cover" style="filter: drop-shadow(0 0 4px rgba(28,176,246,0.6));">
+                <img src="icons/diamond.jpg" alt="diamond" class="w-6 h-6 object-contain" style="mix-blend-mode: screen; filter: drop-shadow(0 0 4px rgba(28,176,246,0.6));">
                 <span id="stat-rank" class="text-sm text-[#1cb0f6]">0</span>
             </div>
 
             <!-- Coins -->
             <div onclick="openModal('shop-modal')" class="flex items-center space-x-1.5 cursor-pointer active:scale-90 transition-transform">
-                <img src="icons/coin.jpg" alt="coin" class="w-6 h-6 rounded-full object-cover" style="filter: drop-shadow(0 0 4px rgba(255,200,0,0.5));">
+                <img src="icons/coin.jpg" alt="coin" class="w-6 h-6 object-contain" style="mix-blend-mode: screen; filter: drop-shadow(0 0 4px rgba(255,200,0,0.5));">
                 <span id="stat-coins" class="text-sm text-[#ffc800]">0</span>
             </div>
 
             <!-- XP -->
             <div onclick="showToastMsg('Опыт','Решай задания для прокачки!','xp')" class="flex items-center space-x-1.5 cursor-pointer active:scale-90 transition-transform">
-                <img src="icons/xp_star.jpg" alt="xp" class="w-6 h-6 rounded-md object-cover" style="filter: drop-shadow(0 0 5px rgba(88,204,2,0.6));">
+                <img src="icons/xp_star.jpg" alt="xp" class="w-6 h-6 object-contain" style="mix-blend-mode: screen; filter: drop-shadow(0 0 5px rgba(88,204,2,0.6));">
                 <span id="stat-xp" class="text-sm text-[#58cc02]">0</span>
             </div>
 
             <!-- Streak -->
             <div onclick="showStreakModal()" class="flex items-center space-x-1 cursor-pointer active:scale-90 transition-transform">
-                <img id="flame-img" src="icons/flame.jpg" alt="streak" class="w-6 h-6 rounded-md object-cover opacity-30 transition-all" style="filter: grayscale(1);">
+                <img id="flame-img" src="icons/flame.jpg" alt="streak" class="w-6 h-6 object-contain opacity-30 transition-all" style="mix-blend-mode: screen; filter: grayscale(1);">
                 <span id="stat-streak" class="text-sm font-black text-gray-500">0</span>
             </div>
         </div>
@@ -1355,11 +1355,11 @@
 
             const streakFire = document.getElementById('streak-fire');
             if (state.streak > 0) {
-                streakFire.innerHTML = '<img src="icons/flame.jpg" alt="fire" class="w-16 h-16 rounded-2xl object-cover" style="animation: flame-dance 0.9s ease-in-out infinite; filter: drop-shadow(0 0 16px rgba(255,150,0,0.7));">';
+                streakFire.innerHTML = '<img src="icons/flame.jpg" alt="fire" class="w-16 h-16 object-contain" style="mix-blend-mode: screen; animation: flame-dance 0.9s ease-in-out infinite; filter: drop-shadow(0 0 16px rgba(255,150,0,0.7));">';
                 document.getElementById('streak-title').innerText = `${state.streak} ${state.streak === 1 ? 'день' : 'дней'} подряд!`;
                 document.getElementById('streak-desc').innerText = 'Так держать! Не прерывай серию.';
             } else {
-                streakFire.innerHTML = '<img src="icons/flame.jpg" alt="fire" class="w-16 h-16 rounded-2xl object-cover opacity-25" style="filter: grayscale(1);">';
+                streakFire.innerHTML = '<img src="icons/flame.jpg" alt="fire" class="w-16 h-16 object-contain opacity-25" style="mix-blend-mode: screen; filter: grayscale(1);">';
                 document.getElementById('streak-title').innerText = 'Ударный режим';
                 document.getElementById('streak-desc').innerText = 'Реши задание сегодня, чтобы зажечь огонь!';
             }

@@ -23,7 +23,7 @@
             overflow-x: hidden;
         }
 
-        /* Тонкая диагональная ромбовидная сеточка на фоне как в Умскуле */
+        /* Тонкая диагональная ромбовидная сеточка на фоне Умскул */
         .umschool-bg {
             background-color: #121214;
             background-image: 
@@ -63,7 +63,7 @@
             filter: brightness(0.93);
         }
 
-        /* Палитра кнопок в точности по скриншоту */
+        /* Палитра кнопок в точности по Умскул */
         .tile-cards { background-color: #1eb885; }
         .tile-subs { background-color: #8b6af0; }
         .tile-shop { background-color: #ce55b3; }
@@ -88,39 +88,41 @@
 </head>
 <body class="min-h-screen flex flex-col pb-20 max-w-md mx-auto relative umschool-bg">
 
-    <!-- ВЕРХНИЙ БЛОК: ПРОФИЛЬ И СТАТИСТИКА (ТОЧНАЯ КОПИЯ СКРИНШОТА) -->
+    <!-- ВЕРХНИЙ БЛОК: ПРОФИЛЬ И СТАТИСТИКА (СБРОШЕНО ДО НУЛЯ) -->
     <header class="p-4 pt-3 space-y-3 bg-[#121214] sticky top-0 z-30">
-        <!-- Аватарка, имя и кнопка чата -->
+        <!-- Аватарка, имя и кнопка смены предметов -->
         <div class="flex justify-between items-center">
             <div class="flex items-center space-x-3">
-                <div class="relative">
+                <div class="relative cursor-pointer" onclick="openSubjectModal()">
                     <img id="user-avatar" src="logo.png" onerror="this.src='logo_transparent.png'" class="w-11 h-11 rounded-full object-cover border border-white/10 shadow">
                 </div>
                 <div>
                     <div class="flex items-center space-x-1.5">
-                        <span id="user-display-name" class="text-base font-extrabold text-white tracking-tight">Даниил Ковех</span>
-                        <!-- Значок уровня в сером кружочке как на скрине -->
-                        <span class="w-4 h-4 rounded-full border border-gray-500 text-gray-300 text-[10px] flex items-center justify-center font-bold">8</span>
+                        <span id="user-display-name" class="text-base font-extrabold text-white tracking-tight">Ученик</span>
+                        <!-- Значок уровня -->
+                        <span id="user-lvl-badge" class="w-4 h-4 rounded-full border border-gray-500 text-gray-300 text-[10px] flex items-center justify-center font-bold">1</span>
                     </div>
-                    <div class="text-xs text-[#8e8e93] font-semibold">Уже шарю</div>
+                    <div id="user-status-text" class="text-xs text-[#8e8e93] font-semibold flex items-center space-x-1">
+                        <span id="active-exam-label">ОГЭ • Новичок</span>
+                        <span onclick="openSubjectModal()" class="text-[#8b6af0] text-[11px] underline ml-1 cursor-pointer">изменить</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Иконка сообщений (круглая реплика) -->
+            <!-- Иконка сообщений -->
             <button onclick="openNotifSheet()" class="w-9 h-9 rounded-full flex items-center justify-center text-gray-300 hover:text-white active:scale-95 transition">
                 <i data-lucide="message-circle" class="w-6 h-6 stroke-[1.75]"></i>
             </button>
         </div>
 
-        <!-- СТРОКА ВАЛЮТЫ (ФИОЛЕТОВАЯ ЗВЕЗДА, МОНЕТА «У», ЗЕЛЕНАЯ ЗВЕЗДА, СЕРЫЙ ОГОНЬ) -->
+        <!-- СТРОКА ВАЛЮТЫ (СБРОШЕНЫ ДО 0, ПОЛЬЗОВАТЕЛЬ ЗАРАБАТЫВАЕТ САМ) -->
         <div class="flex items-center justify-between px-3 pt-1 text-sm font-extrabold">
             <!-- 1. Фиолетовая звезда ранга -->
-            <div onclick="showToast('Кристаллы рейтинга', 'Используются для позиции в таблице лидеров среди всех 9-классников!')" class="flex items-center space-x-1.5 text-[#8b6af0] cursor-pointer active:scale-95 transition">
-                <!-- Кастомная изометрическая звездочка -->
+            <div onclick="showToast('Рейтинг', 'Набирай кристаллы за прохождение тестов!')" class="flex items-center space-x-1.5 text-[#8b6af0] cursor-pointer active:scale-95 transition">
                 <svg class="w-5 h-5" viewBox="0 0 24 24" fill="#8b6af0">
                     <path d="M12 2L14.8 8.2L21.5 9.1L16.5 13.7L17.8 20.3L12 17L6.2 20.3L7.5 13.7L2.5 9.1L9.2 8.2L12 2Z"/>
                 </svg>
-                <span id="stat-rank" class="text-base font-black">66</span>
+                <span id="stat-rank" class="text-base font-black">0</span>
             </div>
 
             <!-- 2. Оранжевая монета с белой буквой «У» -->
@@ -128,20 +130,20 @@
                 <div class="w-5 h-5 rounded-full bg-[#f59f1e] flex items-center justify-center text-white text-[11px] font-black border border-amber-300/40 shadow-sm">
                     У
                 </div>
-                <span id="stat-coins" class="text-base font-black">16</span>
+                <span id="stat-coins" class="text-base font-black">0</span>
             </div>
 
             <!-- 3. Зеленая звезда XP -->
-            <div onclick="showToast('Опыт (XP)', 'Зарабатывай опыт за решение задач и повышай свой уровень!')" class="flex items-center space-x-1.5 text-[#34d399] cursor-pointer active:scale-95 transition">
+            <div onclick="showToast('Опыт (XP)', 'Решай задачи для накопления опыта!')" class="flex items-center space-x-1.5 text-[#34d399] cursor-pointer active:scale-95 transition">
                 <svg class="w-5 h-5" viewBox="0 0 24 24" fill="#34d399">
                     <path d="M12 2L14.8 8.2L21.5 9.1L16.5 13.7L17.8 20.3L12 17L6.2 20.3L7.5 13.7L2.5 9.1L9.2 8.2L12 2Z"/>
                 </svg>
-                <span id="stat-xp" class="text-base font-black">2689</span>
+                <span id="stat-xp" class="text-base font-black">0</span>
             </div>
 
-            <!-- 4. Огонь стрика (Серый при 0) -->
-            <div onclick="showToast('Ударный режим', 'Реши задачу сегодня, чтобы зажечь огонь стрика!')" class="flex items-center space-x-1 text-[#8e8e93] cursor-pointer active:scale-95 transition">
-                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="#8e8e93">
+            <!-- 4. Огонь стрика (Серый при 0, зажигается при регулярных занятиях) -->
+            <div onclick="showToast('Ударный режим', 'Реши задачу сегодня, чтобы зажечь стрик!')" class="flex items-center space-x-1 text-[#8e8e93] cursor-pointer active:scale-95 transition">
+                <svg id="flame-icon" class="w-5 h-5" viewBox="0 0 24 24" fill="#8e8e93">
                     <path d="M12 2C8 7 4 11 4 15C4 19.4 7.6 23 12 23C16.4 23 20 19.4 20 15C20 9 15 5 12 2Z"/>
                 </svg>
                 <span id="stat-streak" class="text-base font-black">0</span>
@@ -149,18 +151,16 @@
         </div>
     </header>
 
-    <!-- ОСНОВНОЙ КОНТЕНТ ХАБА (ТОЧНАЯ СТРУКТУРА СКРИНШОТА) -->
+    <!-- ОСНОВНОЙ КОНТЕНТ ХАБА -->
     <main class="flex-grow p-4 space-y-4 pt-1">
 
-        <!-- 1. ТЕМНЫЙ СПИСОК ЗАДАНИЙ (ЧЕК-ЛИСТ С КРУГЛЫМИ ЧЕКБОКСАМИ И СТРЕЛКАМИ >) -->
+        <!-- 1. ТЕМНЫЙ СПИСОК ЗАДАНИЙ (ЧЕК-ЛИСТ С КРУГЛЫМИ ЧЕКБОКСАМИ) -->
         <div class="um-card p-4 space-y-3.5 shadow-lg border border-white/[0.04]">
-            <!-- Задание 1 (Выполнено с фиолетовой галочкой) -->
-            <div class="flex items-center justify-between cursor-pointer py-1">
+            <!-- Задание 1 -->
+            <div onclick="toggleQuest(1)" id="quest-1" class="flex items-center justify-between cursor-pointer py-1 active:translate-x-1 transition">
                 <div class="flex items-center space-x-3">
-                    <span class="w-6 h-6 rounded-full bg-[#8b6af0] text-white flex items-center justify-center font-bold text-xs shadow-md">
-                        <i data-lucide="check" class="w-4 h-4 stroke-[3]"></i>
-                    </span>
-                    <span class="text-sm font-bold text-gray-200">Установи приложение</span>
+                    <span id="quest-check-1" class="w-6 h-6 rounded-full border-2 border-[#545464] flex items-center justify-center text-xs"></span>
+                    <span class="text-sm font-bold text-gray-200">Выбрать предметы подготовки</span>
                 </div>
                 <i data-lucide="chevron-right" class="w-5 h-5 text-gray-500"></i>
             </div>
@@ -169,16 +169,16 @@
             <div onclick="toggleQuest(2)" id="quest-2" class="flex items-center justify-between cursor-pointer py-1 active:translate-x-1 transition">
                 <div class="flex items-center space-x-3">
                     <span id="quest-check-2" class="w-6 h-6 rounded-full border-2 border-[#545464] flex items-center justify-center text-xs"></span>
-                    <span class="text-sm font-bold text-gray-200">Вступи в ТГ-сообщество</span>
+                    <span class="text-sm font-bold text-gray-200">Вступить в ТГ-сообщество</span>
                 </div>
                 <i data-lucide="chevron-right" class="w-5 h-5 text-gray-500"></i>
             </div>
 
             <!-- Задание 3 -->
-            <div onclick="startDuoQuiz()" class="flex items-center justify-between cursor-pointer py-1 active:translate-x-1 transition">
+            <div onclick="openFlashcards()" class="flex items-center justify-between cursor-pointer py-1 active:translate-x-1 transition">
                 <div class="flex items-center space-x-3">
-                    <span class="w-6 h-6 rounded-full border-2 border-[#545464] flex items-center justify-center text-xs"></span>
-                    <span class="text-sm font-bold text-gray-200">Посмотри один урок</span>
+                    <span id="quest-check-3" class="w-6 h-6 rounded-full border-2 border-[#545464] flex items-center justify-center text-xs"></span>
+                    <span class="text-sm font-bold text-gray-200">Повторить карточки понятий</span>
                 </div>
                 <i data-lucide="chevron-right" class="w-5 h-5 text-gray-500"></i>
             </div>
@@ -186,39 +186,33 @@
             <!-- Задание 4 -->
             <div onclick="startDuoQuiz()" class="flex items-center justify-between cursor-pointer py-1 active:translate-x-1 transition">
                 <div class="flex items-center space-x-3">
-                    <span class="w-6 h-6 rounded-full border-2 border-[#545464] flex items-center justify-center text-xs"></span>
-                    <span class="text-sm font-bold text-gray-200">Реши домашнее задание</span>
+                    <span id="quest-check-4" class="w-6 h-6 rounded-full border-2 border-[#545464] flex items-center justify-center text-xs"></span>
+                    <span class="text-sm font-bold text-gray-200">Решить 1 домашнее задание</span>
                 </div>
                 <i data-lucide="chevron-right" class="w-5 h-5 text-gray-500"></i>
             </div>
         </div>
 
-        <!-- 2. ФИРМЕННЫЙ BENTO-GRID УМСКУЛ (ЦВЕТНЫЕ ПЛИТКИ С ИЗОМЕТРИЧЕСКИМИ ИЛЛЮСТРАЦИЯМИ) -->
+        <!-- 2. ФИРМЕННЫЙ BENTO-GRID УМСКУЛ -->
         <div class="space-y-3">
             <!-- РЯД 1: Карточки + Подписки -->
             <div class="grid grid-cols-2 gap-3">
-                <!-- Карточки (Зеленый) -->
                 <div onclick="openFlashcards()" class="um-tile tile-cards cursor-pointer">
                     <span>Карточки</span>
-                    <!-- Изометрические 3D карточки -->
                     <svg class="tile-art w-14 h-14 opacity-85" viewBox="0 0 64 64" fill="none">
                         <polygon points="12,24 36,12 52,20 28,32" fill="#2fe0a4" stroke="#0e835b" stroke-width="1.5"/>
                         <polygon points="12,24 28,32 28,52 12,44" fill="#189d71" stroke="#0e835b" stroke-width="1.5"/>
                         <polygon points="28,32 52,20 52,40 28,52" fill="#148962" stroke="#0e835b" stroke-width="1.5"/>
-                        <!-- Внутренний листок -->
                         <polygon points="18,18 42,6 54,12 30,24" fill="#a7f3d0" stroke="#0e835b" stroke-width="1.5"/>
                     </svg>
                 </div>
 
-                <!-- Подписки (Фиолетовый) -->
                 <div onclick="openProModal()" class="um-tile tile-subs cursor-pointer">
                     <span>Подписки</span>
-                    <!-- Изометрическая стопка книг -->
                     <svg class="tile-art w-14 h-14 opacity-85" viewBox="0 0 64 64" fill="none">
                         <polygon points="16,36 40,24 56,32 32,44" fill="#a78bfa" stroke="#4c1d95" stroke-width="1.5"/>
                         <polygon points="16,36 32,44 32,52 16,44" fill="#7c3aed" stroke="#4c1d95" stroke-width="1.5"/>
                         <polygon points="32,44 56,32 56,40 32,52" fill="#6d28d9" stroke="#4c1d95" stroke-width="1.5"/>
-                        <!-- Верхняя книга -->
                         <polygon points="12,24 36,12 52,20 28,32" fill="#c4b5fd" stroke="#4c1d95" stroke-width="1.5"/>
                         <polygon points="12,24 28,32 28,38 12,30" fill="#8b5cf6" stroke="#4c1d95" stroke-width="1.5"/>
                         <polygon points="28,32 52,20 52,26 28,38" fill="#7c3aed" stroke="#4c1d95" stroke-width="1.5"/>
@@ -228,20 +222,16 @@
 
             <!-- РЯД 2: Магазин + Учебник -->
             <div class="grid grid-cols-2 gap-3">
-                <!-- Магазин (Маджента) -->
                 <div onclick="openShopModal()" class="um-tile tile-shop cursor-pointer">
                     <span>Магазин</span>
-                    <!-- Изометрические звездочки и кристаллы -->
                     <svg class="tile-art w-14 h-14 opacity-85" viewBox="0 0 64 64" fill="none">
                         <path d="M42 12L46 22L56 24L48 31L50 41L42 36L34 41L36 31L28 24L38 22L42 12Z" fill="#f472b6" stroke="#831843" stroke-width="1.5"/>
                         <path d="M22 28L25 35L32 36L27 41L28 48L22 44L16 48L17 41L12 36L19 35L22 28Z" fill="#fbcfe8" stroke="#831843" stroke-width="1.5"/>
                     </svg>
                 </div>
 
-                <!-- Учебник (Терракотовый Оранж) -->
                 <div onclick="openTextbookModal()" class="um-tile tile-textbook cursor-pointer">
                     <span>Учебник</span>
-                    <!-- Изометрическая открытая книга -->
                     <svg class="tile-art w-14 h-14 opacity-85" viewBox="0 0 64 64" fill="none">
                         <path d="M12 28C12 28 22 24 32 28C42 24 52 28 52 28L52 46C52 46 42 42 32 46C22 42 12 46 12 46Z" fill="#fed7aa" stroke="#7c2d12" stroke-width="1.5"/>
                         <line x1="32" y1="28" x2="32" y2="46" stroke="#7c2d12" stroke-width="1.5"/>
@@ -254,25 +244,20 @@
 
             <!-- РЯД 3: Онлайн-куратор + Пригласи друга -->
             <div class="grid grid-cols-2 gap-3">
-                <!-- Онлайн-куратор (Голубой) -->
                 <div onclick="openAiTutorModal()" class="um-tile tile-ai cursor-pointer">
                     <span>Онлайн-куратор</span>
-                    <!-- Изометрические диалоговые баблы -->
                     <svg class="tile-art w-14 h-14 opacity-85" viewBox="0 0 64 64" fill="none">
                         <rect x="22" y="16" width="30" height="22" rx="8" fill="#7dd3fc" stroke="#0369a1" stroke-width="1.5"/>
                         <polygon points="32,38 28,46 40,38" fill="#7dd3fc" stroke="#0369a1" stroke-width="1.5"/>
                         <circle cx="31" cy="27" r="2" fill="#0284c7"/>
                         <circle cx="37" cy="27" r="2" fill="#0284c7"/>
                         <circle cx="43" cy="27" r="2" fill="#0284c7"/>
-                        <!-- Второй бабл сзади -->
                         <rect x="12" y="24" width="22" height="18" rx="6" fill="#38bdf8" stroke="#0369a1" stroke-width="1.5"/>
                     </svg>
                 </div>
 
-                <!-- Пригласи друга (Желто-оранжевый) -->
                 <div onclick="shareWithFriends()" class="um-tile tile-invite cursor-pointer">
                     <span>Пригласи друга</span>
-                    <!-- Изометрическая золотая монетка Умскул -->
                     <svg class="tile-art w-14 h-14 opacity-85" viewBox="0 0 64 64" fill="none">
                         <ellipse cx="40" cy="32" rx="16" ry="16" fill="#fef08a" stroke="#854d0e" stroke-width="2"/>
                         <ellipse cx="40" cy="32" rx="12" ry="12" fill="#facc15"/>
@@ -281,24 +266,21 @@
                 </div>
             </div>
 
-            <!-- РЯД 4: Широкая карточка «Задания (проверено куратором)» -->
+            <!-- РЯД 4: Широкая карточка «Задания» -->
             <div onclick="startDuoQuiz()" class="um-tile tile-tasks w-full flex-col justify-center items-start cursor-pointer h-[5.2rem] pr-16 relative">
                 <span class="text-base">Задания</span>
                 <span class="text-xs font-normal text-green-100">проверено куратором</span>
-                <!-- Изометрическая тетрадь с карандашом -->
                 <svg class="tile-art w-16 h-16 opacity-90 right-3 top-2" viewBox="0 0 64 64" fill="none">
                     <polygon points="18,20 46,12 56,36 28,44" fill="#bbf7d0" stroke="#14532d" stroke-width="1.5"/>
                     <line x1="24" y1="26" x2="48" y2="20" stroke="#15803d" stroke-width="1.5"/>
                     <line x1="26" y1="32" x2="50" y2="26" stroke="#15803d" stroke-width="1.5"/>
-                    <!-- Карандаш -->
                     <line x1="14" y1="14" x2="30" y2="8" stroke="#86efac" stroke-width="3" stroke-linecap="round"/>
                 </svg>
             </div>
         </div>
 
-        <!-- 3. КАРТОЧКА УРОВНЯ ВНИЗУ (ТОЧНАЯ КОПИЯ СКРИНШОТА) -->
+        <!-- 3. КАРТОЧКА УРОВНЯ ВНИЗУ (ОБНОВЛЯЕТСЯ ДИНАМИЧЕСКИ) -->
         <div class="um-card p-4 flex items-center space-x-4 border border-white/[0.04]">
-            <!-- Изометрический макет с числом Пи (π) -->
             <div class="w-16 h-16 rounded-2xl bg-[#26262b] flex items-center justify-center p-1.5 shrink-0 border border-white/5">
                 <svg class="w-full h-full" viewBox="0 0 64 64" fill="none">
                     <polygon points="12,24 36,12 52,20 28,32" fill="#ffedd5" stroke="#7c2d12" stroke-width="1.5"/>
@@ -308,17 +290,16 @@
                 </svg>
             </div>
             <div>
-                <span class="bg-[#e26a38] text-white text-[11px] font-black px-2.5 py-0.5 rounded-full inline-block">Уровень 8</span>
-                <div class="text-base font-extrabold text-white mt-1">Уже шарю</div>
+                <span id="bottom-lvl-badge" class="bg-[#e26a38] text-white text-[11px] font-black px-2.5 py-0.5 rounded-full inline-block">Уровень 1</span>
+                <div id="bottom-status-name" class="text-base font-extrabold text-white mt-1">Новичок</div>
             </div>
         </div>
 
     </main>
 
-    <!-- НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ (В ТОЧНОСТИ КАК НА СКРИНШОТЕ) -->
+    <!-- НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ -->
     <nav class="fixed bottom-0 left-0 right-0 h-16 bg-[#161618] border-t border-white/[0.06] flex justify-around items-center z-40 max-w-md mx-auto px-1">
-        <!-- 1. Расписание (Календарь-сетка) -->
-        <button onclick="showToast('Расписание', 'Ближайший вебинар: Завтра в 17:00')" class="flex flex-col items-center text-[#8e8e93] hover:text-white transition active:scale-95">
+        <button onclick="showToast('Расписание', 'Выбери тему для составления графика')" class="flex flex-col items-center text-[#8e8e93] hover:text-white transition active:scale-95">
             <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
                 <rect x="3" y="4" width="18" height="18" rx="4"/>
                 <line x1="3" y1="10" x2="21" y2="10"/>
@@ -331,7 +312,6 @@
             <span class="text-[10px] font-medium mt-1">Расписание</span>
         </button>
 
-        <!-- 2. Занятия (Ноутбук с кнопкой Play) -->
         <button onclick="startDuoQuiz()" class="flex flex-col items-center text-[#8e8e93] hover:text-white transition active:scale-95">
             <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
                 <rect x="4" y="5" width="16" height="11" rx="2"/>
@@ -341,7 +321,6 @@
             <span class="text-[10px] font-medium mt-1">Занятия</span>
         </button>
 
-        <!-- 3. Главная (Домик - Активная вкладка с белым цветом) -->
         <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="flex flex-col items-center text-white active:scale-95">
             <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M3 10L12 3L21 10V20C21 20.5 20.5 21 20 21H4C3.5 21 3 20.5 3 20V10Z"/>
@@ -350,7 +329,6 @@
             <span class="text-[10px] font-bold mt-1 text-white">Главная</span>
         </button>
 
-        <!-- 4. Домашки (Лист с галочкой) -->
         <button onclick="startDuoQuiz()" class="flex flex-col items-center text-[#8e8e93] hover:text-white transition active:scale-95">
             <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
                 <path d="M14 2H6C5 2 4 3 4 4V20C4 21 5 22 6 22H18C19 22 20 21 20 20V8L14 2Z"/>
@@ -360,7 +338,6 @@
             <span class="text-[10px] font-medium mt-1">Домашки</span>
         </button>
 
-        <!-- 5. Тренажёр (Гантель) -->
         <button onclick="startDuoQuiz()" class="flex flex-col items-center text-[#8e8e93] hover:text-white transition active:scale-95">
             <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
                 <rect x="2" y="8" width="4" height="8" rx="1"/>
@@ -374,7 +351,80 @@
     </nav>
 
     <!-- ======================================================== -->
-    <!-- МОДАЛЬНЫЙ ЭКРАН 1: ТРЕНАЖЁР-КВИЗ                         -->
+    <!-- МОДАЛЬНЫЙ ЭКРАН: ВЫБОР ПРЕДМЕТОВ И ЭКЗАМЕНА (ОНБОРДИНГ)  -->
+    <!-- ======================================================== -->
+    <div id="subject-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-end justify-center hidden">
+        <div class="bg-[#1c1c1f] border-t border-white/10 rounded-t-[32px] p-6 w-full max-w-md space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h3 class="text-lg font-black text-white">Выбор предметов</h3>
+                    <p class="text-xs text-gray-400">Настрой экзамен и предметы подготовки</p>
+                </div>
+                <button onclick="closeSubjectModal()" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- Выбор экзамена -->
+            <div class="space-y-2 pt-1">
+                <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Экзамен</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="exam-btn-oge" onclick="selectExamType('ОГЭ 2026')" class="p-3 rounded-2xl bg-[#8b6af0] text-white text-xs font-black border border-white/10 active:scale-95 transition">
+                        ОГЭ (9 класс)
+                    </button>
+                    <button id="exam-btn-ege" onclick="selectExamType('ЕГЭ 2026')" class="p-3 rounded-2xl bg-[#26262b] text-gray-300 text-xs font-black border border-white/5 active:scale-95 transition">
+                        ЕГЭ (11 класс)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Список предметов -->
+            <div class="space-y-2 pt-2">
+                <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Предметы для подготовки</label>
+                <div class="grid grid-cols-2 gap-2" id="subjects-list">
+                    <button onclick="toggleUserSubject(this, 'Математика')" class="subj-chip p-3 rounded-2xl bg-[#1eb885] text-white text-xs font-black flex items-center justify-between active:scale-95 transition">
+                        <span>📐 Математика</span>
+                        <span>✓</span>
+                    </button>
+                    <button onclick="toggleUserSubject(this, 'Русский язык')" class="subj-chip p-3 rounded-2xl bg-[#1eb885] text-white text-xs font-black flex items-center justify-between active:scale-95 transition">
+                        <span>📖 Русский</span>
+                        <span>✓</span>
+                    </button>
+                    <button onclick="toggleUserSubject(this, 'Информатика')" class="subj-chip p-3 rounded-2xl bg-[#26262b] text-gray-300 text-xs font-black flex items-center justify-between active:scale-95 transition">
+                        <span>💻 Информатика</span>
+                        <span class="opacity-0">✓</span>
+                    </button>
+                    <button onclick="toggleUserSubject(this, 'Обществознание')" class="subj-chip p-3 rounded-2xl bg-[#26262b] text-gray-300 text-xs font-black flex items-center justify-between active:scale-95 transition">
+                        <span>🏛 Общество</span>
+                        <span class="opacity-0">✓</span>
+                    </button>
+                    <button onclick="toggleUserSubject(this, 'Физика')" class="subj-chip p-3 rounded-2xl bg-[#26262b] text-gray-300 text-xs font-black flex items-center justify-between active:scale-95 transition">
+                        <span>⚡️ Физика</span>
+                        <span class="opacity-0">✓</span>
+                    </button>
+                    <button onclick="toggleUserSubject(this, 'Биология')" class="subj-chip p-3 rounded-2xl bg-[#26262b] text-gray-300 text-xs font-black flex items-center justify-between active:scale-95 transition">
+                        <span>🌱 Биология</span>
+                        <span class="opacity-0">✓</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Имя пользователя -->
+            <div class="space-y-1.5 pt-2">
+                <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Как тебя зовут?</label>
+                <input id="user-name-input" type="text" placeholder="Твое имя или никнейм" value="Даниил" class="w-full bg-[#26262b] border border-white/10 rounded-2xl p-3.5 text-white text-sm font-bold outline-none focus:border-[#8b6af0] transition">
+            </div>
+
+            <div class="pt-3">
+                <button onclick="saveUserOnboarding()" class="w-full bg-[#8b6af0] hover:bg-[#7a57e3] text-white font-black text-sm py-4 rounded-2xl tracking-wider active:scale-98 transition shadow-lg">
+                    СОХРАНИТЬ И НАЧАТЬ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- МОДАЛЬНЫЙ ЭКРАН: ТРЕНАЖЁР-КВИЗ                           -->
     <!-- ======================================================== -->
     <div id="quiz-screen" class="fixed inset-0 bg-[#121214] z-50 flex flex-col justify-between hidden p-5 max-w-md mx-auto">
         <div class="flex items-center space-x-3 pt-2">
@@ -390,7 +440,7 @@
         <div class="flex-1 flex flex-col justify-center space-y-5 my-auto">
             <div class="space-y-1">
                 <span id="q-category-badge" class="text-[11px] font-black uppercase text-[#df6837] tracking-wider bg-orange-500/10 px-3 py-1 rounded-xl">ОГЭ Математика • Задание 6</span>
-                <h2 id="q-title" class="text-xl font-black text-white leading-tight">Найдите корень линейного уравнения:</h2>
+                <h2 id="q-title" class="text-xl font-black text-white leading-tight">Найдите корень уравнения:</h2>
             </div>
 
             <div id="q-box" class="um-card p-6 text-center text-3xl font-black text-white shadow-xl border border-white/5">
@@ -411,7 +461,7 @@
     </div>
 
     <!-- ======================================================== -->
-    <!-- МОДАЛЬНЫЙ ЭКРАН 2: ФЛЕШ-КАРТОЧКИ                        -->
+    <!-- МОДАЛЬНЫЙ ЭКРАН: ФЛЕШ-КАРТОЧКИ                          -->
     <!-- ======================================================== -->
     <div id="cards-screen" class="fixed inset-0 bg-[#121214] z-50 flex flex-col justify-between hidden p-5 max-w-md mx-auto">
         <div class="flex justify-between items-center pt-2">
@@ -442,7 +492,7 @@
     </div>
 
     <!-- ======================================================== -->
-    <!-- МОДАЛЬНЫЙ ЭКРАН 3: ПОДПИСКИ (PRO)                       -->
+    <!-- МОДАЛЬНЫЙ ЭКРАН: ПОДПИСКИ (PRO)                         -->
     <!-- ======================================================== -->
     <div id="pro-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-end justify-center hidden">
         <div class="bg-[#1c1c1f] border-t border-white/10 rounded-t-[36px] p-6 w-full max-w-md space-y-4">
@@ -475,25 +525,23 @@
 
             <div class="pt-2">
                 <button onclick="buyProSubscription()" class="w-full bg-[#8b6af0] py-4 rounded-2xl font-black text-base text-white tracking-wider flex items-center justify-center space-x-2 shadow-lg active:scale-98 transition">
-                    <span>ОФОРМИТЬ ПОДПИСКУ</span>
+                    <span>ОФОРМИТЬ ЗА 249 ЗВЕЗД</span>
                 </button>
             </div>
         </div>
     </div>
 
     <!-- ======================================================== -->
-    <!-- МОДАЛЬНЫЙ ЭКРАН 4: МАГАЗИН                               -->
+    <!-- МОДАЛЬНЫЙ ЭКРАН: МАГАЗИН                                 -->
     <!-- ======================================================== -->
     <div id="shop-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-end justify-center hidden">
         <div class="bg-[#1c1c1f] border-t border-white/10 rounded-t-[36px] p-6 w-full max-w-md space-y-4 max-h-[85vh] overflow-y-auto">
             <div class="flex justify-between items-center">
-                <div class="flex items-center space-x-2">
-                    <span class="text-base font-black text-white">Магазин наград</span>
-                </div>
+                <span class="text-base font-black text-white">Магазин наград</span>
                 <div class="flex items-center space-x-2">
                     <div class="bg-[#26262b] px-3 py-1.5 rounded-2xl flex items-center space-x-1.5 text-amber-400 font-black text-xs">
                         <span>🪙</span>
-                        <span id="shop-coins-counter">16</span>
+                        <span id="shop-coins-counter">0</span>
                     </div>
                     <button onclick="closeShopModal()" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white">
                         <i data-lucide="x" class="w-4 h-4"></i>
@@ -526,7 +574,7 @@
     </div>
 
     <!-- ======================================================== -->
-    <!-- МОДАЛЬНЫЙ ЭКРАН 5: ОНЛАЙН-КУРАТОР                        -->
+    <!-- МОДАЛЬНЫЙ ЭКРАН: ОНЛАЙН-КУРАТОР                          -->
     <!-- ======================================================== -->
     <div id="ai-modal" class="fixed inset-0 bg-[#121214] z-50 flex flex-col justify-between hidden p-4 max-w-md mx-auto">
         <div class="flex items-center justify-between border-b border-white/10 pb-3">
@@ -547,7 +595,7 @@
         <div id="ai-chat-messages" class="flex-1 overflow-y-auto py-4 space-y-3">
             <div class="flex items-start space-x-2">
                 <div class="bg-[#1c1c1f] rounded-2xl p-3.5 max-w-[85%] text-xs font-bold text-gray-200 leading-relaxed">
-                    Привет! Я твой онлайн-куратор. Напиши номер задания или вопрос по теме, и я подробно разберу решение!
+                    Привет! Я твой онлайн-куратор. Напиши номер задания или вопрос по формуле, и я подробно разберу решение!
                 </div>
             </div>
         </div>
@@ -561,7 +609,7 @@
     </div>
 
     <!-- ======================================================== -->
-    <!-- МОДАЛЬНЫЙ ЭКРАН 6: УЧЕБНИК                               -->
+    <!-- МОДАЛЬНЫЙ ЭКРАН: УЧЕБНИК                                 -->
     <!-- ======================================================== -->
     <div id="textbook-modal" class="fixed inset-0 bg-[#121214] z-50 flex flex-col justify-between hidden p-5 max-w-md mx-auto">
         <div class="flex items-center justify-between border-b border-white/10 pb-3">
@@ -597,61 +645,269 @@
         </button>
     </div>
 
-    <!-- СКРИПТЫ -->
+    <!-- ======================================================== -->
+    <!-- СКРИПТ: ПРИЯТНЫЙ ЗВУКОВОЙ ДВИЖОК И ДИНАМИЧЕСКИЙ ПРОГРЕСС -->
+    <!-- ======================================================== -->
     <script>
+        // ==========================================
+        // МЯГКИЙ ОРГАНИЧЕСКИЙ ЗВУКОВОЙ ДВИЖОК (НЕ ПАКМАН!)
+        // ==========================================
+        let audioCtx = null;
+
+        // Мягкий, приятный уху деревянный такт/клик (как в Telegram/iOS)
+        function playSoftTap() {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                const t = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                const filter = audioCtx.createBiquadFilter();
+
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(500, t);
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(160, t);
+                osc.frequency.exponentialRampToValueAtTime(45, t + 0.045);
+
+                gain.gain.setValueAtTime(0.09, t);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.045);
+
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start(t);
+                osc.stop(t + 0.05);
+            } catch(e) {}
+        }
+
+        // Теплый колокольчик/маримба при правильном ответе и повышении уровня
+        function playWarmChime() {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                const t = audioCtx.currentTime;
+                // Благородные гармоничные ноты (Маримба аккорд C-dur: До, Ми, Соль, До2)
+                const chord = [523.25, 659.25, 783.99, 1046.50];
+                chord.forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, t + idx * 0.07);
+
+                    gain.gain.setValueAtTime(0, t + idx * 0.07);
+                    gain.gain.linearRampToValueAtTime(0.07, t + idx * 0.07 + 0.015);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, t + idx * 0.07 + 0.45);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    osc.start(t + idx * 0.07);
+                    osc.stop(t + idx * 0.07 + 0.5);
+                });
+            } catch(e) {}
+        }
+
+        // ==========================================
+        // ЧИСТОЕ СОСТОЯНИЕ (ВСЕ СБРОШЕНО НА 0)
+        // ==========================================
+        const freshState = {
+            nickname: "Ученик",
+            exam: "ОГЭ 2026",
+            subjects: ["Математика", "Русский язык"],
+            level: 1,
+            statusText: "Новичок",
+            rank: 0,
+            coins: 0,
+            xp: 0,
+            streak: 0,
+            onboarded: false,
+            questsDone: []
+        };
+
+        function loadState() {
+            const saved = localStorage.getItem('examflow_clean_state_v1');
+            return saved ? JSON.parse(saved) : freshState;
+        }
+
+        let state = loadState();
+
+        function saveState() {
+            // Расчет уровня по опыту (Каждые 100 XP - новый уровень!)
+            state.level = Math.floor(state.xp / 100) + 1;
+            if (state.level === 1) state.statusText = "Новичок";
+            else if (state.level === 2) state.statusText = "Стажер";
+            else if (state.level === 3) state.statusText = "Любитель";
+            else if (state.level >= 5) state.statusText = "Уже шарю";
+
+            localStorage.setItem('examflow_clean_state_v1', JSON.stringify(state));
+
+            document.getElementById('stat-streak').innerText = state.streak;
+            document.getElementById('stat-coins').innerText = state.coins;
+            document.getElementById('stat-xp').innerText = state.xp;
+            document.getElementById('stat-rank').innerText = state.rank;
+            document.getElementById('shop-coins-counter').innerText = state.coins;
+
+            document.getElementById('user-display-name').innerText = state.nickname;
+            document.getElementById('user-lvl-badge').innerText = state.level;
+            document.getElementById('bottom-lvl-badge').innerText = `Уровень ${state.level}`;
+            document.getElementById('bottom-status-name').innerText = state.statusText;
+            document.getElementById('active-exam-label').innerText = `${state.exam.split(' ')[0]} • ${state.statusText}`;
+
+            // Подсветка огонька
+            const flame = document.getElementById('flame-icon');
+            if (state.streak > 0) {
+                flame.setAttribute('fill', '#f97316');
+                flame.parentElement.className = "flex items-center space-x-1 text-[#f97316] cursor-pointer active:scale-95 transition";
+            } else {
+                flame.setAttribute('fill', '#8e8e93');
+                flame.parentElement.className = "flex items-center space-x-1 text-[#8e8e93] cursor-pointer active:scale-95 transition";
+            }
+        }
+
+        // ==========================================
+        // ИНИЦИАЛИЗАЦИЯ И ОНБОРДИНГ
+        // ==========================================
         let tg = window.Telegram?.WebApp;
         if (tg) {
             tg.expand();
             tg.setHeaderColor('#121214');
             tg.setBackgroundColor('#121214');
-            if (tg.initDataUnsafe?.user?.first_name) {
-                document.getElementById('user-display-name').innerText = tg.initDataUnsafe.user.first_name + " Ковех";
+            if (tg.initDataUnsafe?.user?.first_name && !state.onboarded) {
+                state.nickname = tg.initDataUnsafe.user.first_name;
+                document.getElementById('user-name-input').value = state.nickname;
             }
         }
 
         function refreshIcons() {
             if (window.lucide) lucide.createIcons();
         }
-        document.addEventListener("DOMContentLoaded", refreshIcons);
+
+        document.addEventListener("DOMContentLoaded", () => {
+            saveState();
+            refreshIcons();
+            // Если пользователь еще не выбирал предметы - открываем модалку выбора!
+            if (!state.onboarded) {
+                setTimeout(openSubjectModal, 400);
+            }
+        });
 
         function showToast(title, desc) {
+            playSoftTap();
             alert(`${title}\n${desc}`);
         }
 
-        const state = {
-            coins: 16,
-            rank: 66,
-            xp: 2689,
-            streak: 0
-        };
+        // ==========================================
+        // ВЫБОР ПРЕДМЕТОВ ПРИ ЗАХОДЕ
+        // ==========================================
+        function openSubjectModal() {
+            playSoftTap();
+            document.getElementById('subject-modal').classList.remove('hidden');
+            refreshIcons();
+        }
+        function closeSubjectModal() {
+            playSoftTap();
+            document.getElementById('subject-modal').classList.add('hidden');
+        }
 
-        function toggleQuest(num) {
+        function selectExamType(exam) {
+            playSoftTap();
+            state.exam = exam;
+            const bOge = document.getElementById('exam-btn-oge');
+            const bEge = document.getElementById('exam-btn-ege');
+            if (exam.includes('ОГЭ')) {
+                bOge.className = "p-3 rounded-2xl bg-[#8b6af0] text-white text-xs font-black border border-white/10 active:scale-95 transition";
+                bEge.className = "p-3 rounded-2xl bg-[#26262b] text-gray-300 text-xs font-black border border-white/5 active:scale-95 transition";
+            } else {
+                bEge.className = "p-3 rounded-2xl bg-[#8b6af0] text-white text-xs font-black border border-white/10 active:scale-95 transition";
+                bOge.className = "p-3 rounded-2xl bg-[#26262b] text-gray-300 text-xs font-black border border-white/5 active:scale-95 transition";
+            }
+        }
+
+        function toggleUserSubject(btn, name) {
+            playSoftTap();
+            const check = btn.querySelector('span:last-child');
+            if (state.subjects.includes(name)) {
+                state.subjects = state.subjects.filter(s => s !== name);
+                btn.className = "subj-chip p-3 rounded-2xl bg-[#26262b] text-gray-300 text-xs font-black flex items-center justify-between active:scale-95 transition";
+                check.className = "opacity-0";
+            } else {
+                state.subjects.push(name);
+                btn.className = "subj-chip p-3 rounded-2xl bg-[#1eb885] text-white text-xs font-black flex items-center justify-between active:scale-95 transition";
+                check.className = "opacity-100";
+            }
+        }
+
+        function saveUserOnboarding() {
+            const name = document.getElementById('user-name-input').value.trim();
+            if (name) state.nickname = name;
+            
+            // Если первый заход - дарим стартовый бонус за настройку!
+            if (!state.onboarded) {
+                state.onboarded = true;
+                state.xp += 20; // Первые 20 XP!
+                state.coins += 5; // Первые 5 монет!
+                toggleQuest(1, true);
+                if (window.confetti) confetti({ particleCount: 100, spread: 80 });
+                playWarmChime();
+            } else {
+                playSoftTap();
+            }
+
+            saveState();
+            closeSubjectModal();
+        }
+
+        // ==========================================
+        // ЧЕК-ЛИСТ ЗАДАНИЙ (ПОЛУЧЕНИЕ НАГРАД)
+        // ==========================================
+        function toggleQuest(num, silent = false) {
+            if (state.questsDone.includes(num)) return;
             const check = document.getElementById(`quest-check-${num}`);
-            if (check.innerHTML.includes('check')) return;
+            if (!check) return;
+
             check.className = "w-6 h-6 rounded-full bg-[#8b6af0] text-white flex items-center justify-center font-bold text-xs";
             check.innerHTML = '<i data-lucide="check" class="w-4 h-4 stroke-[3]"></i>';
             refreshIcons();
-            state.xp += 20;
-            document.getElementById('stat-xp').innerText = state.xp;
-            if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
+
+            state.questsDone.push(num);
+            state.xp += 25;
+            state.coins += 3;
+            saveState();
+
+            if (!silent) {
+                playWarmChime();
+                if (window.confetti) confetti({ particleCount: 60, spread: 60 });
+                if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
+            }
         }
 
-        // Тест
+        // ==========================================
+        // КВИЗ-ТРЕНАЖЕР
+        // ==========================================
         const testQuestions = [
             { q: "4x - 16 = 24", opts: ["8", "10", "12", "14"], ans: 1, exp: "4x = 40 => x = 10" },
-            { q: "√64 + √36 = ?", opts: ["10", "14", "100", "48"], ans: 1, exp: "8 + 6 = 14" }
+            { q: "√64 + √36 = ?", opts: ["10", "14", "100", "48"], ans: 1, exp: "8 + 6 = 14" },
+            { q: "Сколько бит в 2 байтах?", opts: ["8", "12", "16", "24"], ans: 2, exp: "1 байт = 8 бит. 2 * 8 = 16" }
         ];
         let qIdx = 0;
         let selected = null;
         let checked = false;
 
         function startDuoQuiz() {
+            playSoftTap();
             qIdx = 0;
             document.getElementById('quiz-screen').classList.remove('hidden');
             renderQ();
             refreshIcons();
         }
         function closeQuizScreen() {
+            playSoftTap();
             document.getElementById('quiz-screen').classList.add('hidden');
         }
 
@@ -677,6 +933,7 @@
                 b.innerText = opt;
                 b.onclick = () => {
                     if (checked) return;
+                    playSoftTap();
                     for (let c of container.children) c.className = "um-card p-4 text-center text-lg font-black text-white transition";
                     b.className = "um-card p-4 text-center text-lg font-black text-white bg-[#8b6af0] border border-[#8b6af0] transition";
                     selected = idx;
@@ -695,13 +952,17 @@
             if (!checked) {
                 checked = true;
                 if (selected === cur.ans) {
+                    playWarmChime();
                     feed.innerHTML = `<span class="text-emerald-400 font-black">Верно! ${cur.exp}</span>`;
                     btn.className = "bg-[#1eb885] text-white text-xs font-black uppercase tracking-wider py-4 px-7 rounded-2xl active:scale-95 transition";
                     btn.innerText = "ДАЛЬШЕ →";
+                    if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
                 } else {
+                    playSoftTap();
                     feed.innerHTML = `<span class="text-rose-400 font-black">Неверно! ${cur.exp}</span>`;
                     btn.className = "bg-rose-600 text-white text-xs font-black uppercase tracking-wider py-4 px-7 rounded-2xl active:scale-95 transition";
                     btn.innerText = "ПОНЯТНО →";
+                    if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
                 }
             } else {
                 if (qIdx + 1 < testQuestions.length) {
@@ -710,14 +971,21 @@
                 } else {
                     closeQuizScreen();
                     state.xp += 50;
-                    document.getElementById('stat-xp').innerText = state.xp;
-                    if (window.confetti) confetti({ particleCount: 90, spread: 70 });
-                    alert("Задание выполнено! +50 XP начислено!");
+                    state.coins += 10;
+                    state.rank += 5;
+                    state.streak = Math.max(1, state.streak + 1); // Зажигаем стрик!
+                    toggleQuest(4, true);
+                    saveState();
+                    playWarmChime();
+                    if (window.confetti) confetti({ particleCount: 110, spread: 80 });
+                    alert("Отличная работа!\n+50 XP получено\n+10 монет начислено\nСтрик зажжен: 1 день!");
                 }
             }
         }
 
-        // Карточки
+        // ==========================================
+        // ФЛЕШ-КАРТОЧКИ
+        // ==========================================
         const cardsData = [
             { term: "Инфляция", desc: "Долговременный процесс обесценивания денег, приводящий к снижению их покупательской способности." },
             { term: "ВВП", desc: "Рыночная стоимость всех конечных товаров и услуг, произведенных на территории страны за год." }
@@ -726,6 +994,7 @@
         let isFlipped = false;
 
         function openFlashcards() {
+            playSoftTap();
             cardIdx = 0;
             showCard();
             document.getElementById('cards-screen').classList.remove('hidden');
@@ -740,69 +1009,91 @@
             document.getElementById('flashcard-counter').innerText = `${cardIdx + 1}/${cardsData.length}`;
         }
         function flipCard() {
+            playSoftTap();
             isFlipped = !isFlipped;
-            if (isFlipped) {
-                document.getElementById('card-desc').classList.remove('hidden');
-            } else {
-                document.getElementById('card-desc').classList.add('hidden');
-            }
+            if (isFlipped) document.getElementById('card-desc').classList.remove('hidden');
+            else document.getElementById('card-desc').classList.add('hidden');
         }
         function nextCard(known) {
+            playSoftTap();
             if (cardIdx + 1 < cardsData.length) {
                 cardIdx++;
                 showCard();
             } else {
                 document.getElementById('cards-screen').classList.add('hidden');
                 state.xp += 30;
-                document.getElementById('stat-xp').innerText = state.xp;
-                alert("Карточки повторены! +30 XP");
+                toggleQuest(3, true);
+                saveState();
+                playWarmChime();
+                alert("Карточки повторены! +30 XP заработано!");
             }
         }
 
-        // Модалки
-        function openProModal() { document.getElementById('pro-modal').classList.remove('hidden'); refreshIcons(); }
-        function closeProModal() { document.getElementById('pro-modal').classList.add('hidden'); }
-        function buyProSubscription() { closeProModal(); alert("Подписка PRO активирована!"); }
-
-        function openShopModal() { document.getElementById('shop-modal').classList.remove('hidden'); refreshIcons(); }
-        function closeShopModal() { document.getElementById('shop-modal').classList.add('hidden'); }
-        function buyShopItem(name, cost) {
-            if (state.coins < cost) { alert("Недостаточно монет!"); return; }
-            state.coins -= cost;
-            document.getElementById('stat-coins').innerText = state.coins;
-            document.getElementById('shop-coins-counter').innerText = state.coins;
-            alert(`Куплено: ${name}`);
+        // ==========================================
+        // МОДАЛКИ
+        // ==========================================
+        function openProModal() { playSoftTap(); document.getElementById('pro-modal').classList.remove('hidden'); refreshIcons(); }
+        function closeProModal() { playSoftTap(); document.getElementById('pro-modal').classList.add('hidden'); }
+        function buyProSubscription() {
+            playWarmChime();
+            closeProModal();
+            state.xp += 100;
+            saveState();
+            if (window.confetti) confetti({ particleCount: 120, spread: 80 });
+            alert("Подписка PRO активирована!");
         }
 
-        function openAiTutorModal() { document.getElementById('ai-modal').classList.remove('hidden'); refreshIcons(); }
-        function closeAiModal() { document.getElementById('ai-modal').classList.add('hidden'); }
+        function openShopModal() { playSoftTap(); document.getElementById('shop-modal').classList.remove('hidden'); refreshIcons(); }
+        function closeShopModal() { playSoftTap(); document.getElementById('shop-modal').classList.add('hidden'); }
+        function buyShopItem(name, cost) {
+            if (state.coins < cost) {
+                showToast("Недостаточно монет", `Нужно ${cost} монет. Решай задания, чтобы заработать!`);
+                return;
+            }
+            state.coins -= cost;
+            saveState();
+            playWarmChime();
+            alert(`Куплено: ${name}!`);
+        }
+
+        function openAiTutorModal() { playSoftTap(); document.getElementById('ai-modal').classList.remove('hidden'); refreshIcons(); }
+        function closeAiModal() { playSoftTap(); document.getElementById('ai-modal').classList.add('hidden'); }
         function sendAiMessage() {
             const input = document.getElementById('ai-input');
             const q = input.value.trim();
             if (!q) return;
             input.value = '';
+            playSoftTap();
             const chat = document.getElementById('ai-chat-messages');
             const u = document.createElement('div');
             u.className = "flex justify-end";
             u.innerHTML = `<div class="bg-[#269de8] text-white rounded-2xl p-3 text-xs font-bold max-w-[85%]">${q}</div>`;
             chat.appendChild(u);
             setTimeout(() => {
+                playSoftTap();
                 const b = document.createElement('div');
                 b.className = "flex justify-start";
-                b.innerHTML = `<div class="bg-[#1c1c1f] text-gray-200 rounded-2xl p-3 text-xs font-bold max-w-[85%]">Отличный вопрос! Чтобы не ошибиться на ОГЭ: проверь знаки и перенеси слагаемые с x влево, а числа вправо.</div>`;
+                b.innerHTML = `<div class="bg-[#1c1c1f] text-gray-200 rounded-2xl p-3 text-xs font-bold max-w-[85%]">Отличный вопрос! Чтобы не ошибиться на экзамене: проверь знаки и условия задачи.</div>`;
                 chat.appendChild(b);
                 chat.scrollTop = chat.scrollHeight;
             }, 500);
         }
 
-        function openTextbookModal() { document.getElementById('textbook-modal').classList.remove('hidden'); refreshIcons(); }
-        function closeTextbookModal() { document.getElementById('textbook-modal').classList.add('hidden'); }
+        function openTextbookModal() { playSoftTap(); document.getElementById('textbook-modal').classList.remove('hidden'); refreshIcons(); }
+        function closeTextbookModal() { playSoftTap(); document.getElementById('textbook-modal').classList.add('hidden'); }
 
-        function openNotifSheet() { alert("Уведомления: новых сообщений нет."); }
+        function openNotifSheet() {
+            playSoftTap();
+            alert("Уведомления:\nДобро пожаловать в ExamFlow! Начни с решения 1 задания.");
+        }
+
         function shareWithFriends() {
+            playSoftTap();
             state.coins += 50;
-            document.getElementById('stat-coins').innerText = state.coins;
-            alert("Ссылка скопирована! +50 монет начислено.");
+            saveState();
+            playWarmChime();
+            if (window.confetti) confetti({ particleCount: 70, spread: 60 });
+            alert("Реферальная ссылка скопирована! +50 монет начислено на твой баланс!");
         }
     </script>
 </body>

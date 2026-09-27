@@ -721,39 +721,7 @@
             <div class="space-y-2">
                 <label class="text-[10px] font-black text-gray-500 uppercase tracking-wider">Предметы</label>
                 <div class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1 custom-scrollbar" id="subjects-list">
-                    <button onclick="toggleUserSubject(this,'Математика')" data-subj="Математика" class="subj-chip p-3 rounded-2xl bg-[#58cc02]/20 text-[#58cc02] text-xs font-black flex items-center justify-between active:scale-95 transition-all border border-[#58cc02]/30">
-                        <span>📐 Математика</span><span class="text-[#58cc02]">✓</span>
-                    </button>
-                    <button onclick="toggleUserSubject(this,'Русский язык')" data-subj="Русский язык" class="subj-chip p-3 rounded-2xl bg-[#58cc02]/20 text-[#58cc02] text-xs font-black flex items-center justify-between active:scale-95 transition-all border border-[#58cc02]/30">
-                        <span>📖 Русский</span><span class="text-[#58cc02]">✓</span>
-                    </button>
-                    <button onclick="toggleUserSubject(this,'Информатика')" data-subj="Информатика" class="subj-chip p-3 rounded-2xl bg-white/[0.04] text-gray-400 text-xs font-black flex items-center justify-between active:scale-95 transition-all border border-transparent">
-                        <span>💻 Информатика</span><span class="opacity-0">✓</span>
-                    </button>
-                    <button onclick="toggleUserSubject(this,'Обществознание')" data-subj="Обществознание" class="subj-chip p-3 rounded-2xl bg-white/[0.04] text-gray-400 text-xs font-black flex items-center justify-between active:scale-95 transition-all border border-transparent">
-                        <span>🏛 Общество</span><span class="opacity-0">✓</span>
-                    </button>
-                    <button onclick="toggleUserSubject(this,'Физика')" data-subj="Физика" class="subj-chip p-3 rounded-2xl bg-white/[0.04] text-gray-400 text-xs font-black flex items-center justify-between active:scale-95 transition-all border border-transparent">
-                        <span>⚡ Физика</span><span class="opacity-0">✓</span>
-                    </button>
-                    <button onclick="toggleUserSubject(this,'Биология')" data-subj="Биология" class="subj-chip p-3 rounded-2xl bg-white/[0.04] text-gray-400 text-xs font-black flex items-center justify-between active:scale-95 transition-all border border-transparent">
-                        <span>🧬 Биология</span><span class="opacity-0">✓</span>
-                    </button>
-                    <button onclick="toggleUserSubject(this,'Химия')" data-subj="Химия" class="subj-chip p-3 rounded-2xl bg-white/[0.04] text-gray-400 text-xs font-black flex items-center justify-between active:scale-95 transition-all border border-transparent">
-                        <span>🧪 Химия</span><span class="opacity-0">✓</span>
-                    </button>
-                    <button onclick="toggleUserSubject(this,'История')" data-subj="История" class="subj-chip p-3 rounded-2xl bg-white/[0.04] text-gray-400 text-xs font-black flex items-center justify-between active:scale-95 transition-all border border-transparent">
-                        <span>🏰 История</span><span class="opacity-0">✓</span>
-                    </button>
-                    <button onclick="toggleUserSubject(this,'География')" data-subj="География" class="subj-chip p-3 rounded-2xl bg-white/[0.04] text-gray-400 text-xs font-black flex items-center justify-between active:scale-95 transition-all border border-transparent">
-                        <span>🗺 География</span><span class="opacity-0">✓</span>
-                    </button>
-                    <button onclick="toggleUserSubject(this,'Литература')" data-subj="Литература" class="subj-chip p-3 rounded-2xl bg-white/[0.04] text-gray-400 text-xs font-black flex items-center justify-between active:scale-95 transition-all border border-transparent">
-                        <span>📚 Литература</span><span class="opacity-0">✓</span>
-                    </button>
-                    <button onclick="toggleUserSubject(this,'Английский')" data-subj="Английский" class="subj-chip p-3 rounded-2xl bg-white/[0.04] text-gray-400 text-xs font-black flex items-center justify-between active:scale-95 transition-all border border-transparent">
-                        <span>🇬🇧 Английский</span><span class="opacity-0">✓</span>
-                    </button>
+                    <!-- Populated by JS renderSubjects() -->
                 </div>
             </div>
 
@@ -1197,6 +1165,9 @@
         function openModal(id) {
             playSoftTap();
             document.getElementById(id).classList.add('active');
+            if (id === 'subject-modal' && typeof renderSubjects === 'function') {
+                renderSubjects();
+            }
         }
         function closeModal(id) {
             playSoftTap();
@@ -1477,9 +1448,62 @@
         // ==========================================
         // SUBJECT SELECTION
         // ==========================================
+        const OGE_SUBJECTS = [
+            { id: "Математика", icon: "📐", name: "Математика" },
+            { id: "Русский язык", icon: "📖", name: "Русский язык" },
+            { id: "Информатика", icon: "💻", name: "Информатика" },
+            { id: "Обществознание", icon: "🏛", name: "Общество" },
+            { id: "Физика", icon: "⚡", name: "Физика" },
+            { id: "Биология", icon: "🧬", name: "Биология" },
+            { id: "Химия", icon: "🧪", name: "Химия" },
+            { id: "История", icon: "🏰", name: "История" },
+            { id: "География", icon: "🗺", name: "География" },
+            { id: "Литература", icon: "📚", name: "Литература" },
+            { id: "Английский", icon: "🇬🇧", name: "Английский" }
+        ];
+
+        const EGE_SUBJECTS = [
+            { id: "Профильная математика", icon: "📐", name: "Проф. мат." },
+            { id: "Базовая математика", icon: "📏", name: "Базовая мат." },
+            { id: "Русский язык", icon: "📖", name: "Русский язык" },
+            { id: "Информатика", icon: "💻", name: "Информатика" },
+            { id: "Обществознание", icon: "🏛", name: "Общество" },
+            { id: "Физика", icon: "⚡", name: "Физика" },
+            { id: "Биология", icon: "🧬", name: "Биология" },
+            { id: "Химия", icon: "🧪", name: "Химия" },
+            { id: "История", icon: "🏰", name: "История" },
+            { id: "География", icon: "🗺", name: "География" },
+            { id: "Литература", icon: "📚", name: "Литература" },
+            { id: "Английский", icon: "🇬🇧", name: "Английский" }
+        ];
+
+        function renderSubjects() {
+            const list = document.getElementById('subjects-list');
+            if (!list) return;
+
+            const isEge = state.exam && state.exam.includes('ЕГЭ');
+            const subjects = isEge ? EGE_SUBJECTS : OGE_SUBJECTS;
+
+            list.innerHTML = subjects.map(s => {
+                const isSelected = state.subjects && state.subjects.includes(s.id);
+                if (isSelected) {
+                    return `<button onclick="toggleUserSubject(this,'${s.id}')" data-subj="${s.id}" class="subj-chip p-3 rounded-2xl bg-[#58cc02]/20 text-[#58cc02] text-xs font-black flex items-center justify-between active:scale-95 transition-all border border-[#58cc02]/30">
+                                <span class="truncate pr-1">${s.icon} ${s.name}</span><span class="text-[#58cc02]">✓</span>
+                            </button>`;
+                } else {
+                    return `<button onclick="toggleUserSubject(this,'${s.id}')" data-subj="${s.id}" class="subj-chip p-3 rounded-2xl bg-white/[0.04] text-gray-400 text-xs font-black flex items-center justify-between active:scale-95 transition-all border border-transparent">
+                                <span class="truncate pr-1">${s.icon} ${s.name}</span><span class="opacity-0">✓</span>
+                            </button>`;
+                }
+            }).join('');
+        }
+
         function selectExamType(exam) {
             playSoftTap();
-            state.exam = exam;
+            if (state.exam !== exam) {
+                state.exam = exam;
+                state.subjects = []; // reset subjects on exam change
+            }
             const bOge = document.getElementById('exam-btn-oge');
             const bEge = document.getElementById('exam-btn-ege');
             if (exam.includes('ОГЭ')) {
@@ -1489,20 +1513,17 @@
                 bEge.className = "p-3.5 rounded-2xl bg-[#58cc02] text-slate-950 text-xs font-black active:scale-95 transition-all shadow-md";
                 bOge.className = "p-3.5 rounded-2xl bg-white/[0.06] text-gray-400 text-xs font-black active:scale-95 transition-all hover:bg-white/[0.08]";
             }
+            renderSubjects();
         }
 
         function toggleUserSubject(btn, name) {
             playSoftTap();
-            const check = btn.querySelector('span:last-child');
             if (state.subjects.includes(name)) {
                 state.subjects = state.subjects.filter(s => s !== name);
-                btn.className = "subj-chip p-3 rounded-2xl bg-white/[0.04] text-gray-400 text-xs font-black flex items-center justify-between active:scale-95 transition-all border border-transparent";
-                check.className = "opacity-0";
             } else {
                 state.subjects.push(name);
-                btn.className = "subj-chip p-3 rounded-2xl bg-[#58cc02]/20 text-[#58cc02] text-xs font-black flex items-center justify-between active:scale-95 transition-all border border-[#58cc02]/30";
-                check.className = "text-[#58cc02]";
             }
+            renderSubjects();
         }
 
         function saveUserOnboarding() {

@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>ExamFlow</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -12,8 +15,14 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <!-- Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" defer></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800;900&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
 
     <style>
+        /* Базовые стили */
         body {
             background-color: #121214;
             color: #ffffff;
@@ -21,32 +30,112 @@
             -webkit-tap-highlight-color: transparent;
             user-select: none;
             overflow-x: hidden;
+            transition: background-color 0.3s ease;
         }
 
-        /* Тонкая диагональная ромбовидная сеточка на фоне Умскул */
-        .umschool-bg {
+        /* ======================================================== */
+        /* СТИЛЬ 1: УМСКУЛ КЛАССИК (ОРИГИНАЛ ИЗ СКРИНШОТА)          */
+        /* ======================================================== */
+        body.theme-umschool {
             background-color: #121214;
             background-image: 
                 linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
             background-size: 32px 32px;
         }
-
-        /* Темные карточки блоков Умскул */
-        .um-card {
+        body.theme-umschool .main-card {
             background-color: #1c1c1f;
             border-radius: 24px;
-            transition: transform 0.1s ease, background-color 0.15s ease;
+            border: 1px solid rgba(255, 255, 255, 0.04);
         }
-        .um-card:active {
-            transform: scale(0.985);
-            background-color: #242429;
-        }
+        body.theme-umschool .tile-cards { background-color: #1eb885; }
+        body.theme-umschool .tile-subs { background-color: #8b6af0; }
+        body.theme-umschool .tile-shop { background-color: #ce55b3; }
+        body.theme-umschool .tile-textbook { background-color: #df6837; }
+        body.theme-umschool .tile-ai { background-color: #269de8; }
+        body.theme-umschool .tile-invite { background-color: #f59f1e; }
+        body.theme-umschool .tile-tasks { background-color: #4ea652; }
 
-        /* Фирменные цветные Bento-плитки Умскул */
+        /* ======================================================== */
+        /* СТИЛЬ 2: APPLE KEYNOTE & WWDC (САПФИРОВОЕ СТЕКЛО)        */
+        /* ======================================================== */
+        body.theme-apple {
+            background-color: #07080c;
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+        }
+        body.theme-apple .main-card {
+            background: linear-gradient(180deg, rgba(25, 28, 40, 0.75) 0%, rgba(14, 16, 24, 0.85) 100%);
+            border-radius: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(20px);
+        }
+        body.theme-apple .um-tile {
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 12px 25px -8px rgba(0, 0, 0, 0.5);
+        }
+        body.theme-apple .tile-cards { background: linear-gradient(135deg, #10b981 0%, #047857 100%); }
+        body.theme-apple .tile-subs { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); }
+        body.theme-apple .tile-shop { background: linear-gradient(135deg, #ec4899 0%, #be185d 100%); }
+        body.theme-apple .tile-textbook { background: linear-gradient(135deg, #f97316 0%, #c2410c 100%); }
+        body.theme-apple .tile-ai { background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%); }
+        body.theme-apple .tile-invite { background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%); }
+        body.theme-apple .tile-tasks { background: linear-gradient(135deg, #059669 0%, #064e3b 100%); }
+
+        /* ======================================================== */
+        /* СТИЛЬ 3: STRIPE & LINEAR MINIMAL (СИЛИКОНОВАЯ ДОЛИНА)    */
+        /* ======================================================== */
+        body.theme-stripe {
+            background-color: #0c0d12;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        body.theme-stripe .main-card {
+            background-color: #13151f;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+        body.theme-stripe .um-tile {
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        body.theme-stripe .tile-cards { background-color: #111827; border-left: 4px solid #10b981; }
+        body.theme-stripe .tile-subs { background-color: #111827; border-left: 4px solid #8b5cf6; }
+        body.theme-stripe .tile-shop { background-color: #111827; border-left: 4px solid #ec4899; }
+        body.theme-stripe .tile-textbook { background-color: #111827; border-left: 4px solid #f97316; }
+        body.theme-stripe .tile-ai { background-color: #111827; border-left: 4px solid #0ea5e9; }
+        body.theme-stripe .tile-invite { background-color: #111827; border-left: 4px solid #f59e0b; }
+        body.theme-stripe .tile-tasks { background-color: #111827; border-left: 4px solid #10b981; }
+
+        /* ======================================================== */
+        /* СТИЛЬ 4: DUOLINGO 3D TACTILE (ОБЪЕМНЫЕ КНОПКИ)          */
+        /* ======================================================== */
+        body.theme-duolingo {
+            background-color: #131f24;
+            font-family: 'Nunito', -apple-system, sans-serif;
+        }
+        body.theme-duolingo .main-card {
+            background-color: #202f36;
+            border-radius: 26px;
+            border: 2px solid #37464f;
+            border-bottom: 5px solid #2b3940;
+        }
+        body.theme-duolingo .um-tile {
+            border-radius: 24px;
+            border-bottom: 5px solid rgba(0, 0, 0, 0.35);
+        }
+        body.theme-duolingo .tile-cards { background-color: #58cc02; border-bottom-color: #46a302; }
+        body.theme-duolingo .tile-subs { background-color: #ce82ff; border-bottom-color: #a855f7; }
+        body.theme-duolingo .tile-shop { background-color: #ff4b4b; border-bottom-color: #d33131; }
+        body.theme-duolingo .tile-textbook { background-color: #ff9600; border-bottom-color: #e08500; }
+        body.theme-duolingo .tile-ai { background-color: #1cb0f6; border-bottom-color: #1899d6; }
+        body.theme-duolingo .tile-invite { background-color: #ffc800; color: #4b3200; border-bottom-color: #e5a500; }
+        body.theme-duolingo .tile-tasks { background-color: #58cc02; border-bottom-color: #46a302; }
+
+        /* Общие свойства плиток */
         .um-tile {
             position: relative;
-            border-radius: 20px;
             height: 5.4rem;
             display: flex;
             align-items: center;
@@ -63,16 +152,6 @@
             filter: brightness(0.93);
         }
 
-        /* Палитра кнопок в точности по Умскул */
-        .tile-cards { background-color: #1eb885; }
-        .tile-subs { background-color: #8b6af0; }
-        .tile-shop { background-color: #ce55b3; }
-        .tile-textbook { background-color: #df6837; }
-        .tile-ai { background-color: #269de8; }
-        .tile-invite { background-color: #f59f1e; }
-        .tile-tasks { background-color: #4ea652; }
-
-        /* Изометрические векторные иллюстрации в углах плиток */
         .tile-art {
             position: absolute;
             right: 8px;
@@ -86,11 +165,19 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col pb-20 max-w-md mx-auto relative umschool-bg">
+<body class="theme-umschool min-h-screen flex flex-col pb-20 max-w-md mx-auto relative">
 
-    <!-- ВЕРХНИЙ БЛОК: ПРОФИЛЬ И СТАТИСТИКА (СБРОШЕНО ДО НУЛЯ) -->
-    <header class="p-4 pt-3 space-y-3 bg-[#121214] sticky top-0 z-30">
-        <!-- Аватарка, имя и кнопка смены предметов -->
+    <!-- ПЛАВАЮЩИЙ ПЕРЕКЛЮЧАТЕЛЬ ДИЗАЙНОВ (НОВАЯ ФИЧА!) -->
+    <div class="fixed top-2 right-4 z-50">
+        <button onclick="openThemePicker()" class="bg-[#1c1c1f]/95 hover:bg-[#25252b] text-white text-[11px] font-black px-3 py-1.5 rounded-full border border-white/10 shadow-xl flex items-center space-x-1.5 active:scale-95 transition backdrop-blur-md">
+            <span>🎨</span>
+            <span id="theme-btn-label">Стиль: Умскул</span>
+            <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-gray-400"></i>
+        </button>
+    </div>
+
+    <!-- ВЕРХНИЙ БЛОК: ПРОФИЛЬ И СТАТИСТИКА (ЧИСТЫЕ НУЛИ) -->
+    <header class="p-4 pt-3 space-y-3 sticky top-0 z-30 bg-inherit backdrop-blur-xl">
         <div class="flex justify-between items-center">
             <div class="flex items-center space-x-3">
                 <div class="relative cursor-pointer" onclick="openSubjectModal()">
@@ -110,22 +197,22 @@
             </div>
 
             <!-- Иконка сообщений -->
-            <button onclick="openNotifSheet()" class="w-9 h-9 rounded-full flex items-center justify-center text-gray-300 hover:text-white active:scale-95 transition">
+            <button onclick="openNotifSheet()" class="w-9 h-9 rounded-full flex items-center justify-center text-gray-300 hover:text-white active:scale-95 transition mr-28">
                 <i data-lucide="message-circle" class="w-6 h-6 stroke-[1.75]"></i>
             </button>
         </div>
 
-        <!-- СТРОКА ВАЛЮТЫ (СБРОШЕНЫ ДО 0, ПОЛЬЗОВАТЕЛЬ ЗАРАБАТЫВАЕТ САМ) -->
+        <!-- СТРОКА ВАЛЮТЫ (СБРОШЕНО ДО 0) -->
         <div class="flex items-center justify-between px-3 pt-1 text-sm font-extrabold">
             <!-- 1. Фиолетовая звезда ранга -->
-            <div onclick="showToast('Рейтинг', 'Набирай кристаллы за прохождение тестов!')" class="flex items-center space-x-1.5 text-[#8b6af0] cursor-pointer active:scale-95 transition">
+            <div onclick="showToast('Кристаллы рейтинга', 'Набирай кристаллы за тесты и поднимайся в таблице лидеров!')" class="flex items-center space-x-1.5 text-[#8b6af0] cursor-pointer active:scale-95 transition">
                 <svg class="w-5 h-5" viewBox="0 0 24 24" fill="#8b6af0">
                     <path d="M12 2L14.8 8.2L21.5 9.1L16.5 13.7L17.8 20.3L12 17L6.2 20.3L7.5 13.7L2.5 9.1L9.2 8.2L12 2Z"/>
                 </svg>
                 <span id="stat-rank" class="text-base font-black">0</span>
             </div>
 
-            <!-- 2. Оранжевая монета с белой буквой «У» -->
+            <!-- 2. Оранжевая монета «У» -->
             <div onclick="openShopModal()" class="flex items-center space-x-1.5 text-[#f59f1e] cursor-pointer active:scale-95 transition">
                 <div class="w-5 h-5 rounded-full bg-[#f59f1e] flex items-center justify-center text-white text-[11px] font-black border border-amber-300/40 shadow-sm">
                     У
@@ -141,7 +228,7 @@
                 <span id="stat-xp" class="text-base font-black">0</span>
             </div>
 
-            <!-- 4. Огонь стрика (Серый при 0, зажигается при регулярных занятиях) -->
+            <!-- 4. Огонь стрика (Серый при 0) -->
             <div onclick="showToast('Ударный режим', 'Реши задачу сегодня, чтобы зажечь стрик!')" class="flex items-center space-x-1 text-[#8e8e93] cursor-pointer active:scale-95 transition">
                 <svg id="flame-icon" class="w-5 h-5" viewBox="0 0 24 24" fill="#8e8e93">
                     <path d="M12 2C8 7 4 11 4 15C4 19.4 7.6 23 12 23C16.4 23 20 19.4 20 15C20 9 15 5 12 2Z"/>
@@ -154,9 +241,8 @@
     <!-- ОСНОВНОЙ КОНТЕНТ ХАБА -->
     <main class="flex-grow p-4 space-y-4 pt-1">
 
-        <!-- 1. ТЕМНЫЙ СПИСОК ЗАДАНИЙ (ЧЕК-ЛИСТ С КРУГЛЫМИ ЧЕКБОКСАМИ) -->
-        <div class="um-card p-4 space-y-3.5 shadow-lg border border-white/[0.04]">
-            <!-- Задание 1 -->
+        <!-- 1. ТЕМНЫЙ СПИСОК ЗАДАНИЙ -->
+        <div class="main-card p-4 space-y-3.5 shadow-lg">
             <div onclick="toggleQuest(1)" id="quest-1" class="flex items-center justify-between cursor-pointer py-1 active:translate-x-1 transition">
                 <div class="flex items-center space-x-3">
                     <span id="quest-check-1" class="w-6 h-6 rounded-full border-2 border-[#545464] flex items-center justify-center text-xs"></span>
@@ -165,7 +251,6 @@
                 <i data-lucide="chevron-right" class="w-5 h-5 text-gray-500"></i>
             </div>
 
-            <!-- Задание 2 -->
             <div onclick="toggleQuest(2)" id="quest-2" class="flex items-center justify-between cursor-pointer py-1 active:translate-x-1 transition">
                 <div class="flex items-center space-x-3">
                     <span id="quest-check-2" class="w-6 h-6 rounded-full border-2 border-[#545464] flex items-center justify-center text-xs"></span>
@@ -174,7 +259,6 @@
                 <i data-lucide="chevron-right" class="w-5 h-5 text-gray-500"></i>
             </div>
 
-            <!-- Задание 3 -->
             <div onclick="openFlashcards()" class="flex items-center justify-between cursor-pointer py-1 active:translate-x-1 transition">
                 <div class="flex items-center space-x-3">
                     <span id="quest-check-3" class="w-6 h-6 rounded-full border-2 border-[#545464] flex items-center justify-center text-xs"></span>
@@ -183,7 +267,6 @@
                 <i data-lucide="chevron-right" class="w-5 h-5 text-gray-500"></i>
             </div>
 
-            <!-- Задание 4 -->
             <div onclick="startDuoQuiz()" class="flex items-center justify-between cursor-pointer py-1 active:translate-x-1 transition">
                 <div class="flex items-center space-x-3">
                     <span id="quest-check-4" class="w-6 h-6 rounded-full border-2 border-[#545464] flex items-center justify-center text-xs"></span>
@@ -193,9 +276,8 @@
             </div>
         </div>
 
-        <!-- 2. ФИРМЕННЫЙ BENTO-GRID УМСКУЛ -->
+        <!-- 2. ФИРМЕННЫЙ BENTO-GRID -->
         <div class="space-y-3">
-            <!-- РЯД 1: Карточки + Подписки -->
             <div class="grid grid-cols-2 gap-3">
                 <div onclick="openFlashcards()" class="um-tile tile-cards cursor-pointer">
                     <span>Карточки</span>
@@ -220,7 +302,6 @@
                 </div>
             </div>
 
-            <!-- РЯД 2: Магазин + Учебник -->
             <div class="grid grid-cols-2 gap-3">
                 <div onclick="openShopModal()" class="um-tile tile-shop cursor-pointer">
                     <span>Магазин</span>
@@ -242,7 +323,6 @@
                 </div>
             </div>
 
-            <!-- РЯД 3: Онлайн-куратор + Пригласи друга -->
             <div class="grid grid-cols-2 gap-3">
                 <div onclick="openAiTutorModal()" class="um-tile tile-ai cursor-pointer">
                     <span>Онлайн-куратор</span>
@@ -266,7 +346,6 @@
                 </div>
             </div>
 
-            <!-- РЯД 4: Широкая карточка «Задания» -->
             <div onclick="startDuoQuiz()" class="um-tile tile-tasks w-full flex-col justify-center items-start cursor-pointer h-[5.2rem] pr-16 relative">
                 <span class="text-base">Задания</span>
                 <span class="text-xs font-normal text-green-100">проверено куратором</span>
@@ -279,8 +358,8 @@
             </div>
         </div>
 
-        <!-- 3. КАРТОЧКА УРОВНЯ ВНИЗУ (ОБНОВЛЯЕТСЯ ДИНАМИЧЕСКИ) -->
-        <div class="um-card p-4 flex items-center space-x-4 border border-white/[0.04]">
+        <!-- 3. КАРТОЧКА УРОВНЯ ВНИЗУ -->
+        <div class="main-card p-4 flex items-center space-x-4">
             <div class="w-16 h-16 rounded-2xl bg-[#26262b] flex items-center justify-center p-1.5 shrink-0 border border-white/5">
                 <svg class="w-full h-full" viewBox="0 0 64 64" fill="none">
                     <polygon points="12,24 36,12 52,20 28,32" fill="#ffedd5" stroke="#7c2d12" stroke-width="1.5"/>
@@ -299,7 +378,7 @@
 
     <!-- НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ -->
     <nav class="fixed bottom-0 left-0 right-0 h-16 bg-[#161618] border-t border-white/[0.06] flex justify-around items-center z-40 max-w-md mx-auto px-1">
-        <button onclick="showToast('Расписание', 'Выбери тему для составления графика')" class="flex flex-col items-center text-[#8e8e93] hover:text-white transition active:scale-95">
+        <button onclick="showToast('Расписание', 'Выбери тему для графика занятий')" class="flex flex-col items-center text-[#8e8e93] hover:text-white transition active:scale-95">
             <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
                 <rect x="3" y="4" width="18" height="18" rx="4"/>
                 <line x1="3" y1="10" x2="21" y2="10"/>
@@ -351,7 +430,71 @@
     </nav>
 
     <!-- ======================================================== -->
-    <!-- МОДАЛЬНЫЙ ЭКРАН: ВЫБОР ПРЕДМЕТОВ И ЭКЗАМЕНА (ОНБОРДИНГ)  -->
+    <!-- МОДАЛЬНЫЙ ЭКРАН: ВЫБОР ДИЗАЙНА (4 СТИЛЯ С ДОРОГИХ САЙТОВ) -->
+    <!-- ======================================================== -->
+    <div id="theme-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-end justify-center hidden">
+        <div class="bg-[#1c1c1f] border-t border-white/10 rounded-t-[32px] p-6 w-full max-w-md space-y-4">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h3 class="text-lg font-black text-white">Выбор стиля дизайна</h3>
+                    <p class="text-xs text-gray-400">Переключай и выбери тот, который нравится</p>
+                </div>
+                <button onclick="closeThemePicker()" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <div class="space-y-2.5 pt-1">
+                <!-- Стиль 1 -->
+                <div onclick="setTheme('umschool')" class="theme-choice-card p-4 rounded-2xl bg-[#26262b] border-2 border-[#8b6af0] flex items-center justify-between cursor-pointer active:scale-98 transition">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">🎓</span>
+                        <div>
+                            <div class="text-sm font-black text-white">Умскул Классик (Выбрано)</div>
+                            <div class="text-[11px] text-gray-400">Оригинальный интерфейс из твоего скриншота</div>
+                        </div>
+                    </div>
+                    <i data-lucide="check" class="w-5 h-5 text-[#8b6af0] font-black"></i>
+                </div>
+
+                <!-- Стиль 2 -->
+                <div onclick="setTheme('apple')" class="theme-choice-card p-4 rounded-2xl bg-[#26262b] border border-white/10 flex items-center justify-between cursor-pointer active:scale-98 transition">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">🍏</span>
+                        <div>
+                            <div class="text-sm font-black text-white">Apple Keynote & WWDC</div>
+                            <div class="text-[11px] text-gray-400">Жидкое сапфировое стекло и глубокие градиенты</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Стиль 3 -->
+                <div onclick="setTheme('stripe')" class="theme-choice-card p-4 rounded-2xl bg-[#26262b] border border-white/10 flex items-center justify-between cursor-pointer active:scale-98 transition">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">⚡️</span>
+                        <div>
+                            <div class="text-sm font-black text-white">Stripe & Linear Minimal</div>
+                            <div class="text-[11px] text-gray-400">Минимализм Кремниевой долины, тонкие фаски</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Стиль 4 -->
+                <div onclick="setTheme('duolingo')" class="theme-choice-card p-4 rounded-2xl bg-[#26262b] border border-white/10 flex items-center justify-between cursor-pointer active:scale-98 transition">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">🕹</span>
+                        <div>
+                            <div class="text-sm font-black text-white">Duolingo 3D Tactile</div>
+                            <div class="text-[11px] text-gray-400">Объемные 3D-кнопки с физическим вдавливанием</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- МОДАЛЬНЫЙ ЭКРАН: ВЫБОР ПРЕДМЕТОВ                         -->
     <!-- ======================================================== -->
     <div id="subject-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-end justify-center hidden">
         <div class="bg-[#1c1c1f] border-t border-white/10 rounded-t-[32px] p-6 w-full max-w-md space-y-4 max-h-[90vh] overflow-y-auto">
@@ -365,7 +508,7 @@
                 </button>
             </div>
 
-            <!-- Выбор экзамена -->
+            <!-- Экзамен -->
             <div class="space-y-2 pt-1">
                 <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Экзамен</label>
                 <div class="grid grid-cols-2 gap-2">
@@ -409,15 +552,15 @@
                 </div>
             </div>
 
-            <!-- Имя пользователя -->
+            <!-- Имя -->
             <div class="space-y-1.5 pt-2">
                 <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Как тебя зовут?</label>
-                <input id="user-name-input" type="text" placeholder="Твое имя или никнейм" value="Даниил" class="w-full bg-[#26262b] border border-white/10 rounded-2xl p-3.5 text-white text-sm font-bold outline-none focus:border-[#8b6af0] transition">
+                <input id="user-name-input" type="text" placeholder="Твое имя или никнейм" value="Ученик" class="w-full bg-[#26262b] border border-white/10 rounded-2xl p-3.5 text-white text-sm font-bold outline-none focus:border-[#8b6af0] transition">
             </div>
 
             <div class="pt-3">
                 <button onclick="saveUserOnboarding()" class="w-full bg-[#8b6af0] hover:bg-[#7a57e3] text-white font-black text-sm py-4 rounded-2xl tracking-wider active:scale-98 transition shadow-lg">
-                    СОХРАНИТЬ И НАЧАТЬ
+                    СОХРАНИТЬ ВЫБОР
                 </button>
             </div>
         </div>
@@ -443,7 +586,7 @@
                 <h2 id="q-title" class="text-xl font-black text-white leading-tight">Найдите корень уравнения:</h2>
             </div>
 
-            <div id="q-box" class="um-card p-6 text-center text-3xl font-black text-white shadow-xl border border-white/5">
+            <div id="q-box" class="main-card p-6 text-center text-3xl font-black text-white shadow-xl">
                 4x - 16 = 24
             </div>
 
@@ -473,7 +616,7 @@
             <span id="flashcard-counter" class="text-xs font-black text-gray-400">1/3</span>
         </div>
 
-        <div onclick="flipCard()" id="flashcard" class="um-card p-8 flex flex-col items-center justify-center text-center my-auto min-h-[320px] cursor-pointer shadow-xl relative border border-white/5">
+        <div onclick="flipCard()" id="flashcard" class="main-card p-8 flex flex-col items-center justify-center text-center my-auto min-h-[320px] cursor-pointer shadow-xl relative">
             <span class="text-[10px] font-black uppercase text-gray-400 mb-4 bg-white/5 px-3 py-1 rounded-xl">Нажми для переворота</span>
             <h3 id="card-term" class="text-3xl font-black text-white mb-2">Инфляция</h3>
             <p id="card-desc" class="text-sm text-gray-300 font-extrabold hidden leading-relaxed">Долговременный процесс обесценивания денег, приводящий к снижению их покупательской способности.</p>
@@ -622,7 +765,7 @@
         </div>
 
         <div class="flex-1 overflow-y-auto py-4 space-y-3">
-            <div class="um-card p-4 space-y-2">
+            <div class="main-card p-4 space-y-2">
                 <div class="text-xs font-black text-[#df6837]">Формулы сокращенного умножения</div>
                 <div class="text-xs text-gray-300 font-mono bg-black/40 p-3 rounded-2xl space-y-1">
                     <div>• (a + b)² = a² + 2ab + b²</div>
@@ -631,7 +774,7 @@
                 </div>
             </div>
 
-            <div class="um-card p-4 space-y-2">
+            <div class="main-card p-4 space-y-2">
                 <div class="text-xs font-black text-[#1eb885]">Орфоэпический минимум</div>
                 <div class="text-xs text-gray-300 bg-black/40 p-3 rounded-2xl space-y-1">
                     <div>• т<span class="text-emerald-400 font-black">О</span>рты (не тортЫ)</div>
@@ -650,11 +793,10 @@
     <!-- ======================================================== -->
     <script>
         // ==========================================
-        // МЯГКИЙ ОРГАНИЧЕСКИЙ ЗВУКОВОЙ ДВИЖОК (НЕ ПАКМАН!)
+        // МЯГКИЙ ОРГАНИЧЕСКИЙ ЗВУКОВОЙ ДВИЖОК
         // ==========================================
         let audioCtx = null;
 
-        // Мягкий, приятный уху деревянный такт/клик (как в Telegram/iOS)
         function playSoftTap() {
             try {
                 if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -684,14 +826,12 @@
             } catch(e) {}
         }
 
-        // Теплый колокольчик/маримба при правильном ответе и повышении уровня
         function playWarmChime() {
             try {
                 if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 if (audioCtx.state === 'suspended') audioCtx.resume();
 
                 const t = audioCtx.currentTime;
-                // Благородные гармоничные ноты (Маримба аккорд C-dur: До, Ми, Соль, До2)
                 const chord = [523.25, 659.25, 783.99, 1046.50];
                 chord.forEach((freq, idx) => {
                     const osc = audioCtx.createOscillator();
@@ -714,8 +854,15 @@
         }
 
         // ==========================================
-        // ЧИСТОЕ СОСТОЯНИЕ (ВСЕ СБРОШЕНО НА 0)
+        // ЖЕСТКИЙ СБРОС СТАРЫХ КЭШЕЙ (ГАРАНТИЯ 0)
         // ==========================================
+        const resetKey = 'examflow_zero_v3_force';
+        if (!localStorage.getItem(resetKey)) {
+            // Очищаем старые кэши браузера пользователя
+            ['examflow_umschool_state', 'examflow_duo_state', 'examflow_clean_state_v1'].forEach(k => localStorage.removeItem(k));
+            localStorage.setItem(resetKey, 'true');
+        }
+
         const freshState = {
             nickname: "Ученик",
             exam: "ОГЭ 2026",
@@ -731,21 +878,19 @@
         };
 
         function loadState() {
-            const saved = localStorage.getItem('examflow_clean_state_v1');
+            const saved = localStorage.getItem('examflow_zero_v3_state');
             return saved ? JSON.parse(saved) : freshState;
         }
 
         let state = loadState();
 
         function saveState() {
-            // Расчет уровня по опыту (Каждые 100 XP - новый уровень!)
             state.level = Math.floor(state.xp / 100) + 1;
             if (state.level === 1) state.statusText = "Новичок";
             else if (state.level === 2) state.statusText = "Стажер";
-            else if (state.level === 3) state.statusText = "Любитель";
-            else if (state.level >= 5) state.statusText = "Уже шарю";
+            else if (state.level >= 3) state.statusText = "Уже шарю";
 
-            localStorage.setItem('examflow_clean_state_v1', JSON.stringify(state));
+            localStorage.setItem('examflow_zero_v3_state', JSON.stringify(state));
 
             document.getElementById('stat-streak').innerText = state.streak;
             document.getElementById('stat-coins').innerText = state.coins;
@@ -759,7 +904,6 @@
             document.getElementById('bottom-status-name').innerText = state.statusText;
             document.getElementById('active-exam-label').innerText = `${state.exam.split(' ')[0]} • ${state.statusText}`;
 
-            // Подсветка огонька
             const flame = document.getElementById('flame-icon');
             if (state.streak > 0) {
                 flame.setAttribute('fill', '#f97316');
@@ -771,7 +915,35 @@
         }
 
         // ==========================================
-        // ИНИЦИАЛИЗАЦИЯ И ОНБОРДИНГ
+        // ПЕРЕКЛЮЧЕНИЕ ТЕМ ДИЗАЙНА
+        // ==========================================
+        const themesInfo = {
+            'umschool': 'Стиль: Умскул',
+            'apple': 'Стиль: Apple Keynote',
+            'stripe': 'Стиль: Stripe Minimal',
+            'duolingo': 'Стиль: Duolingo 3D'
+        };
+
+        function openThemePicker() {
+            playSoftTap();
+            document.getElementById('theme-modal').classList.remove('hidden');
+            refreshIcons();
+        }
+        function closeThemePicker() {
+            playSoftTap();
+            document.getElementById('theme-modal').classList.add('hidden');
+        }
+
+        function setTheme(tName) {
+            playWarmChime();
+            document.body.className = `theme-${tName} min-h-screen flex flex-col pb-20 max-w-md mx-auto relative`;
+            localStorage.setItem('examflow_active_theme_choice', tName);
+            document.getElementById('theme-btn-label').innerText = themesInfo[tName] || 'Стиль';
+            closeThemePicker();
+        }
+
+        // ==========================================
+        // ИНИЦИАЛИЗАЦИЯ
         // ==========================================
         let tg = window.Telegram?.WebApp;
         if (tg) {
@@ -789,9 +961,13 @@
         }
 
         document.addEventListener("DOMContentLoaded", () => {
+            // Восстанавливаем выбранную тему
+            const savedTheme = localStorage.getItem('examflow_active_theme_choice') || 'umschool';
+            setTheme(savedTheme);
+
             saveState();
             refreshIcons();
-            // Если пользователь еще не выбирал предметы - открываем модалку выбора!
+
             if (!state.onboarded) {
                 setTimeout(openSubjectModal, 400);
             }
@@ -803,7 +979,7 @@
         }
 
         // ==========================================
-        // ВЫБОР ПРЕДМЕТОВ ПРИ ЗАХОДЕ
+        // ВЫБОР ПРЕДМЕТОВ
         // ==========================================
         function openSubjectModal() {
             playSoftTap();
@@ -847,11 +1023,10 @@
             const name = document.getElementById('user-name-input').value.trim();
             if (name) state.nickname = name;
             
-            // Если первый заход - дарим стартовый бонус за настройку!
             if (!state.onboarded) {
                 state.onboarded = true;
-                state.xp += 20; // Первые 20 XP!
-                state.coins += 5; // Первые 5 монет!
+                state.xp += 20;
+                state.coins += 5;
                 toggleQuest(1, true);
                 if (window.confetti) confetti({ particleCount: 100, spread: 80 });
                 playWarmChime();
@@ -864,7 +1039,7 @@
         }
 
         // ==========================================
-        // ЧЕК-ЛИСТ ЗАДАНИЙ (ПОЛУЧЕНИЕ НАГРАД)
+        // ЧЕК-ЛИСТ ЗАДАНИЙ
         // ==========================================
         function toggleQuest(num, silent = false) {
             if (state.questsDone.includes(num)) return;
@@ -929,13 +1104,13 @@
 
             cur.opts.forEach((opt, idx) => {
                 const b = document.createElement('button');
-                b.className = "um-card p-4 text-center text-lg font-black text-white hover:bg-[#25252b] active:scale-95 transition";
+                b.className = "main-card p-4 text-center text-lg font-black text-white hover:bg-[#25252b] active:scale-95 transition";
                 b.innerText = opt;
                 b.onclick = () => {
                     if (checked) return;
                     playSoftTap();
-                    for (let c of container.children) c.className = "um-card p-4 text-center text-lg font-black text-white transition";
-                    b.className = "um-card p-4 text-center text-lg font-black text-white bg-[#8b6af0] border border-[#8b6af0] transition";
+                    for (let c of container.children) c.className = "main-card p-4 text-center text-lg font-black text-white transition";
+                    b.className = "main-card p-4 text-center text-lg font-black text-white bg-[#8b6af0] border border-[#8b6af0] transition";
                     selected = idx;
                     btn.className = "bg-[#8b6af0] text-white text-xs font-black uppercase tracking-wider py-4 px-7 rounded-2xl cursor-pointer active:scale-95 transition shadow";
                 };
@@ -973,7 +1148,7 @@
                     state.xp += 50;
                     state.coins += 10;
                     state.rank += 5;
-                    state.streak = Math.max(1, state.streak + 1); // Зажигаем стрик!
+                    state.streak = Math.max(1, state.streak + 1);
                     toggleQuest(4, true);
                     saveState();
                     playWarmChime();

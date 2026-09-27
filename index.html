@@ -762,13 +762,7 @@
                 <input id="user-name-input" type="text" placeholder="Имя или никнейм" value="Ученик" class="w-full bg-white/[0.04] border border-white/[0.06] rounded-2xl p-3.5 text-white text-sm font-bold outline-none focus:border-[#58cc02]/50 transition-all">
             </div>
 
-            <div class="space-y-1.5">
-                <label class="text-[10px] font-black text-gray-500 uppercase tracking-wider">Телеграм (для аватарки)</label>
-                <input id="user-tg-input" type="text" placeholder="@username (необязательно)" class="w-full bg-white/[0.04] border border-white/[0.06] rounded-2xl p-3.5 text-white text-sm font-bold outline-none focus:border-[#1cb0f6]/50 transition-all">
-                <p class="text-[9px] text-gray-500 font-bold ml-1">Если укажешь ник, мы подгрузим твою аватарку из ТГ!</p>
-            </div>
-
-            <button onclick="saveUserOnboarding()" class="w-full py-4 mt-2 rounded-2xl font-black text-sm tracking-wider active:scale-[0.98] transition-all shadow-lg text-white" style="background: linear-gradient(135deg, #58cc02, #4cb300); border-bottom: 4px solid #3d9400;">
+            <button onclick="saveUserOnboarding()" class="w-full py-4 mt-4 rounded-2xl font-black text-sm tracking-wider active:scale-[0.98] transition-all shadow-lg text-white" style="background: linear-gradient(135deg, #58cc02, #4cb300); border-bottom: 4px solid #3d9400;">
                 СОХРАНИТЬ
             </button>
         </div>
@@ -1303,7 +1297,6 @@
             $('active-exam-label').innerText = `${state.exam.split(' ')[0]} • ${state.statusText}`;
 
             if ($('user-name-input')) $('user-name-input').value = state.nickname;
-            if ($('user-tg-input') && state.tgUsername) $('user-tg-input').value = state.tgUsername;
 
             // XP to next level
             const xpInLevel = state.xp % 100;
@@ -1515,31 +1508,6 @@
         function saveUserOnboarding() {
             const name = document.getElementById('user-name-input').value.trim();
             if (name) state.nickname = name;
-
-            const tgInput = document.getElementById('user-tg-input');
-            if (tgInput) {
-                let tgUser = tgInput.value.replace('@','').trim();
-                if (tgUser && tgUser !== state.tgUsername) {
-                    state.tgUsername = tgUser;
-                    // Async fetch avatar via allorigins and meta og:image
-                    fetch(`https://api.allorigins.win/get?url=${encodeURIComponent('https://t.me/' + tgUser)}`)
-                        .then(r => r.json())
-                        .then(data => {
-                            if (data.contents) {
-                                const match = data.contents.match(/<meta property="og:image" content="([^"]+)"/);
-                                if (match && match[1]) {
-                                    state.avatarUrl = match[1];
-                                    saveState();
-                                    showToastMsg('Аватарка', 'Успешно загружена из Telegram!', 'success');
-                                }
-                            }
-                        })
-                        .catch(e => console.log('Avatar fetch failed', e));
-                } else if (!tgUser) {
-                    state.tgUsername = '';
-                    state.avatarUrl = '';
-                }
-            }
 
             if (!state.onboarded) {
                 state.onboarded = true;

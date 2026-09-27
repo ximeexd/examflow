@@ -1525,6 +1525,11 @@
             if (state.subjects.includes(name)) {
                 state.subjects = state.subjects.filter(s => s !== name);
             } else {
+                if (state.subjects.length >= 4) {
+                    playError();
+                    showToastMsg('Лимит!', 'Можно выбрать не более 4 предметов', 'error');
+                    return;
+                }
                 state.subjects.push(name);
             }
             renderSubjects();

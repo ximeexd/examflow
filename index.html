@@ -679,6 +679,155 @@
             <div class="h-20"></div>
         </div>
 
+        <!-- LEAGUES VIEW -->
+        <div id="view-leagues" class="hidden w-full space-y-4 pb-20">
+            <div class="mb-1">
+                <h1 class="text-[22px] font-extrabold text-white tracking-tight">Лиги</h1>
+                <p class="text-[11px] font-medium text-gray-500 mt-0.5">Соревнуйся с другими учениками</p>
+            </div>
+
+            <!-- Current league banner -->
+            <div class="rounded-[22px] p-5 relative overflow-hidden" style="background: linear-gradient(145deg, #1a0a3e 0%, #0f0620 100%); border: 1px solid rgba(168,85,247,0.25); box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 40px rgba(140,80,255,0.08);">
+                <div class="absolute top-0 right-0 w-40 h-40 rounded-full" style="background: radial-gradient(circle, rgba(168,85,247,0.15) 0%, transparent 70%); transform: translate(20px, -20px);"></div>
+                <div class="flex items-center space-x-4 relative z-10">
+                    <div class="w-16 h-16 rounded-2xl flex items-center justify-center" style="background: linear-gradient(145deg, #a855f7, #7c3aed); box-shadow: 0 4px 20px rgba(168,85,247,0.4);">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 9H4.5a2.5 2.5 0 010-5C7 4 7 8 12 8s5-4 7.5-4a2.5 2.5 0 010 5H18"/>
+                            <path d="M4 22V12a2 2 0 012-2h12a2 2 0 012 2v10"/>
+                            <line x1="2" y1="22" x2="22" y2="22"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-[11px] font-semibold text-purple-400 uppercase tracking-widest">Текущая лига</div>
+                        <div class="text-[22px] font-black text-white tracking-tight mt-0.5">Бронза</div>
+                        <div class="text-[11px] font-medium text-gray-400 mt-0.5">Набери 500 XP за неделю</div>
+                    </div>
+                </div>
+                <div class="mt-4 relative z-10">
+                    <div class="flex justify-between text-[10px] font-semibold text-gray-500 mb-1.5">
+                        <span>Прогресс</span>
+                        <span id="league-xp-text" class="text-purple-400">0 / 500 XP</span>
+                    </div>
+                    <div class="w-full rounded-full overflow-hidden" style="height: 6px; background: rgba(255,255,255,0.06);">
+                        <div id="league-xp-bar" class="h-full rounded-full transition-all duration-700" style="width: 0%; background: linear-gradient(90deg, #a855f7, #c084fc); box-shadow: 0 0 8px rgba(168,85,247,0.5);"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leaderboard -->
+            <div class="rounded-[22px] p-4 space-y-1" style="background: rgba(12,18,28,0.9); border: 1px solid rgba(255,255,255,0.06); box-shadow: 0 4px 24px rgba(0,0,0,0.3);">
+                <div class="text-[11px] font-semibold text-gray-500 uppercase tracking-widest px-2 pb-2">Топ недели</div>
+                <!-- Top 3 podium -->
+                <div id="league-board"><!-- JS renders this --></div>
+            </div>
+
+            <!-- Leagues progression -->
+            <div class="rounded-[22px] p-4 space-y-3" style="background: rgba(12,18,28,0.9); border: 1px solid rgba(255,255,255,0.06); box-shadow: 0 4px 24px rgba(0,0,0,0.3);">
+                <div class="text-[11px] font-semibold text-gray-500 uppercase tracking-widest">Все лиги</div>
+                <div class="space-y-2">
+                    <div class="flex items-center space-x-3 p-3 rounded-xl" style="background: rgba(168,85,247,0.08); border: 1px solid rgba(168,85,247,0.15);">
+                        <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background: linear-gradient(145deg, #cd7f32, #a0522d);"><svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M12 2l3 6h7l-5.5 4.5L18 19l-6-4-6 4 1.5-6.5L2 8h7z"/></svg></div>
+                        <div class="flex-1">
+                            <div class="text-[12px] font-bold text-white">Бронзовая</div>
+                            <div class="text-[10px] text-gray-500">0 – 500 XP в неделю</div>
+                        </div>
+                        <div class="text-[10px] font-bold text-purple-400 bg-purple-500/10 px-2 py-1 rounded-lg">Здесь</div>
+                    </div>
+                    <div class="flex items-center space-x-3 p-3 rounded-xl" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);">
+                        <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background: linear-gradient(145deg, #c0c0c0, #808080);"><svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M12 2l3 6h7l-5.5 4.5L18 19l-6-4-6 4 1.5-6.5L2 8h7z"/></svg></div>
+                        <div class="flex-1"><div class="text-[12px] font-bold text-gray-400">Серебряная</div><div class="text-[10px] text-gray-600">500 – 1500 XP в неделю</div></div>
+                    </div>
+                    <div class="flex items-center space-x-3 p-3 rounded-xl" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);">
+                        <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background: linear-gradient(145deg, #ffd700, #d4a000);"><svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M12 2l3 6h7l-5.5 4.5L18 19l-6-4-6 4 1.5-6.5L2 8h7z"/></svg></div>
+                        <div class="flex-1"><div class="text-[12px] font-bold text-gray-400">Золотая</div><div class="text-[10px] text-gray-600">1500+ XP в неделю</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PROFILE VIEW -->
+        <div id="view-profile" class="hidden w-full space-y-4 pb-20">
+            <!-- Profile hero card -->
+            <div class="rounded-[22px] p-5 relative overflow-hidden" style="background: linear-gradient(145deg, rgba(18,28,42,0.98), rgba(10,16,26,0.98)); border: 1px solid rgba(255,255,255,0.07); box-shadow: 0 8px 32px rgba(0,0,0,0.4);">
+                <div class="absolute top-0 right-0 w-48 h-48 rounded-full" style="background: radial-gradient(circle, rgba(88,204,2,0.06) 0%, transparent 70%); transform: translate(20px, -20px);"></div>
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <div id="profile-avatar" class="w-20 h-20 rounded-2xl flex items-center justify-center text-2xl font-black text-white" style="background: linear-gradient(145deg, #7c3aed, #1d4ed8); box-shadow: 0 4px 20px rgba(124,58,237,0.4);">У</div>
+                        <div id="profile-level-badge" class="absolute -bottom-1.5 -right-1.5 w-7 h-7 rounded-xl flex items-center justify-center text-[11px] font-black text-slate-900" style="background: linear-gradient(145deg, #6be020, #4cb300); box-shadow: 0 2px 8px rgba(88,204,2,0.4);">1</div>
+                    </div>
+                    <div class="flex-1">
+                        <div id="profile-name" class="text-[20px] font-extrabold text-white tracking-tight">Ученик</div>
+                        <div id="profile-rank" class="text-[12px] font-semibold text-gray-400 mt-0.5">Новичок • ОГЭ 2026</div>
+                        <div class="flex items-center space-x-1.5 mt-2">
+                            <div class="flex items-center space-x-1 bg-[#58cc02]/10 px-2.5 py-1 rounded-lg">
+                                <div class="w-2 h-2 rounded-full bg-[#58cc02]"></div>
+                                <span id="profile-streak" class="text-[11px] font-bold text-[#58cc02]">0 дней</span>
+                            </div>
+                            <div class="flex items-center space-x-1 bg-[#1cb0f6]/10 px-2.5 py-1 rounded-lg">
+                                <span id="profile-xp" class="text-[11px] font-bold text-[#1cb0f6]">0 XP</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats grid -->
+            <div class="grid grid-cols-2 gap-3">
+                <div class="rounded-[20px] p-4" style="background: rgba(12,18,28,0.9); border: 1px solid rgba(88,204,2,0.12); box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                    <div class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Опыт</div>
+                    <div id="profile-stat-xp" class="text-[26px] font-black text-white tracking-tight mt-1">0</div>
+                    <div class="text-[10px] text-[#58cc02] font-semibold mt-0.5">XP накоплено</div>
+                </div>
+                <div class="rounded-[20px] p-4" style="background: rgba(12,18,28,0.9); border: 1px solid rgba(255,200,0,0.12); box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                    <div class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Монеты</div>
+                    <div id="profile-stat-coins" class="text-[26px] font-black text-white tracking-tight mt-1">0</div>
+                    <div class="text-[10px] text-[#ffc800] font-semibold mt-0.5">В кошельке</div>
+                </div>
+                <div class="rounded-[20px] p-4" style="background: rgba(12,18,28,0.9); border: 1px solid rgba(28,176,246,0.12); box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                    <div class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Стрик</div>
+                    <div id="profile-stat-streak" class="text-[26px] font-black text-white tracking-tight mt-1">0</div>
+                    <div class="text-[10px] text-[#1cb0f6] font-semibold mt-0.5">Дней подряд</div>
+                </div>
+                <div class="rounded-[20px] p-4" style="background: rgba(12,18,28,0.9); border: 1px solid rgba(168,85,247,0.12); box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                    <div class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Тестов</div>
+                    <div id="profile-stat-quizzes" class="text-[26px] font-black text-white tracking-tight mt-1">0</div>
+                    <div class="text-[10px] text-[#a855f7] font-semibold mt-0.5">Пройдено</div>
+                </div>
+            </div>
+
+            <!-- Subjects section -->
+            <div class="rounded-[22px] p-4" style="background: rgba(12,18,28,0.9); border: 1px solid rgba(255,255,255,0.06); box-shadow: 0 4px 24px rgba(0,0,0,0.3);">
+                <div class="flex justify-between items-center mb-3">
+                    <div class="text-[12px] font-bold text-white">Мои предметы</div>
+                    <button onclick="openModal('subject-modal')" class="text-[11px] font-semibold text-[#58cc02] active:scale-95 transition-transform">Изменить</button>
+                </div>
+                <div id="profile-subjects" class="flex flex-wrap gap-2"><!-- JS fills this --></div>
+            </div>
+
+            <!-- Settings -->
+            <div class="rounded-[22px] p-4 space-y-1" style="background: rgba(12,18,28,0.9); border: 1px solid rgba(255,255,255,0.06); box-shadow: 0 4px 24px rgba(0,0,0,0.3);">
+                <div class="text-[11px] font-semibold text-gray-500 uppercase tracking-widest mb-3">Настройки</div>
+                <button onclick="openModal('subject-modal')" class="w-full flex items-center justify-between p-3 rounded-xl hover:bg-white/[0.03] active:scale-[0.99] transition-all">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background: rgba(88,204,2,0.1);">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#58cc02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </div>
+                        <span class="text-[13px] font-semibold text-white">Профиль</span>
+                    </div>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+                <button onclick="shareWithFriends()" class="w-full flex items-center justify-between p-3 rounded-xl hover:bg-white/[0.03] active:scale-[0.99] transition-all">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background: rgba(255,200,0,0.1);">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffc800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                        </div>
+                        <span class="text-[13px] font-semibold text-white">Пригласить друга</span>
+                    </div>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+            </div>
+        </div>
+
     </main>
 
     <!-- ========================================= -->
@@ -728,7 +877,7 @@
 
     <!-- SUBJECT MODAL -->
     <div id="subject-modal" class="modal-overlay" onclick="if(event.target===this)closeModal('subject-modal')">
-        <div class="modal-sheet bg-[#1a2228] rounded-t-[28px] p-5 w-full max-w-md space-y-4">
+        <div class="modal-sheet rounded-t-[28px] p-5 w-full max-w-md space-y-4" style="background: rgba(10,15,22,0.98); border-top: 1px solid rgba(255,255,255,0.06);">
             <div class="w-10 h-1 rounded-full bg-white/10 mx-auto mb-2"></div>
             <div class="flex justify-between items-center">
                 <div>
@@ -768,7 +917,7 @@
 
     <!-- SHOP MODAL -->
     <div id="shop-modal" class="modal-overlay" onclick="if(event.target===this)closeModal('shop-modal')">
-        <div class="modal-sheet bg-[#1a2228] rounded-t-[28px] p-5 w-full max-w-md space-y-4">
+        <div class="modal-sheet rounded-t-[28px] p-5 w-full max-w-md space-y-4" style="background: rgba(10,15,22,0.98); border-top: 1px solid rgba(255,255,255,0.06);">
             <div class="w-10 h-1 rounded-full bg-white/10 mx-auto mb-2"></div>
             <div class="flex justify-between items-center">
                 <span class="text-base font-black text-white">Магазин наград</span>
@@ -827,7 +976,7 @@
     </div>
 
     <!-- TEXTBOOK MODAL -->
-    <div id="textbook-modal" class="fullscreen-modal bg-[#131f24] flex flex-col p-5 max-w-md mx-auto">
+    <div id="textbook-modal" class="fullscreen-modal flex flex-col p-5 max-w-md mx-auto" style="background: #090e14;">
         <div class="flex items-center justify-between pb-4">
             <div class="flex items-center space-x-2.5">
                 <button onclick="closeFullscreen('textbook-modal')" class="w-9 h-9 rounded-2xl glass-card flex items-center justify-center text-gray-400 active:scale-90 transition-all">
@@ -882,7 +1031,7 @@
     </div>
 
     <!-- AI MODAL -->
-    <div id="ai-modal" class="fullscreen-modal bg-[#131f24] flex flex-col p-4 max-w-md mx-auto">
+    <div id="ai-modal" class="fullscreen-modal flex flex-col p-4 max-w-md mx-auto" style="background: #090e14;">
         <div class="flex items-center justify-between pb-3 border-b border-white/[0.06]">
             <div class="flex items-center space-x-2.5">
                 <button onclick="closeFullscreen('ai-modal')" class="w-9 h-9 rounded-2xl glass-card flex items-center justify-center text-gray-400 active:scale-90 transition-all">
@@ -918,13 +1067,13 @@
     </div>
 
     <!-- QUIZ SCREEN -->
-    <div id="quiz-screen" class="fullscreen-modal bg-[#131f24] flex flex-col justify-between p-5 max-w-md mx-auto">
+    <div id="quiz-screen" class="fullscreen-modal flex flex-col justify-between p-5 max-w-md mx-auto" style="background: #090e14;">
         <div class="flex items-center space-x-3 pt-2">
             <button onclick="closeFullscreen('quiz-screen')" class="w-10 h-10 rounded-2xl glass-card flex items-center justify-center text-gray-400 hover:text-white active:scale-90 transition-all">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
             </button>
-            <div class="flex-1 bg-white/[0.04] h-3 rounded-full overflow-hidden">
-                <div id="quiz-progress-bar" class="h-full rounded-full transition-all duration-500" style="width: 0%; background: linear-gradient(90deg, #58cc02, #7ce83a);"></div>
+            <div class="flex-1 rounded-full overflow-hidden" style="height: 5px; background: rgba(255,255,255,0.06);">
+                <div id="quiz-progress-bar" class="h-full rounded-full transition-all duration-500" style="width: 0%; background: linear-gradient(90deg, #4cb300, #7dea35); box-shadow: 0 0 8px rgba(88,204,2,0.5);"></div>
             </div>
             <span id="quiz-step-text" class="text-xs font-bold text-gray-400">1/5</span>
         </div>
@@ -935,11 +1084,11 @@
                 <h2 id="q-title" class="text-xl font-black text-white leading-tight mt-2">Найдите корень уравнения:</h2>
             </div>
 
-            <div id="q-box" class="glass-card p-6 text-center text-2xl font-black text-white shadow-xl">4x - 16 = 24</div>
+            <div id="q-box" class="p-6 text-center text-2xl font-extrabold text-white shadow-xl rounded-[20px]" style="background: rgba(14,20,32,0.9); border: 1px solid rgba(255,255,255,0.07); box-shadow: 0 4px 24px rgba(0,0,0,0.4);">4x - 16 = 24</div>
             <div id="q-options" class="grid grid-cols-2 gap-3"></div>
         </div>
 
-        <div id="quiz-drawer" class="w-full p-4 glass-card rounded-2xl">
+        <div id="quiz-drawer" class="w-full p-4 rounded-[20px]" style="background: rgba(10,16,24,0.95); border: 1px solid rgba(255,255,255,0.06);">
             <div class="flex items-center justify-between">
                 <div id="quiz-feedback" class="text-xs font-black pr-2"></div>
                 <button id="quiz-action-btn" onclick="checkAnswer()" class="bg-gray-700 text-gray-400 text-xs font-black uppercase tracking-wider py-4 px-7 rounded-2xl cursor-not-allowed opacity-50 transition-all">ПРОВЕРИТЬ</button>
@@ -978,7 +1127,7 @@
 
     <!-- STREAK MODAL -->
     <div id="streak-modal" class="modal-overlay" onclick="if(event.target===this)closeModal('streak-modal')">
-        <div class="modal-sheet bg-[#1a2228] rounded-t-[28px] p-5 w-full max-w-md space-y-4">
+        <div class="modal-sheet rounded-t-[28px] p-5 w-full max-w-md space-y-4" style="background: rgba(10,15,22,0.98); border-top: 1px solid rgba(255,255,255,0.06);">
             <div class="w-10 h-1 rounded-full bg-white/10 mx-auto mb-2"></div>
             <div class="text-center space-y-2">
                 <div id="streak-fire" class="text-5xl mx-auto w-16 h-16 flex items-center justify-center">
@@ -1238,19 +1387,81 @@
             const viewHome = document.getElementById('view-home');
             const viewTasks = document.getElementById('view-tasks');
 
-            if (idx === 0) {
-                if(viewHome) viewHome.classList.remove('hidden');
-                if(viewTasks) viewTasks.classList.add('hidden');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+            const viewLeagues = document.getElementById('view-leagues');
+            const viewProfile = document.getElementById('view-profile');
+
+            [viewHome, viewTasks, viewLeagues, viewProfile].forEach(v => v && v.classList.add('hidden'));
+
+            if (idx === 0) { if(viewHome) viewHome.classList.remove('hidden'); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+            if (idx === 1) { if(viewTasks) viewTasks.classList.remove('hidden'); window.scrollTo({ top: 0, behavior: 'smooth' }); if (typeof renderPath === 'function') renderPath(); }
+            if (idx === 2) { if(viewLeagues) viewLeagues.classList.remove('hidden'); window.scrollTo({ top: 0, behavior: 'smooth' }); renderLeagues(); }
+            if (idx === 3) { if(viewProfile) viewProfile.classList.remove('hidden'); window.scrollTo({ top: 0, behavior: 'smooth' }); renderProfileView(); }
+
+        }
+
+        function renderLeagues() {
+            // Update league XP bar
+            const xpNeeded = 500;
+            const pct = Math.min(100, (state.xp / xpNeeded) * 100);
+            const bar = document.getElementById('league-xp-bar');
+            const txt = document.getElementById('league-xp-text');
+            if (bar) bar.style.width = pct + '%';
+            if (txt) txt.textContent = `${state.xp} / ${xpNeeded} XP`;
+
+            // Mock leaderboard
+            const board = document.getElementById('league-board');
+            if (!board) return;
+            const players = [
+                { name: state.nickname || 'Ты', xp: state.xp, isMe: true },
+                { name: 'Алина', xp: 420 },
+                { name: 'Максим', xp: 310 },
+                { name: 'Соня', xp: 280 },
+                { name: 'Данила', xp: 195 },
+            ].sort((a, b) => b.xp - a.xp);
+
+            board.innerHTML = players.map((p, i) => {
+                const colors = ['text-[#ffd700]', 'text-[#c0c0c0]', 'text-[#cd7f32]'];
+                const bg = p.isMe ? 'background: rgba(88,204,2,0.08); border: 1px solid rgba(88,204,2,0.15);' : 'background: transparent;';
+                return `<div class="flex items-center space-x-3 p-3 rounded-xl" style="${bg}">
+                    <div class="w-6 text-center text-[13px] font-extrabold ${i < 3 ? colors[i] : 'text-gray-500'}">${i + 1}</div>
+                    <div class="w-8 h-8 rounded-xl flex items-center justify-center text-[12px] font-black text-white" style="background: linear-gradient(145deg, ${p.isMe ? '#7c3aed, #4f46e5' : '#1e293b, #0f172a'});">${p.name.charAt(0)}</div>
+                    <div class="flex-1">
+                        <div class="text-[13px] font-semibold ${p.isMe ? 'text-white' : 'text-gray-400'}">${p.isMe ? p.name + ' (ты)' : p.name}</div>
+                    </div>
+                    <div class="text-[12px] font-bold text-[#58cc02]">${p.xp} XP</div>
+                </div>`;
+            }).join('');
+        }
+
+        function renderProfileView() {
+            const nameEl = document.getElementById('profile-name');
+            const rankEl = document.getElementById('profile-rank');
+            const streakEl = document.getElementById('profile-streak');
+            const xpEl = document.getElementById('profile-xp');
+            const avatarEl = document.getElementById('profile-avatar');
+            const levelEl = document.getElementById('profile-level-badge');
+            const statXp = document.getElementById('profile-stat-xp');
+            const statCoins = document.getElementById('profile-stat-coins');
+            const statStreak = document.getElementById('profile-stat-streak');
+            const statQuizzes = document.getElementById('profile-stat-quizzes');
+            const subjectsEl = document.getElementById('profile-subjects');
+
+            if (nameEl) nameEl.textContent = state.nickname || 'Ученик';
+            if (rankEl) rankEl.textContent = `${state.statusText || 'Новичок'} • ${state.exam || 'ОГЭ 2026'}`;
+            if (streakEl) streakEl.textContent = `${state.streak || 0} дней`;
+            if (xpEl) xpEl.textContent = `${state.xp || 0} XP`;
+            if (avatarEl) avatarEl.textContent = (state.nickname || 'У').charAt(0).toUpperCase();
+            if (levelEl) levelEl.textContent = state.level || 1;
+            if (statXp) statXp.textContent = state.xp || 0;
+            if (statCoins) statCoins.textContent = state.coins || 0;
+            if (statStreak) statStreak.textContent = state.streak || 0;
+            if (statQuizzes) statQuizzes.textContent = state.quizzesDone || 0;
+
+            if (subjectsEl && state.subjects) {
+                subjectsEl.innerHTML = state.subjects.map(s =>
+                    `<span class="text-[11px] font-semibold px-3 py-1.5 rounded-xl" style="background: rgba(88,204,2,0.1); border: 1px solid rgba(88,204,2,0.15); color: #58cc02;">${s}</span>`
+                ).join('');
             }
-            if (idx === 1) {
-                if(viewHome) viewHome.classList.add('hidden');
-                if(viewTasks) viewTasks.classList.remove('hidden');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                if (typeof renderPath === 'function') renderPath();
-            }
-            if (idx === 2) showToastMsg('Лиги', 'Набери 100 XP, чтобы попасть в таблицу лидеров!', 'info');
-            if (idx === 3) openModal('subject-modal');
         }
 
         // ==========================================
@@ -1609,25 +1820,28 @@
                     
                     let content = `<div class="flex flex-col items-center justify-center gap-1.5 h-full w-full">${icon}<span class="text-[8px] font-black uppercase tracking-wider opacity-60">Урок ${nIdx + 1}</span></div>`;
 
-                    let bg = "bg-[#1c242a] border-[#131a1e] text-gray-600 shadow-sm opacity-80";
+                    let bg = "opacity-50";
+                    let bgStyle = "background: rgba(14,20,32,0.8); border: 1px solid rgba(255,255,255,0.06);";
                     let ring = "";
                     let stagger = nIdx % 2 !== 0 ? "translate-y-3" : ""; // Zig-zag layout
 
                     if (isCompleted) {
-                        bg = "bg-gradient-to-b from-[#58cc02] to-[#4cb300] border-[#3d9400] text-white shadow-[0_4px_15px_rgba(88,204,2,0.3)] opacity-100";
+                        bg = "opacity-100";
+                        bgStyle = "background: linear-gradient(145deg, #4cb300, #3a8f00); border: 1px solid rgba(88,204,2,0.3); box-shadow: 0 4px 20px rgba(88,204,2,0.25);";
                         if (node.type === 'test') {
-                            bg = "bg-gradient-to-b from-[#ffc800] to-[#e6b400] border-[#b38c00] text-amber-950 shadow-[0_4px_15px_rgba(255,200,0,0.3)] opacity-100";
+                            bgStyle = "background: linear-gradient(145deg, #e6b400, #c09000); border: 1px solid rgba(255,200,0,0.3); box-shadow: 0 4px 20px rgba(255,200,0,0.25);";
                         }
                     } else if (isNext) {
-                        bg = "bg-gradient-to-b from-[#1cb0f6] to-[#1899d6] border-[#147eb0] text-white shadow-[0_4px_25px_rgba(28,176,246,0.5)] opacity-100";
-                        ring = "ring-[3px] ring-[#1cb0f6]/50 ring-offset-2 ring-offset-[#131f24] animate-pulse";
+                        bg = "opacity-100";
+                        bgStyle = "background: linear-gradient(145deg, #5dce08, #3a8f00); border: 1px solid rgba(88,204,2,0.4); box-shadow: 0 4px 24px rgba(88,204,2,0.35), 0 0 0 4px rgba(88,204,2,0.12);";
+                        ring = "";
                     }
 
                     const clickAction = (isNext || isCompleted) ? `startLesson('${node.id}', '${node.title}')` : `showToastMsg('Закрыто', 'Пройдите предыдущие уроки', 'error'); playError();`;
 
                     html += `
-                    <button onclick="${clickAction}" class="aspect-[4/5] rounded-2xl border-b-[4px] ${bg} ${ring} ${stagger} transition-all active:scale-90 hover:brightness-110 flex flex-col items-center justify-center relative overflow-hidden group">
-                        ${isNext ? '<div class="absolute inset-0 bg-white/20 blur-xl group-hover:bg-white/30 transition-all"></div>' : ''}
+                    <button onclick="${clickAction}" class="aspect-[4/5] rounded-2xl ${bg} ${ring} ${stagger} transition-all active:scale-90 hover:brightness-110 flex flex-col items-center justify-center relative overflow-hidden group" style="${bgStyle}">
+                        ${isNext ? '<div class="absolute inset-0 bg-white/10 blur-xl group-hover:bg-white/20 transition-all"></div>' : ''}
                         <div class="relative z-10 w-full h-full">${content}</div>
                     </button>
                     `;

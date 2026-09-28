@@ -1530,19 +1530,20 @@
 
             data.forEach((month, mIdx) => {
                 html += `
-                <div class="bg-white/[0.03] rounded-2xl border border-white/[0.05] overflow-hidden mb-6 shadow-xl">
+                <div class="mb-10">
                     <!-- Header -->
-                    <div class="bg-black/20 p-4 border-b border-white/[0.05] flex justify-between items-center backdrop-blur-md">
-                        <div>
-                            <h2 class="text-sm font-black text-white tracking-wide uppercase">${month.title}</h2>
-                            <p class="text-[10px] font-bold text-gray-500 mt-0.5">${month.desc}</p>
+                    <div class="bg-gradient-to-r from-white/[0.05] to-transparent p-4 rounded-2xl mb-4 border border-white/[0.05] flex justify-between items-center shadow-lg relative overflow-hidden">
+                        <div class="absolute inset-0 bg-blue-500/5 blur-3xl rounded-full"></div>
+                        <div class="relative z-10">
+                            <h2 class="text-[15px] font-black text-white tracking-wide">${month.title}</h2>
+                            <p class="text-[10px] font-bold text-gray-400 mt-0.5">${month.desc}</p>
                         </div>
-                        <button onclick="skipSection(${mIdx})" class="p-2 bg-white/5 hover:bg-white/10 active:bg-white/20 rounded-xl text-gray-300 transition-colors text-[9px] uppercase font-bold tracking-widest border border-white/10">
-                            Завершить
+                        <button onclick="skipSection(${mIdx})" class="relative z-10 p-2.5 bg-white/5 hover:bg-white/10 active:bg-white/20 rounded-xl text-gray-300 transition-colors text-[9px] uppercase font-bold tracking-widest border border-white/10 backdrop-blur-md">
+                            Экстерн
                         </button>
                     </div>
-                    <!-- Grid of days -->
-                    <div class="p-4 grid grid-cols-5 gap-2">
+                    <!-- Nodes Grid -->
+                    <div class="px-2 pb-6 grid grid-cols-4 gap-3">
                 `;
                 
                 month.nodes.forEach((node, nIdx) => {
@@ -1552,25 +1553,31 @@
                     if (isCompleted) previousNodeCompleted = true;
                     else previousNodeCompleted = false;
                     
-                    let bg = "bg-white/[0.04] border-white/10 text-gray-600";
-                    let ring = "";
-                    let content = `<span class="text-[9px] font-black">${nIdx + 1}</span>`;
+                    const ICONS = ["📝", "📐", "➗", "📊", "💡", "🧠", "🎯"];
+                    const icon = node.type === 'test' ? "🏆" : ICONS[nIdx % ICONS.length];
+                    
+                    let content = `<div class="flex flex-col items-center justify-center gap-1 h-full w-full"><span class="text-xl drop-shadow-lg">${icon}</span><span class="text-[8px] font-black uppercase tracking-wider opacity-60">Урок ${nIdx + 1}</span></div>`;
 
-                    if (node.type === 'test') content = `<span class="text-[10px]">🏆</span>`;
+                    let bg = "bg-[#1c242a] border-[#131a1e] text-gray-600 shadow-sm opacity-80";
+                    let ring = "";
+                    let stagger = nIdx % 2 !== 0 ? "translate-y-3" : ""; // Zig-zag layout
 
                     if (isCompleted) {
-                        bg = "bg-[#58cc02]/20 border-[#58cc02]/40 text-[#58cc02]";
-                        if (node.type === 'test') bg = "bg-[#ffc800]/20 border-[#ffc800]/40 text-[#ffc800]";
+                        bg = "bg-gradient-to-b from-[#58cc02] to-[#4cb300] border-[#3d9400] text-white shadow-[0_4px_15px_rgba(88,204,2,0.3)] opacity-100";
+                        if (node.type === 'test') {
+                            bg = "bg-gradient-to-b from-[#ffc800] to-[#e6b400] border-[#b38c00] text-amber-950 shadow-[0_4px_15px_rgba(255,200,0,0.3)] opacity-100";
+                        }
                     } else if (isNext) {
-                        bg = "bg-[#1cb0f6] border-[#1cb0f6] text-white";
-                        ring = "ring-2 ring-[#1cb0f6]/50 ring-offset-2 ring-offset-[#131f24]";
+                        bg = "bg-gradient-to-b from-[#1cb0f6] to-[#1899d6] border-[#147eb0] text-white shadow-[0_4px_25px_rgba(28,176,246,0.5)] opacity-100";
+                        ring = "ring-[3px] ring-[#1cb0f6]/50 ring-offset-2 ring-offset-[#131f24] animate-pulse";
                     }
 
-                    const clickAction = (isNext || isCompleted) ? `startLesson('${node.id}', '${node.title}')` : `showToastMsg('Закрыто', 'Сначала завершите предыдущие дни', 'error'); playError();`;
+                    const clickAction = (isNext || isCompleted) ? `startLesson('${node.id}', '${node.title}')` : `showToastMsg('Закрыто', 'Пройдите предыдущие уроки', 'error'); playError();`;
 
                     html += `
-                    <button onclick="${clickAction}" class="aspect-square flex items-center justify-center rounded-lg border ${bg} ${ring} transition-all active:scale-90 hover:brightness-110">
-                        ${content}
+                    <button onclick="${clickAction}" class="aspect-[4/5] rounded-2xl border-b-[4px] ${bg} ${ring} ${stagger} transition-all active:scale-90 hover:brightness-110 flex flex-col items-center justify-center relative overflow-hidden group">
+                        ${isNext ? '<div class="absolute inset-0 bg-white/20 blur-xl group-hover:bg-white/30 transition-all"></div>' : ''}
+                        <div class="relative z-10 w-full h-full">${content}</div>
                     </button>
                     `;
                 });
@@ -1605,16 +1612,12 @@
             saveState();
         }
 
+        let activeCurriculumNode = null;
+
         function startLesson(id, title) {
             playSoftTap();
-            if (!state.completedNodes) state.completedNodes = [];
-            if (!state.completedNodes.includes(id)) {
-                state.completedNodes.push(id);
-            }
-            showToastMsg(title, 'Урок пройден! +15 XP', 'success');
-            state.xp += 15;
-            saveState();
-            renderPath();
+            activeCurriculumNode = id;
+            startDuoQuiz();
         }
 
         // ==========================================
@@ -1871,6 +1874,16 @@
                     renderQ();
                 } else {
                     closeFullscreen('quiz-screen');
+                    
+                    if (activeCurriculumNode) {
+                        if (!state.completedNodes) state.completedNodes = [];
+                        if (!state.completedNodes.includes(activeCurriculumNode)) {
+                            state.completedNodes.push(activeCurriculumNode);
+                        }
+                        activeCurriculumNode = null;
+                        if (typeof renderPath === 'function') renderPath();
+                    }
+
                     state.xp += 50;
                     state.coins += 10;
                     state.rank += 5;
@@ -1883,7 +1896,7 @@
                         confetti({ particleCount: 120, spread: 90, origin: { y: 0.6 } });
                         setTimeout(() => confetti({ particleCount: 60, spread: 50, origin: { y: 0.5 } }), 200);
                     }
-                    showToastMsg('Тест пройден!', '+50 XP • +10 монет • Стрик зажжён!', 'success');
+                    showToastMsg('Урок пройден!', '+50 XP • Вы отлично справились!', 'success');
                     showXpPopup(50);
                 }
             }

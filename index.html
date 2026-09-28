@@ -1986,16 +1986,17 @@
 
             cur.opts.forEach((opt, idx) => {
                 const b = document.createElement('button');
-                b.className = "glass-card p-4 text-center text-lg font-black text-white hover:bg-white/[0.06] active:scale-95 transition-all";
+                b.className = "glass-card p-4 text-center text-lg font-black text-white hover:bg-white/[0.06] active:scale-95 transition-all border-2 border-transparent";
                 b.innerText = opt;
                 b.onclick = () => {
                     if (checked) return;
                     playSoftTap();
                     for (let c of container.children) {
-                        c.className = "glass-card p-4 text-center text-lg font-black text-white transition-all";
+                        c.className = "glass-card p-4 text-center text-lg font-black text-white transition-all border-2 border-transparent";
+                        c.style.background = '';
                     }
-                    b.className = "glass-card p-4 text-center text-lg font-black text-white transition-all border-2 border-[#58cc02]";
-                    b.style.background = 'rgba(88,204,2,0.1)';
+                    b.className = "glass-card p-4 text-center text-lg font-black text-white transition-all border-2 border-[#1cb0f6] shadow-[0_0_10px_rgba(28,176,246,0.2)]";
+                    b.style.background = 'rgba(28,176,246,0.1)';
                     selected = idx;
                     btn.className = "text-white text-xs font-black uppercase tracking-wider py-4 px-7 rounded-2xl active:scale-95 transition-all shadow-lg";
                     btn.style.background = 'linear-gradient(135deg, #58cc02, #4cb300)';

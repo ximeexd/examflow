@@ -498,6 +498,11 @@
             </div>
         </div>
 
+        <!-- LEARNING PATH -->
+        <div id="learning-path-container" class="space-y-6 pt-4 pb-4 w-full max-w-sm mx-auto flex flex-col items-center">
+            <!-- Rendered by JS -->
+        </div>
+
         <!-- BENTO GRID -->
         <div class="space-y-3 stagger-4">
             <div class="grid grid-cols-2 gap-3">
@@ -1322,6 +1327,8 @@
                 }
             }
 
+            if (typeof renderPath === 'function') renderPath();
+
             // Quests
             const qDone = (state.questsDone || []).length;
             $('quests-counter').innerText = `${qDone}/3`;
@@ -1444,6 +1451,165 @@
                 setTimeout(() => openModal('subject-modal'), 500);
             }
         });
+
+        // ==========================================
+        // LEARNING PATH & CURRICULUM
+        // ==========================================
+        const curriculumData = {
+            "ОГЭ Математика": [
+                {
+                    title: "Раздел 1: Базовая алгебра (9 класс)",
+                    desc: "Числа, вычисления и простейшие уравнения",
+                    nodes: [
+                        { id: "oge_m1_1", icon: "🔢", title: "Задание 1: Вычисления" },
+                        { id: "oge_m1_2", icon: "📊", title: "Задание 2: Степени и корни" },
+                        { id: "oge_m1_3", icon: "📈", title: "Задание 3: Проценты" },
+                        { id: "oge_m1_4", icon: "🏆", title: "Мини-тест", type: "chest" }
+                    ]
+                },
+                {
+                    title: "Раздел 2: Геометрия ОГЭ",
+                    desc: "Углы, треугольники и окружности",
+                    nodes: [
+                        { id: "oge_m2_1", icon: "📐", title: "Задание 15: Треугольники" },
+                        { id: "oge_m2_2", icon: "⭕", title: "Задание 16: Окружность" },
+                        { id: "oge_m2_3", icon: "👑", title: "Финальный тест", type: "chest" }
+                    ]
+                }
+            ],
+            "ЕГЭ Профильная математика": [
+                {
+                    title: "Раздел 1: Старт (10 класс)",
+                    desc: "Уравнения, неравенства и тригонометрия",
+                    nodes: [
+                        { id: "ege_p_m1_1", icon: "🧮", title: "Простейшие уравнения" },
+                        { id: "ege_p_m1_2", icon: "📉", title: "Тригонометрический круг" },
+                        { id: "ege_p_m1_3", icon: "sin", title: "Триг. уравнения" },
+                        { id: "ege_p_m1_4", icon: "🎁", title: "Тест раздела", type: "chest" }
+                    ]
+                },
+                {
+                    title: "Раздел 2: Профиль (11 класс)",
+                    desc: "Сложная алгебра и графики функций",
+                    nodes: [
+                        { id: "ege_p_m2_1", icon: "📊", title: "Графики функций" },
+                        { id: "ege_p_m2_2", icon: "🚀", title: "Производная" },
+                        { id: "ege_p_m2_3", icon: "👑", title: "Финальный тест", type: "chest" }
+                    ]
+                }
+            ]
+        };
+
+        function renderPath() {
+            const container = document.getElementById('learning-path-container');
+            if (!container) return;
+            
+            const isEge = state.exam && state.exam.includes('ЕГЭ');
+            const mainSubj = (state.subjects && state.subjects.length > 0) ? state.subjects[0] : 'Математика';
+            const dbKey = (isEge ? 'ЕГЭ ' : 'ОГЭ ') + mainSubj;
+            
+            let data = curriculumData[dbKey];
+            if (!data) data = curriculumData['ЕГЭ Профильная математика']; // Fallback
+
+            let html = '';
+            
+            let previousNodeCompleted = true; // First node is always available
+
+            data.forEach((sec, sIdx) => {
+                html += `
+                <div class="w-full bg-[#1c242a] rounded-2xl p-4 mb-4 flex justify-between items-center shadow-lg border-b-4 border-[#131a1e]">
+                    <div class="flex-1">
+                        <h2 class="text-[14px] font-black text-white leading-tight">${sec.title}</h2>
+                        <p class="text-[10px] font-bold text-gray-400 mt-1">${sec.desc}</p>
+                    </div>
+                    <button onclick="skipSection(${sIdx})" class="ml-3 p-2.5 rounded-xl bg-purple-500/20 text-purple-400 border border-purple-500/30 font-black text-[9px] uppercase active:scale-95 transition-all whitespace-nowrap">
+                        Сдать<br>экстерном
+                    </button>
+                </div>
+                `;
+
+                html += `<div class="relative py-4 flex flex-col items-center space-y-6 w-full">`;
+                
+                sec.nodes.forEach((node, nIdx) => {
+                    const isCompleted = state.completedNodes && state.completedNodes.includes(node.id);
+                    const isNext = !isCompleted && previousNodeCompleted;
+                    
+                    if (isCompleted) {
+                        previousNodeCompleted = true;
+                    } else {
+                        previousNodeCompleted = false;
+                    }
+                    
+                    const offset = Math.sin(nIdx * 0.8) * 45; // Wavy path
+                    
+                    let nodeStyle = "bg-[#2a343b] border-[#1d262b] text-gray-500";
+                    let iconStyle = "";
+                    let bounce = "";
+                    
+                    if (isCompleted) {
+                        nodeStyle = "bg-[#ffc800] border-[#d8a200] text-amber-900";
+                    } else if (isNext) {
+                        nodeStyle = "bg-[#58cc02] border-[#4cb300] text-white";
+                        bounce = "animation: bounce-slight 2s infinite;";
+                        iconStyle = "filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));";
+                    }
+
+                    html += `
+                    <div class="relative flex flex-col items-center" style="transform: translateX(${offset}px)">
+                       <button onclick="${isNext || isCompleted ? `startLesson('${node.id}', '${node.title}')` : `showToastMsg('Закрыто', 'Сначала пройди предыдущие уроки!', 'error'); playError();`}" class="w-16 h-16 rounded-full border-b-[5px] ${nodeStyle} flex items-center justify-center font-black text-2xl active:scale-95 transition-all shadow-lg" style="${bounce}">
+                           <span style="${iconStyle}">${node.icon}</span>
+                       </button>
+                       <div class="absolute -bottom-6 w-32 text-center">
+                           <span class="text-[10px] font-bold ${isNext ? 'text-[#58cc02]' : 'text-gray-500'} bg-[#131f24]/80 px-2 py-1 rounded-md shadow-sm">${node.title}</span>
+                       </div>
+                    </div>
+                    <div class="h-4"></div>
+                    `;
+                });
+                
+                html += `</div>`;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function skipSection(sIdx) {
+            playSoftTap();
+            
+            const isEge = state.exam && state.exam.includes('ЕГЭ');
+            const mainSubj = (state.subjects && state.subjects.length > 0) ? state.subjects[0] : 'Математика';
+            const dbKey = (isEge ? 'ЕГЭ ' : 'ОГЭ ') + mainSubj;
+            
+            let data = curriculumData[dbKey] || curriculumData['ЕГЭ Профильная математика'];
+            
+            if (!state.completedNodes) state.completedNodes = [];
+            
+            // Mark all nodes in all sections UP TO this section as complete
+            for (let i = 0; i <= sIdx; i++) {
+                data[i].nodes.forEach(node => {
+                    if (!state.completedNodes.includes(node.id)) {
+                        state.completedNodes.push(node.id);
+                    }
+                });
+            }
+
+            showToastMsg('Сдано!', 'Раздел успешно пройден экстерном!', 'success');
+            state.xp += 150;
+            if (window.confetti) confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 } });
+            saveState();
+        }
+
+        function startLesson(id, title) {
+            playSoftTap();
+            if (!state.completedNodes) state.completedNodes = [];
+            if (!state.completedNodes.includes(id)) {
+                state.completedNodes.push(id);
+            }
+            showToastMsg(title, 'Урок пройден! +15 XP', 'success');
+            state.xp += 15;
+            saveState();
+            renderPath();
+        }
 
         // ==========================================
         // SUBJECT SELECTION

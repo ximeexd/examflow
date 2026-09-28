@@ -1424,7 +1424,10 @@
             days.forEach((d, i) => {
                 const div = document.createElement('div');
                 div.className = 'streak-day ' + (i < todayIdx && state.streak > (todayIdx - i) ? 'active' : i === todayIdx ? (state.streak > 0 ? 'active' : 'today') : 'inactive');
-                div.innerHTML = `<div class="text-center"><div class="text-[8px] opacity-60 mb-0.5">${d}</div><div>${i < todayIdx && state.streak > (todayIdx - i) ? '✓' : i === todayIdx ? (state.streak > 0 ? '✓' : '·') : '·'}</div></div>`;
+                const fireSvg = `<svg class="w-3.5 h-3.5 mx-auto ${state.streak > 0 ? 'text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]' : 'text-gray-500'}" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 10c0 3.5-3.5 5.5-3.5 5.5S12 11 12 7c-4.5 4-4.5 10-4.5 10C5.5 14 7 10 7 10s-3.5 2.5-3.5 7.5A8.5 8.5 0 0 0 12 22a8.5 8.5 0 0 0 8.5-8.5C20.5 8.5 17.5 10 17.5 10z"/></svg>`;
+                const emptySvg = `<svg class="w-3.5 h-3.5 mx-auto text-gray-700" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="5" opacity="0.4"/></svg>`;
+                const icon = (i < todayIdx && state.streak > (todayIdx - i)) ? fireSvg : (i === todayIdx ? (state.streak > 0 ? fireSvg : emptySvg) : emptySvg);
+                div.innerHTML = `<div class="text-center"><div class="text-[8px] opacity-60 mb-1">${d}</div><div>${icon}</div></div>`;
                 cal.appendChild(div);
             });
 
@@ -1570,7 +1573,7 @@
                             <h2 class="text-[15px] font-black text-white tracking-wide">${month.title}</h2>
                             <p class="text-[10px] font-bold text-gray-400 mt-0.5">${month.desc}</p>
                         </div>
-                        <button onclick="skipSection(${mIdx})" class="relative z-10 p-2.5 bg-white/5 hover:bg-white/10 active:bg-white/20 rounded-xl text-gray-300 transition-colors text-[9px] uppercase font-bold tracking-widest border border-white/10 backdrop-blur-md">
+                        <button onclick="startExternTest(${mIdx}, '${month.title}')" class="relative z-10 p-2.5 bg-white/5 hover:bg-white/10 active:bg-white/20 rounded-xl text-gray-300 transition-colors text-[9px] uppercase font-bold tracking-widest border border-white/10 backdrop-blur-md">
                             Экстерн
                         </button>
                     </div>
@@ -1585,10 +1588,19 @@
                     if (isCompleted) previousNodeCompleted = true;
                     else previousNodeCompleted = false;
                     
-                    const ICONS = ["📝", "📐", "➗", "📊", "💡", "🧠", "🎯"];
-                    const icon = node.type === 'test' ? "🏆" : ICONS[nIdx % ICONS.length];
+                    const iconClass = "w-6 h-6 stroke-current drop-shadow-md";
+                    const ICONS = [
+                        `<svg class="${iconClass}" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>`,
+                        `<svg class="${iconClass}" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`,
+                        `<svg class="${iconClass}" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`,
+                        `<svg class="${iconClass}" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>`,
+                        `<svg class="${iconClass}" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`
+                    ];
+                    const testIcon = `<svg class="w-7 h-7 stroke-current drop-shadow-lg" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5C6 4 8 4 12 4s6 0 7.5 0a2.5 2.5 0 0 1 0 5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>`;
                     
-                    let content = `<div class="flex flex-col items-center justify-center gap-1 h-full w-full"><span class="text-xl drop-shadow-lg">${icon}</span><span class="text-[8px] font-black uppercase tracking-wider opacity-60">Урок ${nIdx + 1}</span></div>`;
+                    const icon = node.type === 'test' ? testIcon : ICONS[nIdx % ICONS.length];
+                    
+                    let content = `<div class="flex flex-col items-center justify-center gap-1.5 h-full w-full">${icon}<span class="text-[8px] font-black uppercase tracking-wider opacity-60">Урок ${nIdx + 1}</span></div>`;
 
                     let bg = "bg-[#1c242a] border-[#131a1e] text-gray-600 shadow-sm opacity-80";
                     let ring = "";
@@ -1622,29 +1634,16 @@
             container.innerHTML = html;
         }
 
-        function skipSection(sIdx) {
-            playSoftTap();
-            const isEge = state.exam && state.exam.includes('ЕГЭ');
-            const mainSubj = state.activeSyllabusSubject || 'Математика';
-            const data = generateCurriculum(isEge, mainSubj);
-            
-            if (!state.completedNodes) state.completedNodes = [];
-            
-            for (let i = 0; i <= sIdx; i++) {
-                data[i].nodes.forEach(node => {
-                    if (!state.completedNodes.includes(node.id)) {
-                        state.completedNodes.push(node.id);
-                    }
-                });
-            }
-
-            showToastMsg('Месяц завершен', 'Вы успешно сдали экстерном!', 'success');
-            state.xp += 500;
-            if (window.confetti) confetti({ particleCount: 200, spread: 120, origin: { y: 0.5 } });
-            saveState();
-        }
-
         let activeCurriculumNode = null;
+        let activeExternSection = null;
+
+        function startExternTest(sIdx, title) {
+            playSoftTap();
+            activeExternSection = sIdx;
+            // Launch quiz for the overall subject to act as an extern test
+            const mainSubj = state.activeSyllabusSubject || 'Математика';
+            startDuoQuiz(mainSubj);
+        }
 
         function startLesson(id, title) {
             playSoftTap();
@@ -1655,33 +1654,46 @@
         // ==========================================
         // SUBJECT SELECTION
         // ==========================================
+        const S_ICONS = {
+            math: `<svg class="w-6 h-6 stroke-current drop-shadow-md" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19l16-14M4 5l16 14"/></svg>`,
+            book: `<svg class="w-6 h-6 stroke-current drop-shadow-md" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" /></svg>`,
+            pc: `<svg class="w-6 h-6 stroke-current drop-shadow-md" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`,
+            gov: `<svg class="w-6 h-6 stroke-current drop-shadow-md" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="20" width="20" height="2"/><rect x="4" y="10" width="2" height="10"/><rect x="10" y="10" width="2" height="10"/><rect x="16" y="10" width="2" height="10"/><polygon points="12 2 2 10 22 10"/></svg>`,
+            bolt: `<svg class="w-6 h-6 stroke-current drop-shadow-md" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
+            dna: `<svg class="w-6 h-6 stroke-current drop-shadow-md" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10H12V2Z"/><path d="M12 12 2.1 7.1"/></svg>`,
+            flask: `<svg class="w-6 h-6 stroke-current drop-shadow-md" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2h6"/><path d="M12 2v7"/><path d="M6 22h12a2 2 0 0 0 2-2V13l-4-4V2H8v7l-4 4v7a2 2 0 0 0 2 2z"/></svg>`,
+            history: `<svg class="w-6 h-6 stroke-current drop-shadow-md" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+            map: `<svg class="w-6 h-6 stroke-current drop-shadow-md" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21 3 6"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>`,
+            lang: `<svg class="w-6 h-6 stroke-current drop-shadow-md" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>`
+        };
+
         const OGE_SUBJECTS = [
-            { id: "Математика", icon: "📐", name: "Математика" },
-            { id: "Русский язык", icon: "📖", name: "Русский язык" },
-            { id: "Информатика", icon: "💻", name: "Информатика" },
-            { id: "Обществознание", icon: "🏛", name: "Общество" },
-            { id: "Физика", icon: "⚡", name: "Физика" },
-            { id: "Биология", icon: "🧬", name: "Биология" },
-            { id: "Химия", icon: "🧪", name: "Химия" },
-            { id: "История", icon: "🏰", name: "История" },
-            { id: "География", icon: "🗺", name: "География" },
-            { id: "Литература", icon: "📚", name: "Литература" },
-            { id: "Английский", icon: "🇬🇧", name: "Английский" }
+            { id: "Математика", icon: S_ICONS.math, name: "Математика" },
+            { id: "Русский язык", icon: S_ICONS.book, name: "Русский язык" },
+            { id: "Информатика", icon: S_ICONS.pc, name: "Информатика" },
+            { id: "Обществознание", icon: S_ICONS.gov, name: "Общество" },
+            { id: "Физика", icon: S_ICONS.bolt, name: "Физика" },
+            { id: "Биология", icon: S_ICONS.dna, name: "Биология" },
+            { id: "Химия", icon: S_ICONS.flask, name: "Химия" },
+            { id: "История", icon: S_ICONS.history, name: "История" },
+            { id: "География", icon: S_ICONS.map, name: "География" },
+            { id: "Литература", icon: S_ICONS.book, name: "Литература" },
+            { id: "Английский", icon: S_ICONS.lang, name: "Английский" }
         ];
 
         const EGE_SUBJECTS = [
-            { id: "Профильная математика", icon: "📐", name: "Проф. мат." },
-            { id: "Базовая математика", icon: "📏", name: "Базовая мат." },
-            { id: "Русский язык", icon: "📖", name: "Русский язык" },
-            { id: "Информатика", icon: "💻", name: "Информатика" },
-            { id: "Обществознание", icon: "🏛", name: "Общество" },
-            { id: "Физика", icon: "⚡", name: "Физика" },
-            { id: "Биология", icon: "🧬", name: "Биология" },
-            { id: "Химия", icon: "🧪", name: "Химия" },
-            { id: "История", icon: "🏰", name: "История" },
-            { id: "География", icon: "🗺", name: "География" },
-            { id: "Литература", icon: "📚", name: "Литература" },
-            { id: "Английский", icon: "🇬🇧", name: "Английский" }
+            { id: "Профильная математика", icon: S_ICONS.math, name: "Проф. мат." },
+            { id: "Базовая математика", icon: S_ICONS.math, name: "Базовая мат." },
+            { id: "Русский язык", icon: S_ICONS.book, name: "Русский язык" },
+            { id: "Информатика", icon: S_ICONS.pc, name: "Информатика" },
+            { id: "Обществознание", icon: S_ICONS.gov, name: "Общество" },
+            { id: "Физика", icon: S_ICONS.bolt, name: "Физика" },
+            { id: "Биология", icon: S_ICONS.dna, name: "Биология" },
+            { id: "Химия", icon: S_ICONS.flask, name: "Химия" },
+            { id: "История", icon: S_ICONS.history, name: "История" },
+            { id: "География", icon: S_ICONS.map, name: "География" },
+            { id: "Литература", icon: S_ICONS.book, name: "Литература" },
+            { id: "Английский", icon: S_ICONS.lang, name: "Английский" }
         ];
 
         function renderSubjects() {
@@ -2038,16 +2050,42 @@
                 } else {
                     closeFullscreen('quiz-screen');
                     
-                    if (activeCurriculumNode) {
+                    if (activeExternSection !== null) {
+                        const isEge = state.exam && state.exam.includes('ЕГЭ');
+                        const mainSubj = state.activeSyllabusSubject || 'Математика';
+                        const data = generateCurriculum(isEge, mainSubj);
+                        
+                        if (!state.completedNodes) state.completedNodes = [];
+                        for (let i = 0; i <= activeExternSection; i++) {
+                            data[i].nodes.forEach(node => {
+                                if (!state.completedNodes.includes(node.id)) {
+                                    state.completedNodes.push(node.id);
+                                }
+                            });
+                        }
+                        activeExternSection = null;
+                        if (typeof renderPath === 'function') renderPath();
+                        
+                        state.xp += 500;
+                        showToastMsg('Экстерн сдан!', '+500 XP • Раздел завершен', 'success');
+                        showXpPopup(500);
+                    } else if (activeCurriculumNode) {
                         if (!state.completedNodes) state.completedNodes = [];
                         if (!state.completedNodes.includes(activeCurriculumNode)) {
                             state.completedNodes.push(activeCurriculumNode);
                         }
                         activeCurriculumNode = null;
                         if (typeof renderPath === 'function') renderPath();
+                        
+                        state.xp += 50;
+                        showToastMsg('Урок пройден!', '+50 XP • Вы отлично справились!', 'success');
+                        showXpPopup(50);
+                    } else {
+                        state.xp += 50;
+                        showToastMsg('Тест пройден!', '+50 XP • Стрик зажжён!', 'success');
+                        showXpPopup(50);
                     }
 
-                    state.xp += 50;
                     state.coins += 10;
                     state.rank += 5;
                     state.streak = Math.max(1, (state.streak || 0) + 1);
@@ -2059,8 +2097,6 @@
                         confetti({ particleCount: 120, spread: 90, origin: { y: 0.6 } });
                         setTimeout(() => confetti({ particleCount: 60, spread: 50, origin: { y: 0.5 } }), 200);
                     }
-                    showToastMsg('Урок пройден!', '+50 XP • Вы отлично справились!', 'success');
-                    showXpPopup(50);
                 }
             }
         }

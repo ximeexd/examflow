@@ -447,7 +447,9 @@
     <!-- ========================================= -->
     <!-- MAIN CONTENT                               -->
     <!-- ========================================= -->
-    <main class="flex-grow p-4 space-y-4 pt-1 relative z-10">
+    <main class="flex-grow p-4 pt-1 relative z-10 w-full max-w-lg mx-auto">
+        <!-- HOME VIEW -->
+        <div id="view-home" class="space-y-4">
 
         <!-- DAILY QUESTS -->
         <div class="stagger-3 p-4 rounded-2xl glass-card space-y-3">
@@ -498,10 +500,7 @@
             </div>
         </div>
 
-        <!-- LEARNING PATH -->
-        <div id="learning-path-container" class="space-y-6 pt-4 pb-4 w-full max-w-sm mx-auto flex flex-col items-center">
-            <!-- Rendered by JS -->
-        </div>
+
 
         <!-- BENTO GRID -->
         <div class="space-y-3 stagger-4">
@@ -652,6 +651,20 @@
                 </div>
             </div>
             <button onclick="shareWithFriends()" class="text-[11px] font-black text-[#ffc800] bg-amber-500/10 px-4 py-2.5 rounded-xl active:scale-95 transition-transform hover:bg-amber-500/20">Позвать</button>
+        </div>
+
+        </div> <!-- END HOME VIEW -->
+
+        <!-- TASKS / SYLLABUS VIEW -->
+        <div id="view-tasks" class="hidden w-full">
+            <div class="mb-4">
+                <h1 class="text-xl font-black text-white">План подготовки</h1>
+                <p class="text-[11px] font-bold text-gray-400 mt-0.5">Ежедневная практика по стандарту ФГОС (edsoo.ru)</p>
+            </div>
+            <div id="syllabus-container" class="space-y-4">
+                <!-- Rendered by JS -->
+            </div>
+            <div class="h-20"></div>
         </div>
 
     </main>
@@ -1210,8 +1223,20 @@
             const positions = [12.5, 37.5, 62.5, 87.5];
             pill.style.left = `calc(${positions[idx]}% - 20px)`;
 
-            if (idx === 0) window.scrollTo({ top: 0, behavior: 'smooth' });
-            if (idx === 1) startDuoQuiz();
+            const viewHome = document.getElementById('view-home');
+            const viewTasks = document.getElementById('view-tasks');
+
+            if (idx === 0) {
+                if(viewHome) viewHome.classList.remove('hidden');
+                if(viewTasks) viewTasks.classList.add('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+            if (idx === 1) {
+                if(viewHome) viewHome.classList.add('hidden');
+                if(viewTasks) viewTasks.classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                if (typeof renderPath === 'function') renderPath();
+            }
             if (idx === 2) showToastMsg('Лиги', 'Набери 100 XP, чтобы попасть в таблицу лидеров!', 'info');
             if (idx === 3) openModal('subject-modal');
         }
@@ -1453,121 +1478,106 @@
         });
 
         // ==========================================
-        // LEARNING PATH & CURRICULUM
         // ==========================================
-        const curriculumData = {
-            "ОГЭ Математика": [
-                {
-                    title: "Раздел 1: Базовая алгебра (9 класс)",
-                    desc: "Числа, вычисления и простейшие уравнения",
-                    nodes: [
-                        { id: "oge_m1_1", icon: "🔢", title: "Задание 1: Вычисления" },
-                        { id: "oge_m1_2", icon: "📊", title: "Задание 2: Степени и корни" },
-                        { id: "oge_m1_3", icon: "📈", title: "Задание 3: Проценты" },
-                        { id: "oge_m1_4", icon: "🏆", title: "Мини-тест", type: "chest" }
-                    ]
-                },
-                {
-                    title: "Раздел 2: Геометрия ОГЭ",
-                    desc: "Углы, треугольники и окружности",
-                    nodes: [
-                        { id: "oge_m2_1", icon: "📐", title: "Задание 15: Треугольники" },
-                        { id: "oge_m2_2", icon: "⭕", title: "Задание 16: Окружность" },
-                        { id: "oge_m2_3", icon: "👑", title: "Финальный тест", type: "chest" }
-                    ]
+        // EDSOO CURRICULUM GENERATOR (ФГОС)
+        // ==========================================
+        function generateCurriculum(isEge, subject) {
+            const monthsCount = isEge ? 18 : 9; // 10-11th grade = ~18 months of study, 9th = ~9 months
+            const topics = {
+                "Математика": ["Алгебра: Уравнения", "Геометрия: Планиметрия", "Алгебра: Функции", "Текстовые задачи", "Геометрия: Окружность", "Вероятность и статистика", "Алгебра: Неравенства", "Сложная геометрия", "Повторение"],
+                "Профильная математика": ["Тригонометрия", "Стереометрия", "Производная", "Логарифмы", "Экономическая задача", "Параметры", "Теория чисел", "Сложная планиметрия", "Интегралы"],
+                "Базовая математика": ["Вычисления", "Текстовые задачи", "Базовая геометрия", "Уравнения", "Неравенства", "Графики", "Анализ данных", "Логика", "Повторение"]
+            };
+
+            const subjTopics = topics[subject] || topics["Математика"];
+            const curriculum = [];
+
+            for (let m = 0; m < monthsCount; m++) {
+                const topic = subjTopics[m % subjTopics.length];
+                const daysInMonth = 20; // 20 study days a month
+                
+                let nodes = [];
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const isTest = d % 5 === 0;
+                    nodes.push({
+                        id: `m${m}_d${d}`,
+                        title: isTest ? `Срез знаний` : `День ${d}: Практика`,
+                        type: isTest ? 'test' : 'practice'
+                    });
                 }
-            ],
-            "ЕГЭ Профильная математика": [
-                {
-                    title: "Раздел 1: Старт (10 класс)",
-                    desc: "Уравнения, неравенства и тригонометрия",
-                    nodes: [
-                        { id: "ege_p_m1_1", icon: "🧮", title: "Простейшие уравнения" },
-                        { id: "ege_p_m1_2", icon: "📉", title: "Тригонометрический круг" },
-                        { id: "ege_p_m1_3", icon: "sin", title: "Триг. уравнения" },
-                        { id: "ege_p_m1_4", icon: "🎁", title: "Тест раздела", type: "chest" }
-                    ]
-                },
-                {
-                    title: "Раздел 2: Профиль (11 класс)",
-                    desc: "Сложная алгебра и графики функций",
-                    nodes: [
-                        { id: "ege_p_m2_1", icon: "📊", title: "Графики функций" },
-                        { id: "ege_p_m2_2", icon: "🚀", title: "Производная" },
-                        { id: "ege_p_m2_3", icon: "👑", title: "Финальный тест", type: "chest" }
-                    ]
-                }
-            ]
-        };
+
+                curriculum.push({
+                    title: `Месяц ${m + 1}: ${topic}`,
+                    desc: `Ежедневная практика (${daysInMonth} занятий)`,
+                    nodes: nodes
+                });
+            }
+            return curriculum;
+        }
 
         function renderPath() {
-            const container = document.getElementById('learning-path-container');
+            const container = document.getElementById('syllabus-container');
             if (!container) return;
             
             const isEge = state.exam && state.exam.includes('ЕГЭ');
             const mainSubj = (state.subjects && state.subjects.length > 0) ? state.subjects[0] : 'Математика';
-            const dbKey = (isEge ? 'ЕГЭ ' : 'ОГЭ ') + mainSubj;
             
-            let data = curriculumData[dbKey];
-            if (!data) data = curriculumData['ЕГЭ Профильная математика']; // Fallback
+            // Generate curriculum on the fly for the selected subject
+            const data = generateCurriculum(isEge, mainSubj);
 
             let html = '';
-            
-            let previousNodeCompleted = true; // First node is always available
+            let previousNodeCompleted = true; 
 
-            data.forEach((sec, sIdx) => {
+            data.forEach((month, mIdx) => {
                 html += `
-                <div class="w-full bg-[#1c242a] rounded-2xl p-4 mb-4 flex justify-between items-center shadow-lg border-b-4 border-[#131a1e]">
-                    <div class="flex-1">
-                        <h2 class="text-[14px] font-black text-white leading-tight">${sec.title}</h2>
-                        <p class="text-[10px] font-bold text-gray-400 mt-1">${sec.desc}</p>
+                <div class="bg-white/[0.03] rounded-2xl border border-white/[0.05] overflow-hidden mb-6 shadow-xl">
+                    <!-- Header -->
+                    <div class="bg-black/20 p-4 border-b border-white/[0.05] flex justify-between items-center backdrop-blur-md">
+                        <div>
+                            <h2 class="text-sm font-black text-white tracking-wide uppercase">${month.title}</h2>
+                            <p class="text-[10px] font-bold text-gray-500 mt-0.5">${month.desc}</p>
+                        </div>
+                        <button onclick="skipSection(${mIdx})" class="p-2 bg-white/5 hover:bg-white/10 active:bg-white/20 rounded-xl text-gray-300 transition-colors text-[9px] uppercase font-bold tracking-widest border border-white/10">
+                            Завершить
+                        </button>
                     </div>
-                    <button onclick="skipSection(${sIdx})" class="ml-3 p-2.5 rounded-xl bg-purple-500/20 text-purple-400 border border-purple-500/30 font-black text-[9px] uppercase active:scale-95 transition-all whitespace-nowrap">
-                        Сдать<br>экстерном
-                    </button>
-                </div>
+                    <!-- Grid of days -->
+                    <div class="p-4 grid grid-cols-5 gap-2">
                 `;
-
-                html += `<div class="relative py-4 flex flex-col items-center space-y-6 w-full">`;
                 
-                sec.nodes.forEach((node, nIdx) => {
+                month.nodes.forEach((node, nIdx) => {
                     const isCompleted = state.completedNodes && state.completedNodes.includes(node.id);
                     const isNext = !isCompleted && previousNodeCompleted;
                     
+                    if (isCompleted) previousNodeCompleted = true;
+                    else previousNodeCompleted = false;
+                    
+                    let bg = "bg-white/[0.04] border-white/10 text-gray-600";
+                    let ring = "";
+                    let content = `<span class="text-[9px] font-black">${nIdx + 1}</span>`;
+
+                    if (node.type === 'test') content = `<span class="text-[10px]">🏆</span>`;
+
                     if (isCompleted) {
-                        previousNodeCompleted = true;
-                    } else {
-                        previousNodeCompleted = false;
-                    }
-                    
-                    const offset = Math.sin(nIdx * 0.8) * 45; // Wavy path
-                    
-                    let nodeStyle = "bg-[#2a343b] border-[#1d262b] text-gray-500";
-                    let iconStyle = "";
-                    let bounce = "";
-                    
-                    if (isCompleted) {
-                        nodeStyle = "bg-[#ffc800] border-[#d8a200] text-amber-900";
+                        bg = "bg-[#58cc02]/20 border-[#58cc02]/40 text-[#58cc02]";
+                        if (node.type === 'test') bg = "bg-[#ffc800]/20 border-[#ffc800]/40 text-[#ffc800]";
                     } else if (isNext) {
-                        nodeStyle = "bg-[#58cc02] border-[#4cb300] text-white";
-                        bounce = "animation: bounce-slight 2s infinite;";
-                        iconStyle = "filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));";
+                        bg = "bg-[#1cb0f6] border-[#1cb0f6] text-white";
+                        ring = "ring-2 ring-[#1cb0f6]/50 ring-offset-2 ring-offset-[#131f24]";
                     }
 
+                    const clickAction = (isNext || isCompleted) ? `startLesson('${node.id}', '${node.title}')` : `showToastMsg('Закрыто', 'Сначала завершите предыдущие дни', 'error'); playError();`;
+
                     html += `
-                    <div class="relative flex flex-col items-center" style="transform: translateX(${offset}px)">
-                       <button onclick="${isNext || isCompleted ? `startLesson('${node.id}', '${node.title}')` : `showToastMsg('Закрыто', 'Сначала пройди предыдущие уроки!', 'error'); playError();`}" class="w-16 h-16 rounded-full border-b-[5px] ${nodeStyle} flex items-center justify-center font-black text-2xl active:scale-95 transition-all shadow-lg" style="${bounce}">
-                           <span style="${iconStyle}">${node.icon}</span>
-                       </button>
-                       <div class="absolute -bottom-6 w-32 text-center">
-                           <span class="text-[10px] font-bold ${isNext ? 'text-[#58cc02]' : 'text-gray-500'} bg-[#131f24]/80 px-2 py-1 rounded-md shadow-sm">${node.title}</span>
-                       </div>
-                    </div>
-                    <div class="h-4"></div>
+                    <button onclick="${clickAction}" class="aspect-square flex items-center justify-center rounded-lg border ${bg} ${ring} transition-all active:scale-90 hover:brightness-110">
+                        ${content}
+                    </button>
                     `;
                 });
                 
-                html += `</div>`;
+                html += `
+                    </div>
+                </div>`;
             });
 
             container.innerHTML = html;
@@ -1575,16 +1585,12 @@
 
         function skipSection(sIdx) {
             playSoftTap();
-            
             const isEge = state.exam && state.exam.includes('ЕГЭ');
             const mainSubj = (state.subjects && state.subjects.length > 0) ? state.subjects[0] : 'Математика';
-            const dbKey = (isEge ? 'ЕГЭ ' : 'ОГЭ ') + mainSubj;
-            
-            let data = curriculumData[dbKey] || curriculumData['ЕГЭ Профильная математика'];
+            const data = generateCurriculum(isEge, mainSubj);
             
             if (!state.completedNodes) state.completedNodes = [];
             
-            // Mark all nodes in all sections UP TO this section as complete
             for (let i = 0; i <= sIdx; i++) {
                 data[i].nodes.forEach(node => {
                     if (!state.completedNodes.includes(node.id)) {
@@ -1593,9 +1599,9 @@
                 });
             }
 
-            showToastMsg('Сдано!', 'Раздел успешно пройден экстерном!', 'success');
-            state.xp += 150;
-            if (window.confetti) confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 } });
+            showToastMsg('Месяц завершен', 'Вы успешно сдали экстерном!', 'success');
+            state.xp += 500;
+            if (window.confetti) confetti({ particleCount: 200, spread: 120, origin: { y: 0.5 } });
             saveState();
         }
 

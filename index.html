@@ -659,7 +659,12 @@
         <div id="view-tasks" class="hidden w-full">
             <div class="mb-4">
                 <h1 class="text-xl font-black text-white">План подготовки</h1>
-                <p class="text-[11px] font-bold text-gray-400 mt-0.5">Ежедневная практика по стандарту ФГОС (edsoo.ru)</p>
+                <p class="text-[11px] font-bold text-gray-400 mt-0.5">ФГОС: Программа на каждый день</p>
+            </div>
+            
+            <!-- Subject tabs for syllabus -->
+            <div id="syllabus-subject-tabs" class="flex space-x-2 overflow-x-auto pb-3 mb-2 no-scrollbar">
+                <!-- Rendered dynamically -->
             </div>
             <div id="syllabus-container" class="space-y-4">
                 <!-- Rendered by JS -->
@@ -1486,7 +1491,9 @@
             const topics = {
                 "Математика": ["Алгебра: Уравнения", "Геометрия: Планиметрия", "Алгебра: Функции", "Текстовые задачи", "Геометрия: Окружность", "Вероятность и статистика", "Алгебра: Неравенства", "Сложная геометрия", "Повторение"],
                 "Профильная математика": ["Тригонометрия", "Стереометрия", "Производная", "Логарифмы", "Экономическая задача", "Параметры", "Теория чисел", "Сложная планиметрия", "Интегралы"],
-                "Базовая математика": ["Вычисления", "Текстовые задачи", "Базовая геометрия", "Уравнения", "Неравенства", "Графики", "Анализ данных", "Логика", "Повторение"]
+                "Базовая математика": ["Вычисления", "Текстовые задачи", "Базовая геометрия", "Уравнения", "Неравенства", "Графики", "Анализ данных", "Логика", "Повторение"],
+                "Русский язык": ["Русский язык: Орфография", "Пунктуация", "Грамматика", "Текст", "Сочинение", "Лексика", "Морфология", "Синтаксис", "Повторение"],
+                "Информатика": ["Программирование", "Алгебра логики", "Системы счисления", "Графы", "Электронные таблицы", "Кодирование", "Алгоритмы", "Базы данных", "Повторение"]
             };
 
             const subjTopics = topics[subject] || topics["Математика"];
@@ -1500,8 +1507,8 @@
                 for (let d = 1; d <= daysInMonth; d++) {
                     const isTest = d % 5 === 0;
                     nodes.push({
-                        id: `m${m}_d${d}`,
-                        title: isTest ? `Срез знаний` : `День ${d}: Практика`,
+                        id: `s_${subject}_m${m}_d${d}`,
+                        title: topic,
                         type: isTest ? 'test' : 'practice'
                     });
                 }
@@ -1515,15 +1522,33 @@
             return curriculum;
         }
 
+        function switchSyllabusSubject(subj) {
+            playSoftTap();
+            state.activeSyllabusSubject = subj;
+            renderPath();
+        }
+
         function renderPath() {
             const container = document.getElementById('syllabus-container');
-            if (!container) return;
+            const tabsContainer = document.getElementById('syllabus-subject-tabs');
+            if (!container || !tabsContainer) return;
             
             const isEge = state.exam && state.exam.includes('ЕГЭ');
-            const mainSubj = (state.subjects && state.subjects.length > 0) ? state.subjects[0] : 'Математика';
+            const userSubjects = (state.subjects && state.subjects.length > 0) ? state.subjects : ['Математика'];
             
-            // Generate curriculum on the fly for the selected subject
-            const data = generateCurriculum(isEge, mainSubj);
+            if (!state.activeSyllabusSubject || !userSubjects.includes(state.activeSyllabusSubject)) {
+                state.activeSyllabusSubject = userSubjects[0];
+            }
+
+            // Render subject tabs
+            tabsContainer.innerHTML = userSubjects.map(subj => {
+                const isActive = subj === state.activeSyllabusSubject;
+                const bg = isActive ? 'bg-[#58cc02] text-slate-950 font-black' : 'bg-white/[0.05] text-gray-400 font-bold hover:bg-white/[0.1]';
+                return `<button onclick="switchSyllabusSubject('${subj}')" class="px-4 py-2 rounded-xl text-xs transition-colors whitespace-nowrap shadow-sm ${bg}">${subj}</button>`;
+            }).join('');
+
+            // Generate curriculum on the fly for the active subject
+            const data = generateCurriculum(isEge, state.activeSyllabusSubject);
 
             let html = '';
             let previousNodeCompleted = true; 
@@ -1593,7 +1618,7 @@
         function skipSection(sIdx) {
             playSoftTap();
             const isEge = state.exam && state.exam.includes('ЕГЭ');
-            const mainSubj = (state.subjects && state.subjects.length > 0) ? state.subjects[0] : 'Математика';
+            const mainSubj = state.activeSyllabusSubject || 'Математика';
             const data = generateCurriculum(isEge, mainSubj);
             
             if (!state.completedNodes) state.completedNodes = [];
@@ -1617,7 +1642,7 @@
         function startLesson(id, title) {
             playSoftTap();
             activeCurriculumNode = id;
-            startDuoQuiz();
+            startDuoQuiz(title);
         }
 
         // ==========================================
@@ -1762,31 +1787,77 @@
         // ==========================================
         // QUIZ ENGINE (10 questions)
         // ==========================================
-        const testQuestions = [
-            { q: "4x - 16 = 24", title: "Найдите корень уравнения:", cat: "ОГЭ Математика • Задание 6", opts: ["8", "10", "12", "14"], ans: 1, exp: "4x = 40 → x = 10" },
-            { q: "√64 + √36 = ?", title: "Вычислите:", cat: "ОГЭ Математика • Задание 1", opts: ["10", "14", "100", "48"], ans: 1, exp: "8 + 6 = 14" },
-            { q: "2 байта = ? бит", title: "Переведите:", cat: "ОГЭ Информатика • Задание 3", opts: ["8", "12", "16", "24"], ans: 2, exp: "1 байт = 8 бит → 2 × 8 = 16" },
-            { q: "(a + b)² = ?", title: "Раскройте скобки:", cat: "ОГЭ Математика • Задание 4", opts: ["a² + b²", "a² + 2ab + b²", "a² - b²", "2(a + b)"], ans: 1, exp: "Формула квадрата суммы" },
-            { q: "15% от 200 = ?", title: "Найдите процент:", cat: "ОГЭ Математика • Задание 2", opts: ["25", "30", "35", "40"], ans: 1, exp: "200 × 0.15 = 30" },
-            { q: "НОД(12, 18) = ?", title: "Найдите НОД:", cat: "ОГЭ Математика • Задание 1", opts: ["3", "6", "12", "36"], ans: 1, exp: "12 = 2²×3, 18 = 2×3² → НОД = 6" },
-            { q: "3⁴ = ?", title: "Вычислите степень:", cat: "ОГЭ Математика • Задание 5", opts: ["12", "27", "81", "64"], ans: 2, exp: "3 × 3 × 3 × 3 = 81" },
-            { q: "S = πr², r = 3", title: "Найдите площадь круга:", cat: "ОГЭ Математика • Задание 16", opts: ["6π", "9π", "12π", "3π"], ans: 1, exp: "S = π × 3² = 9π" },
-            { q: "0.125 → дробь = ?", title: "Переведите в дробь:", cat: "ОГЭ Математика • Задание 1", opts: ["1/4", "1/8", "1/5", "1/10"], ans: 1, exp: "0.125 = 125/1000 = 1/8" },
-            { q: "|-7| + |3| = ?", title: "Вычислите модуль:", cat: "ОГЭ Математика • Задание 1", opts: ["4", "-4", "10", "-10"], ans: 2, exp: "|-7| = 7, |3| = 3 → 7 + 3 = 10" }
-        ];
+        const questionBank = {
+            "Алгебра: Уравнения": [
+                { q: "4x - 16 = 24", title: "Решите линейное уравнение:", cat: "Алгебра", opts: ["8", "10", "12", "14"], ans: 1, exp: "4x = 40 → x = 10" },
+                { q: "x² - 5x + 6 = 0", title: "Найдите сумму корней:", cat: "Алгебра", opts: ["-5", "5", "6", "-6"], ans: 1, exp: "По теореме Виета x₁+x₂ = -b/a = 5" },
+                { q: "2(x + 3) = 14", title: "Решите уравнение:", cat: "Алгебра", opts: ["3", "4", "5", "6"], ans: 1, exp: "2x + 6 = 14 → 2x = 8 → x = 4" },
+                { q: "x/3 = 12", title: "Найдите корень:", cat: "Алгебра", opts: ["4", "15", "36", "9"], ans: 2, exp: "Умножаем обе части на 3: x = 36" },
+                { q: "3x = 27", title: "Решите уравнение:", cat: "Алгебра", opts: ["9", "8", "7", "6"], ans: 0, exp: "x = 27 / 3 = 9" },
+                { q: "5 - x = 12", title: "Найдите x:", cat: "Алгебра", opts: ["-7", "7", "17", "-17"], ans: 0, exp: "-x = 12 - 5 → -x = 7 → x = -7" }
+            ],
+            "Тригонометрия": [
+                { q: "sin(30°)", title: "Вычислите:", cat: "Тригонометрия", opts: ["0", "1/2", "√2/2", "√3/2"], ans: 1, exp: "Табличное значение: sin(30°) = 1/2" },
+                { q: "cos²x + sin²x = ?", title: "Основное тождество:", cat: "Тригонометрия", opts: ["0", "1", "-1", "tg(x)"], ans: 1, exp: "Сумма квадратов синуса и косинуса одного угла равна 1" },
+                { q: "tg(45°)", title: "Вычислите:", cat: "Тригонометрия", opts: ["0", "1", "√3", "Не существует"], ans: 1, exp: "tg(45°) = sin(45°)/cos(45°) = 1" },
+                { q: "cos(180°)", title: "Вычислите:", cat: "Тригонометрия", opts: ["1", "0", "-1", "1/2"], ans: 2, exp: "На тригонометрической окружности координата x при 180° равна -1" },
+                { q: "2sin(x) = 1", title: "Решите простейшее:", cat: "Тригонометрия", opts: ["π/6", "π/4", "π/3", "π/2"], ans: 0, exp: "sin(x) = 1/2 → x = π/6" }
+            ],
+            "Русский язык: Орфография": [
+                { q: "Вставь букву: Пр..вилегия", title: "Словарное слово:", cat: "Орфография", opts: ["е", "и", "я", "а"], ans: 1, exp: "Словарное слово: ПРИВИЛЕГИЯ" },
+                { q: "Стекл..нный", title: "Н и НН в суффиксах:", cat: "Орфография", opts: ["я", "яя", "ян", "янн"], ans: 3, exp: "Исключение из правила: стеклянный, оловянный, деревянный пишется с НН" },
+                { q: "Пр..ступить закон", title: "Приставки ПРЕ/ПРИ:", cat: "Орфография", opts: ["е", "и", "я", "а"], ans: 0, exp: "В значении 'переступить' пишется ПРЕ" },
+                { q: "Безвкус..ный", title: "Непроизносимые согласные:", cat: "Орфография", opts: ["т", "н", "с", "нет буквы"], ans: 3, exp: "Проверочное слово - вкус, безвкусный (без Т)" },
+                { q: "Девч..нка", title: "О/Ё после шипящих:", cat: "Орфография", opts: ["о", "ё", "е", "и"], ans: 0, exp: "В суффиксах существительных под ударением пишется О" }
+            ],
+            "Программирование": [
+                { q: "Какой цикл работает с условием?", title: "Теория алгоритмов:", cat: "Информатика", opts: ["for", "while", "do-while", "Все перечисленные"], ans: 3, exp: "Все эти циклы используют условие для своей работы" },
+                { q: "101 в двоичной это:", title: "Системы счисления:", cat: "Информатика", opts: ["3", "4", "5", "6"], ans: 2, exp: "1*2² + 0*2¹ + 1*2⁰ = 4 + 0 + 1 = 5" },
+                { q: "Как обозначается ИЛИ?", title: "Алгебра логики:", cat: "Информатика", opts: ["and", "not", "or", "xor"], ans: 2, exp: "Логическое сложение (дизъюнкция) обозначается OR" },
+                { q: "Сколько бит в 1 байте?", title: "Единицы измерения:", cat: "Информатика", opts: ["4", "8", "16", "32"], ans: 1, exp: "1 байт = 8 бит" },
+                { q: "Что такое массив?", title: "Структуры данных:", cat: "Информатика", opts: ["Функция", "Тип данных", "Набор однотипных данных", "Цикл"], ans: 2, exp: "Массив — это структура данных, хранящая набор однотипных элементов" }
+            ],
+            // Fallback generic topic
+            "Общая база": [
+                { q: "2 + 2 = ?", title: "Разминка:", cat: "База", opts: ["3", "4", "5", "22"], ans: 1, exp: "Математическая база" },
+                { q: "Укажи столицу России", title: "Кругозор:", cat: "Общее", opts: ["СПб", "Москва", "Казань", "Новосибирск"], ans: 1, exp: "Москва — столица РФ" },
+                { q: "5 * 5 = ?", title: "Таблица умножения:", cat: "База", opts: ["10", "20", "25", "30"], ans: 2, exp: "5 * 5 = 25" },
+                { q: "Что такое H2O?", title: "Химия:", cat: "База", opts: ["Водород", "Кислород", "Вода", "Огонь"], ans: 2, exp: "Формула воды" },
+                { q: "1 километр = ?", title: "Меры длины:", cat: "База", opts: ["100 м", "1000 м", "10 000 м", "100 см"], ans: 1, exp: "Приставка 'кило' означает 1000" }
+            ]
+        };
+
         let qIdx = 0;
         let quizBatch = [];
         let selected = null;
         let checked = false;
         const QUIZ_SIZE = 5;
 
-        function startDuoQuiz() {
+        function startDuoQuiz(topic = "Общая база") {
             playSoftTap();
             qIdx = 0;
             selected = null;
             checked = false;
-            // Shuffle and pick 5
-            quizBatch = [...testQuestions].sort(() => Math.random() - 0.5).slice(0, QUIZ_SIZE);
+            
+            // Try to find specific questions, else fallback
+            let pool = questionBank[topic] || questionBank["Общая база"];
+            
+            // Fallback for missing specific subjects by keyword
+            if (!questionBank[topic]) {
+                if (topic.includes("Русский")) pool = questionBank["Русский язык: Орфография"];
+                else if (topic.includes("Информатика") || topic.includes("Алгоритмы")) pool = questionBank["Программирование"];
+                else if (topic.includes("Геометрия") || topic.includes("Тригонометрия")) pool = questionBank["Тригонометрия"];
+                else if (topic.includes("Алгебра")) pool = questionBank["Алгебра: Уравнения"];
+            }
+
+            // Shuffle and pick
+            quizBatch = [...pool].sort(() => Math.random() - 0.5).slice(0, QUIZ_SIZE);
+            // If the pool has less than QUIZ_SIZE, fill the rest from General
+            if (quizBatch.length < QUIZ_SIZE) {
+                const fill = [...questionBank["Общая база"]].sort(() => Math.random() - 0.5).slice(0, QUIZ_SIZE - quizBatch.length);
+                quizBatch = quizBatch.concat(fill);
+            }
+            
             openFullscreen('quiz-screen');
             renderQ();
         }

@@ -5654,13 +5654,14 @@
                     }
                 }
             }
-            if (!pool) pool = questionBank["Общая база"] || Object.values(questionBank)[0];
+            if (!pool) pool = questionBank["Общая база"] || Object.values(questionBank)[0] || [];
 
             // Shuffle and pick
             quizBatch = [...pool].sort(() => Math.random() - 0.5).slice(0, QUIZ_SIZE);
             // If the pool has less than QUIZ_SIZE, fill the rest from General
             if (quizBatch.length < QUIZ_SIZE) {
-                const fill = [...questionBank["Общая база"]].sort(() => Math.random() - 0.5).slice(0, QUIZ_SIZE - quizBatch.length);
+                let fallbackFill = questionBank["Общая база"] || Object.values(questionBank)[0] || [];
+                const fill = [...fallbackFill].sort(() => Math.random() - 0.5).slice(0, QUIZ_SIZE - quizBatch.length);
                 quizBatch = quizBatch.concat(fill);
             }
             

@@ -5558,23 +5558,18 @@
             selected = null;
             checked = false;
             
-            // Try to find specific questions, else fallback
-            let pool = questionBank[topic] || questionBank["Общая база"];
+            let rawTopic = topic.replace(/ \(урок \d+\)$/, "").replace(/^Тест: /, "");
+            let pool = questionBank[rawTopic];
             
-            // Fallback for missing specific subjects by keyword
-            if (!questionBank[topic]) {
-                if (topic.includes("Русский") || state.activeSyllabusSubject === "Русский язык") pool = questionBank["Русский язык: Орфография"];
-                else if (topic.includes("Информатика") || topic.includes("Алгоритмы") || state.activeSyllabusSubject === "Информатика") pool = questionBank["Программирование"];
-                else if (topic.includes("Геометрия") || topic.includes("Тригонометрия")) pool = questionBank["Тригонометрия"];
-                else if (topic.includes("Алгебра") || state.activeSyllabusSubject === "Математика" || state.activeSyllabusSubject === "Профильная математика") pool = questionBank["Алгебра: Уравнения"];
-                else if (state.activeSyllabusSubject === "Физика") pool = questionBank["Физика"];
-                else if (state.activeSyllabusSubject === "Обществознание") pool = questionBank["Обществознание"];
-                else if (state.activeSyllabusSubject === "Биология") pool = questionBank["Биология"];
-                else if (state.activeSyllabusSubject === "Химия") pool = questionBank["Химия"];
-                else if (state.activeSyllabusSubject === "История") pool = questionBank["История"];
-                else if (state.activeSyllabusSubject === "Английский язык") pool = questionBank["Английский язык"];
-                else if (state.activeSyllabusSubject === "Литература") pool = questionBank["Литература"];
+            if (!pool) {
+                for (let k in questionBank) {
+                    if (rawTopic.includes(k) || k.includes(rawTopic)) {
+                        pool = questionBank[k];
+                        break;
+                    }
+                }
             }
+            if (!pool) pool = questionBank["Общая база"] || Object.values(questionBank)[0];
 
             // Shuffle and pick
             quizBatch = [...pool].sort(() => Math.random() - 0.5).slice(0, QUIZ_SIZE);

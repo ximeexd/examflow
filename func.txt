@@ -1,0 +1,34 @@
+function startDuoQuiz(topic = "Общая база") {
+            playSoftTap();
+            qIdx = 0;
+            selected = null;
+            checked = false;
+            
+            let rawTopic = topic.replace(/ \(\u0443\u0440\u043e\u043a \d+\)$/, "").replace(/^\u0422\u0435\u0441\u0442: /, "");
+            let pool = typeof ProceduralEngine !== 'undefined' ? ProceduralEngine.getQuestions(rawTopic, QUIZ_SIZE) : null;
+            if (!pool) pool = questionBank[rawTopic];
+            
+            if (!pool) {
+                for (let k in questionBank) {
+                    if (rawTopic.includes(k) || k.includes(rawTopic)) {
+                        pool = questionBank[k];
+                        break;
+                    }
+                }
+            }
+            if (!pool) pool = questionBank["Общая база"] || Object.values(questionBank)[0] || [];
+
+            // Shuffle and pick
+            quizBatch = [...pool].sort(() => Math.random() - 0.5).slice(0, QUIZ_SIZE);
+            // If the pool has less than QUIZ_SIZE, fill the rest from General
+            if (quizBatch.length < QUIZ_SIZE) {
+                let fallbackFill = questionBank["Общая база"] || Object.values(questionBank)[0] || [];
+                const fill = [...fallbackFill].sort(() => Math.random() - 0.5).slice(0, QUIZ_SIZE - quizBatch.length);
+                quizBatch = quizBatch.concat(fill);
+            }
+            
+            openFullscreen('quiz-screen');
+            renderQ();
+        }
+
+        

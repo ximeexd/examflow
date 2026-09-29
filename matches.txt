@@ -1,0 +1,2 @@
+px] font-extrabold text-white leading-tight tracking-tight">Тренажёр</div>
+lass="text-[15px] font-extrabold text-white tracking-tight">Тренажёр</div>

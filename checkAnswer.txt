@@ -1,0 +1,112 @@
+function checkAnswer() {
+            if (selected === null && !checked) return;
+            const cur = quizBatch[qIdx];
+            const btn = document.getElementById('quiz-action-btn');
+            const feed = document.getElementById('quiz-feedback');
+
+            if (!checked) {
+                checked = true;
+                const options = document.getElementById('q-options').children;
+                if (selected === cur.ans) {
+                    playSuccess();
+                    options[selected].style.background = 'rgba(88,204,2,0.2)';
+                    options[selected].style.borderColor = '#58cc02';
+                    feed.innerHTML = `<span class="text-[#58cc02] font-black">${cur.exp}</span>`;
+                    btn.style.background = 'linear-gradient(135deg, #58cc02, #4cb300)';
+                    btn.innerText = "ДАЛЬШЕ →";
+                    if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
+                    showXpPopup(10);
+                } else {
+                    playError();
+                    if (options[selected]) {
+                        options[selected].style.background = 'rgba(255,75,75,0.2)';
+                        options[selected].style.borderColor = '#ff4b4b';
+                        options[selected].className += ' border-2';
+                    }
+                    if (options[cur.ans]) {
+                        options[cur.ans].style.background = 'rgba(88,204,2,0.15)';
+                        options[cur.ans].style.borderColor = '#58cc02';
+                        options[cur.ans].className += ' border-2';
+                    }
+                    feed.innerHTML = `<span class="text-[#ff6b6b] font-black">${cur.exp}</span>`;
+                    btn.style.background = 'linear-gradient(135deg, #ff4b4b, #e03030)';
+                    btn.style.borderBottom = '3px solid #c02020';
+                    btn.innerText = "ПОНЯТНО →";
+                    if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
+                }
+            } else {
+                if (qIdx + 1 < QUIZ_SIZE) {
+                    qIdx++;
+                    renderQ();
+                } else {
+                    closeFullscreen('quiz-screen');
+                    
+                    if (activeExternSection !== null) {
+                        const isEge = state.exam && state.exam.includes('ЕГЭ');
+                        const mainSubj = state.activeSyllabusSubject || 'Математика';
+                        const data = generateCurriculum(isEge, mainSubj);
+                        
+                        if (!state.completedNodes) state.completedNodes = [];
+                        for (let i = 0; i <= activeExternSection; i++) {
+                            data[i].nodes.forEach(node => {
+                                if (!state.completedNodes.includes(node.id)) {
+                                    state.completedNodes.push(node.id);
+                                }
+                            });
+                        }
+                        activeExternSection = null;
+                        if (typeof renderPath === 'function') renderPath();
+                        
+                        state.xp += 500;
+                        showToastMsg('Экстерн сдан!', '+500 XP • Раздел завершен', 'success');
+                        showXpPopup(500);
+                    } else if (activeCurriculumNode) {
+                        if (!state.completedNodes) state.completedNodes = [];
+                        if (!state.completedNodes.includes(activeCurriculumNode)) {
+                            state.completedNodes.push(activeCurriculumNode);
+                        }
+                        activeCurriculumNode = null;
+                        if (typeof renderPath === 'function') renderPath();
+                        
+                        state.xp += 50;
+                        showToastMsg('Урок пройден!', '+50 XP • Вы отлично справились!', 'success');
+                        showXpPopup(50);
+                    } else {
+                        state.xp += 50;
+                        showToastMsg('Тест пройден!', '+50 XP • Стрик зажжён!', 'success');
+                        showXpPopup(50);
+                    }
+
+                    state.coins += 10;
+                    state.rank += 5;
+                    state.streak = Math.max(1, (state.streak || 0) + 1);
+                    state.quizzesDone = (state.quizzesDone || 0) + 1;
+                    toggleQuest(2, true);
+                    saveState();
+                    playSuccess();
+                    if (window.confetti) {
+                        confetti({ particleCount: 120, spread: 90, origin: { y: 0.6 } });
+                        setTimeout(() => confetti({ particleCount: 60, spread: 50, origin: { y: 0.5 } }), 200);
+                    }
+                }
+            }
+        }
+
+        // ==========================================
+        // FLASHCARDS (8 terms)
+        // ==========================================
+        const cardsData = [
+            { term: "Инфляция", desc: "Устойчивый рост общего уровня цен, приводящий к снижению покупательной способности денег." },
+            { term: "ВВП", desc: "Рыночная стоимость всех конечных товаров и услуг, произведенных на территории страны за год." },
+            { term: "Конституция", desc: "Основной закон государства, обладающий высшей юридической силой." },
+            { term: "Демократия", desc: "Политический режим, при котором власть принадлежит народу и осуществляется через выборы." },
+            { term: "Дефицит бюджета", desc: "Ситуация, когда расходы государства превышают его доходы за определённый период." },
+            { term: "Правовое государство", desc: "Государство, где верховенство закона распространяется на все ветви власти и граждан." },
+            { term: "Социализация", desc: "Процесс усвоения человеком норм и ценностей общества на протяжении жизни." },
+            { term: "Монополия", desc: "Рыночная ситуация, когда единственный производитель контролирует весь объём выпуска товара." }
+        ];
+        let cardIdx = 0;
+        let isFlipped = false;
+        let cardBatch = [];
+
+        

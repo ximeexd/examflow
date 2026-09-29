@@ -607,11 +607,11 @@
                 </div>
 
                 <!-- Cheat sheets tile -->
-                <div onclick="openModal('textbook-modal')" class="bento-tile cursor-pointer h-[132px] p-4 flex flex-col justify-between" style="background: linear-gradient(145deg, #fb923c 0%, #c2410c 100%); border-bottom: 4px solid #9a3412;">
+                <div onclick="openTextbook()" class="bento-tile cursor-pointer h-[132px] p-4 flex flex-col justify-between" style="background: linear-gradient(145deg, #fb923c 0%, #c2410c 100%); border-bottom: 4px solid #9a3412;">
                     <div class="flex justify-between items-start">
                         <div>
-                            <div class="text-[14px] font-extrabold text-white leading-tight tracking-tight">Шпаргалки</div>
-                            <div class="text-[10px] font-semibold text-white/60 mt-0.5">Формулы и схемы</div>
+                            <div class="text-[14px] font-extrabold text-white leading-tight tracking-tight">Учебник</div>
+                            <div class="text-[10px] font-semibold text-white/60 mt-0.5">Вся теория ОГЭ/ЕГЭ</div>
                         </div>
                         <div class="w-9 h-9 rounded-xl bg-black/20 flex items-center justify-center backdrop-blur-sm">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -999,88 +999,51 @@
     </div>
 
     <!-- TEXTBOOK MODAL -->
-    <div id="textbook-modal" class="fullscreen-modal flex flex-col p-5 max-w-md mx-auto" style="background: #090e14;">
-        <div class="flex items-center justify-between pb-4">
-            <div class="flex items-center space-x-2.5">
-                <button onclick="closeFullscreen('textbook-modal')" class="w-9 h-9 rounded-2xl glass-card flex items-center justify-center text-gray-400 active:scale-90 transition-all">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    <div id="textbook-modal" class="fullscreen-modal flex flex-col pt-12 pb-5 px-4 max-w-md mx-auto relative" style="background: #090e14; z-index: 90;">
+        <!-- Background tech grid matching the app -->
+        <div class="absolute inset-0 z-0 pointer-events-none opacity-30">
+            <div class="absolute inset-0" style="background-image: repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.03) 0, rgba(255, 255, 255, 0.03) 1px, transparent 1px, transparent 12px);"></div>
+        </div>
+
+        <div class="relative z-10 flex flex-col h-full">
+            <!-- Header -->
+            <div class="flex items-center mb-4">
+                <button onclick="closeFullscreen('textbook-modal')" class="text-white active:scale-90 transition-transform p-1 -ml-1">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
                 </button>
-                <h3 class="text-sm font-black text-white">Справочник ФИПИ</h3>
+                <h2 class="text-xl font-bold text-white ml-2 tracking-tight" id="textbook-main-title">Учебник</h2>
             </div>
-        </div>
 
-        <div class="flex-1 overflow-y-auto space-y-3 pb-4">
-            <div class="glass-card p-4 space-y-2">
-                <div class="text-[11px] font-black text-[#ff9600] uppercase tracking-wider">Формулы сокращенного умножения</div>
-                <div class="text-xs text-gray-300 font-mono bg-black/30 p-3 rounded-xl space-y-1.5">
-                    <div>• (a + b)² = a² + 2ab + b²</div>
-                    <div>• (a - b)² = a² - 2ab + b²</div>
-                    <div>• a² - b² = (a - b)(a + b)</div>
-                    <div>• (a + b)³ = a³ + 3a²b + 3ab² + b³</div>
+            <!-- Search -->
+            <div class="relative mb-5" id="textbook-search-container">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 </div>
+                <input type="text" id="textbook-search" onkeyup="filterTextbook()" placeholder="Поиск" class="w-full bg-[#1e252e] text-gray-200 rounded-[18px] py-3 pl-11 pr-4 outline-none border border-transparent focus:border-white/10 text-[15px] placeholder-gray-500 font-medium">
             </div>
 
-            <div class="glass-card p-4 space-y-2">
-                <div class="text-[11px] font-black text-[#58cc02] uppercase tracking-wider">Свойства степеней</div>
-                <div class="text-xs text-gray-300 font-mono bg-black/30 p-3 rounded-xl space-y-1.5">
-                    <div>• aⁿ · aᵐ = aⁿ⁺ᵐ</div>
-                    <div>• aⁿ / aᵐ = aⁿ⁻ᵐ</div>
-                    <div>• (aⁿ)ᵐ = aⁿᵐ</div>
-                    <div>• a⁰ = 1 (a ≠ 0)</div>
-                </div>
+            <!-- Filters -->
+            <div class="flex flex-wrap gap-2 mb-4" id="textbook-filters">
+                <!-- JS populated -->
             </div>
 
-            <div class="glass-card p-4 space-y-2">
-                <div class="text-[11px] font-black text-[#1cb0f6] uppercase tracking-wider">Орфоэпический минимум</div>
-                <div class="text-xs text-gray-300 bg-black/30 p-3 rounded-xl space-y-1.5">
-                    <div>• т<span class="text-[#58cc02] font-black">О</span>рты (не тортЫ)</div>
-                    <div>• звон<span class="text-[#58cc02] font-black">И</span>т (не звОнит)</div>
-                    <div>• кварт<span class="text-[#58cc02] font-black">А</span>л (не квАртал)</div>
-                    <div>• катал<span class="text-[#58cc02] font-black">О</span>г (не каталОг)</div>
-                </div>
+            <!-- Article List -->
+            <div class="flex-1 overflow-y-auto space-y-3 pb-4 no-scrollbar" id="textbook-content">
+                <!-- JS populated -->
             </div>
-
-            <div class="glass-card p-4 space-y-2">
-                <div class="text-[11px] font-black text-[#ce82ff] uppercase tracking-wider">Теорема Пифагора</div>
-                <div class="text-xs text-gray-300 bg-black/30 p-3 rounded-xl space-y-1.5">
-                    <div>В прямоугольном треугольнике:</div>
-                    <div class="text-center text-base font-black text-white py-1">c² = a² + b²</div>
-                    <div>где c — гипотенуза, a и b — катеты</div>
-                </div>
-            </div>
-        </div>
-
-        <button onclick="closeFullscreen('textbook-modal')" class="w-full py-3.5 rounded-2xl glass-card text-white font-black text-xs active:scale-[0.98] transition-all">ЗАКРЫТЬ</button>
-    </div>
-
-    
-    <!-- TRAINER MODAL -->
-    <div id="trainer-modal" class="modal-overlay hidden fixed inset-0 z-[100] flex items-end justify-center sm:items-center">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeModal('trainer-modal')"></div>
-        <div class="modal-sheet rounded-t-[28px] p-5 w-full max-w-md space-y-4 relative" style="background: rgba(10,15,22,0.98); border-top: 1px solid rgba(255,255,255,0.06);">
-            <div class="w-10 h-1.5 rounded-full bg-white/20 mx-auto mb-4"></div>
-            <h2 class="text-xl font-extrabold text-white">Выбери предмет для тренировки</h2>
-            <p class="text-xs font-medium text-gray-400">Алгоритм подберёт задания на основе твоих сегодняшних ошибок и успехов.</p>
             
-            <div class="grid grid-cols-2 gap-3 mt-4">
-                <button onclick="startTrainer('Математика')" class="p-4 rounded-2xl flex flex-col items-center justify-center space-y-2 hover:bg-white/5 active:scale-95 transition-all" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);">
-                    <div class="text-3xl">📐</div>
-                    <span class="text-xs font-bold text-white mt-2">Математика</span>
-                </button>
-                <button onclick="startTrainer('Русский язык')" class="p-4 rounded-2xl flex flex-col items-center justify-center space-y-2 hover:bg-white/5 active:scale-95 transition-all" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);">
-                    <div class="text-3xl">📚</div>
-                    <span class="text-xs font-bold text-white mt-2">Русский язык</span>
-                </button>
-                <button onclick="startTrainer('Информатика')" class="p-4 rounded-2xl flex flex-col items-center justify-center space-y-2 hover:bg-white/5 active:scale-95 transition-all" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);">
-                    <div class="text-3xl">💻</div>
-                    <span class="text-xs font-bold text-white mt-2">Информатика</span>
-                </button>
-                <button onclick="startTrainer('Обществознание')" class="p-4 rounded-2xl flex flex-col items-center justify-center space-y-2 hover:bg-white/5 active:scale-95 transition-all" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);">
-                    <div class="text-3xl">🌍</div>
-                    <span class="text-xs font-bold text-white mt-2">Общество</span>
-                </button>
+            <!-- Article Reader (Hidden by default) -->
+            <div id="textbook-reader" class="hidden flex-1 overflow-y-auto pb-8 no-scrollbar bg-[#090e14] absolute inset-0 pt-12 px-4 z-20">
+                <div class="flex items-center mb-6">
+                    <button onclick="closeTextbookReader()" class="text-white active:scale-90 transition-transform p-1 -ml-1">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                    </button>
+                    <div id="reader-subject-badge" class="ml-3 text-[10px] font-bold text-white px-2 py-0.5 rounded"></div>
+                </div>
+                <h1 id="reader-title" class="text-2xl font-black text-white leading-tight mb-5 tracking-tight"></h1>
+                <div id="reader-body" class="text-[15px] font-medium text-gray-300 space-y-4 leading-relaxed" style="word-wrap: break-word;">
+                </div>
             </div>
-            <button onclick="closeModal('trainer-modal')" class="w-full mt-2 py-4 rounded-2xl text-gray-400 font-bold active:scale-95 transition-all hover:bg-white/5">Закрыть</button>
         </div>
     </div>
 
@@ -1183,6 +1146,7 @@
     <!-- ========================================= -->
     <!-- SCRIPT ENGINE                              -->
     <!-- ========================================= -->
+    <script src="textbook_db.js"></script>
     <script>
         // ==========================================
         // SOUND ENGINE (Web Audio — warm organic)
@@ -1483,7 +1447,264 @@
         }
 
         // ==========================================
-        // STATE
+        
+        // ==========================================
+        // TEXTBOOK ENGINE
+        // ==========================================
+        let activeTextbookFilter = null;
+        let searchQuery = '';
+
+        const SUBJECT_CONFIG = {
+            "Литература": { color: "#8b5cf6", class: "bg-purple-500", icon: "📚" },
+            "География": { color: "#10b981", class: "bg-emerald-500", icon: "🧭" },
+            "Русский язык": { color: "#f97316", class: "bg-orange-500", icon: "✍️" },
+            "Математика": { color: "#3b82f6", class: "bg-blue-500", icon: "📐" },
+            "Базовая математика": { color: "#2563eb", class: "bg-blue-600", icon: "📏" },
+            "Обществознание": { color: "#eab308", class: "bg-yellow-500", icon: "🏛️" },
+            "История": { color: "#ef4444", class: "bg-red-500", icon: "📜" },
+            "Английский язык": { color: "#0ea5e9", class: "bg-sky-500", icon: "🇬🇧" },
+            "Биология": { color: "#84cc16", class: "bg-lime-500", icon: "🧬" },
+            "Химия": { color: "#d946ef", class: "bg-fuchsia-500", icon: "🧪" },
+            "Физика": { color: "#06b6d4", class: "bg-cyan-500", icon: "⚛️" },
+            "Информатика": { color: "#a855f7", class: "bg-purple-400", icon: "💻" }
+        };
+
+        function openTextbook() {
+            activeTextbookFilter = null;
+            searchQuery = '';
+            document.getElementById('textbook-search').value = '';
+            document.getElementById('textbook-reader').classList.add('hidden');
+            document.getElementById('textbook-search-container').classList.remove('hidden');
+            document.getElementById('textbook-filters').classList.remove('hidden');
+            document.getElementById('textbook-content').classList.remove('hidden');
+            document.getElementById('textbook-main-title').textContent = 'Учебник';
+            
+            renderTextbookFilters();
+            renderTextbookList();
+            openFullscreen('textbook-modal');
+        }
+
+        function filterTextbook() {
+            searchQuery = document.getElementById('textbook-search').value.toLowerCase();
+            renderTextbookList();
+        }
+
+        function toggleTextbookFilter(subj) {
+            if (activeTextbookFilter === subj) {
+                activeTextbookFilter = null;
+            } else {
+                activeTextbookFilter = subj;
+            }
+            renderTextbookFilters();
+            renderTextbookList();
+        }
+
+        function renderTextbookFilters() {
+            const container = document.getElementById('textbook-filters');
+            if (!container || typeof TEXTBOOK_DB === 'undefined') return;
+            
+            // Get unique subjects from DB
+            const subjectsSet = new Set();
+            TEXTBOOK_DB.articles.forEach(a => subjectsSet.add(a.subject));
+            const subjects = Array.from(subjectsSet);
+
+            let html = '';
+            subjects.forEach(subj => {
+                const conf = SUBJECT_CONFIG[subj] || { color: "#6b7280", class: "bg-gray-500", icon: "📘" };
+                const isActive = activeTextbookFilter === subj;
+                
+                // Style matching the premium screenshot
+                const border = isActive ? `border-color: ${conf.color};` : `border-color: rgba(255,255,255,0.1);`;
+                const bg = isActive ? `background: ${conf.color}20;` : `background: transparent;`;
+                
+                html += `
+                    <button onclick="toggleTextbookFilter('${subj}')" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-full border transition-all active:scale-95" style="${border} ${bg}">
+                        <div class="w-5 h-5 rounded-full flex items-center justify-center text-[10px]" style="background: ${conf.color};">${conf.icon}</div>
+                        <span class="text-[13px] font-semibold text-gray-200">${subj}</span>
+                    </button>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function renderTextbookList() {
+            const content = document.getElementById('textbook-content');
+            if (!content || typeof TEXTBOOK_DB === 'undefined') return;
+
+            const isEge = state.exam && state.exam.includes('ЕГЭ') ? 'ЕГЭ' : 'ОГЭ';
+            
+            let articles = TEXTBOOK_DB.articles.filter(a => a.exam === 'all' || a.exam === isEge);
+            
+            if (activeTextbookFilter) {
+                articles = articles.filter(a => a.subject === activeTextbookFilter);
+            }
+            if (searchQuery) {
+                articles = articles.filter(a => a.title.toLowerCase().includes(searchQuery) || a.subject.toLowerCase().includes(searchQuery));
+            }
+
+            if (articles.length === 0) {
+                content.innerHTML = `<div class="text-gray-500 font-medium text-center text-sm mt-10">Ничего не найдено</div>`;
+                return;
+            }
+
+            let html = '';
+            articles.forEach(a => {
+                const conf = SUBJECT_CONFIG[a.subject] || { color: "#6b7280", class: "bg-gray-500", icon: "" };
+                html += `
+                    <div onclick="openTextbookArticle('${a.id}')" class="rounded-[18px] p-4 cursor-pointer active:scale-[0.98] transition-transform" style="background: #1e252e;">
+                        <div class="inline-flex items-center px-2 py-0.5 rounded mb-2" style="background: ${conf.color};">
+                            <span class="text-[10px] font-bold text-white">${a.subject}</span>
+                        </div>
+                        <div class="text-[15px] font-bold text-gray-200 leading-tight">${a.title}</div>
+                    </div>
+                `;
+            });
+            content.innerHTML = html;
+        }
+
+        function openTextbookArticle(id) {
+            const article = TEXTBOOK_DB.articles.find(a => a.id === id);
+            if (!article) return;
+
+            document.getElementById('textbook-search-container').classList.add('hidden');
+            document.getElementById('textbook-filters').classList.add('hidden');
+            document.getElementById('textbook-content').classList.add('hidden');
+            document.getElementById('textbook-main-title').textContent = '';
+            
+            const reader = document.getElementById('textbook-reader');
+            reader.classList.remove('hidden');
+
+            const conf = SUBJECT_CONFIG[article.subject] || { color: "#6b7280", class: "bg-gray-500" };
+            const badge = document.getElementById('reader-subject-badge');
+            badge.textContent = article.subject;
+            badge.style.background = conf.color;
+
+            document.getElementById('reader-title').textContent = article.title;
+            document.getElementById('reader-body').innerHTML = article.html;
+        }
+
+        function closeTextbookReader() {
+            document.getElementById('textbook-reader').classList.add('hidden');
+            document.getElementById('textbook-search-container').classList.remove('hidden');
+            document.getElementById('textbook-filters').classList.remove('hidden');
+            document.getElementById('textbook-content').classList.remove('hidden');
+            document.getElementById('textbook-main-title').textContent = 'Учебник';
+        }
+        // ==========================================
+        let currentTextbookLevel = 'subjects';
+        let currentTextbookSubject = '';
+
+        function openTextbook() {
+            currentTextbookLevel = 'subjects';
+            renderTextbook();
+            openFullscreen('textbook-modal');
+        }
+
+        function closeTextbook() {
+            if (currentTextbookLevel === 'article') {
+                currentTextbookLevel = 'topics';
+                renderTextbook();
+            } else if (currentTextbookLevel === 'topics') {
+                currentTextbookLevel = 'subjects';
+                renderTextbook();
+            } else {
+                closeFullscreen('textbook-modal');
+            }
+        }
+
+        function renderTextbook() {
+            const content = document.getElementById('textbook-content');
+            const title = document.getElementById('textbook-title');
+            if (!content) return;
+
+            const isEge = state.exam && state.exam.includes('ЕГЭ') ? 'ЕГЭ' : 'ОГЭ';
+            const db = typeof TEXTBOOK_DB !== 'undefined' ? TEXTBOOK_DB[isEge] : null;
+
+            if (!db) {
+                content.innerHTML = `<div class="text-gray-500 font-bold text-center text-sm mt-10">Загрузка базы данных...</div>`;
+                return;
+            }
+
+            if (currentTextbookLevel === 'subjects') {
+                title.textContent = `Учебник ${isEge}`;
+                let html = '';
+                const subjects = Object.keys(db);
+                subjects.forEach(subj => {
+                    html += `
+                        <div onclick="openTextbookSubject('${subj}')" class="glass-card p-4 rounded-[22px] flex items-center justify-between cursor-pointer active:scale-[0.98] transition-transform" style="background: rgba(14,20,32,0.6);">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); box-shadow: inset 0 2px 10px rgba(255,255,255,0.02);">${getSubjectIcon(subj)}</div>
+                                <div>
+                                    <div class="text-[15px] font-extrabold text-white tracking-tight">${subj}</div>
+                                    <div class="text-[11px] font-semibold text-gray-500 mt-0.5">${db[subj].length} тем(ы)</div>
+                                </div>
+                            </div>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                        </div>
+                    `;
+                });
+                content.innerHTML = html;
+            } 
+            else if (currentTextbookLevel === 'topics') {
+                title.textContent = currentTextbookSubject;
+                let html = '';
+                const topics = db[currentTextbookSubject];
+                if (!topics || topics.length === 0) {
+                    content.innerHTML = `<div class="text-gray-500 font-bold text-center text-sm mt-10">В этом разделе пока пусто</div>`;
+                    return;
+                }
+                topics.forEach((topic, idx) => {
+                    html += `
+                        <div onclick="openTextbookArticle(${idx})" class="glass-card p-4 rounded-[20px] flex items-center justify-between cursor-pointer active:scale-[0.98] transition-transform hover:bg-white/[0.03]">
+                            <div class="text-[13px] font-bold text-gray-200 leading-tight pr-4">${topic.title}</div>
+                            <div class="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center shrink-0">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                            </div>
+                        </div>
+                    `;
+                });
+                content.innerHTML = html;
+            }
+        }
+
+        function openTextbookSubject(subj) {
+            currentTextbookSubject = subj;
+            currentTextbookLevel = 'topics';
+            renderTextbook();
+        }
+
+        function openTextbookArticle(idx) {
+            currentTextbookLevel = 'article';
+            const isEge = state.exam && state.exam.includes('ЕГЭ') ? 'ЕГЭ' : 'ОГЭ';
+            const article = TEXTBOOK_DB[isEge][currentTextbookSubject][idx];
+            
+            const title = document.getElementById('textbook-title');
+            title.textContent = "Чтение";
+            
+            const content = document.getElementById('textbook-content');
+            content.innerHTML = `
+                <div class="glass-card p-6 rounded-[24px]" style="background: rgba(14,20,32,0.7); border: 1px solid rgba(255,255,255,0.08);">
+                    <h2 class="text-xl font-black text-white leading-tight mb-5 tracking-tight">${article.title}</h2>
+                    <div class="text-[14px] font-medium text-gray-300 space-y-4 leading-relaxed" style="word-wrap: break-word;">
+                        ${article.html}
+                    </div>
+                </div>
+            `;
+        }
+
+        function getSubjectIcon(subj) {
+            if (subj.includes('Математика')) return '📐';
+            if (subj.includes('Русский')) return '📚';
+            if (subj.includes('Информатика')) return '💻';
+            if (subj.includes('Общество')) return '🌍';
+            if (subj.includes('Литература')) return '📖';
+            if (subj.includes('Физика')) return '⚡';
+            if (subj.includes('История')) return '🏛️';
+            return '📘';
+        }
+
+        // ==========================================
+// STATE
         // ==========================================
         const resetKey = 'examflow_v4_reset';
         if (!localStorage.getItem(resetKey)) {

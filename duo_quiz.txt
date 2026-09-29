@@ -1,0 +1,181 @@
+function startDuoQuiz(topic = "Общая база") {
+            playSoftTap();
+            qIdx = 0;
+            selected = null;
+            checked = false;
+            
+            let rawTopic = topic.replace(/ \(\u0443\u0440\u043e\u043a \d+\)$/, "").replace(/^\u0422\u0435\u0441\u0442: /, "");
+            let pool = typeof ProceduralEngine !== 'undefined' ? ProceduralEngine.getQuestions(rawTopic, QUIZ_SIZE) : null;
+            if (!pool) pool = questionBank[rawTopic];
+            
+            if (!pool) {
+                for (let k in questionBank) {
+                    if (rawTopic.includes(k) || k.includes(rawTopic)) {
+                        pool = questionBank[k];
+                        break;
+                    }
+                }
+            }
+            if (!pool && state.activeSyllabusSubject) {
+                let subjBase = state.activeSyllabusSubject + " (Общая)";
+                pool = questionBank[subjBase];
+            }
+            if (!pool) {
+                let subj = state.activeSyllabusSubject || "";
+                if (subj.includes("\u043c\u0430\u0442\u0435\u043c\u0430\u0442\u0438\u043a\u0430")) pool = questionBank["Математика (Общая)"];
+            }
+            if (!pool) pool = questionBank["Общая база"] || Object.values(questionBank)[0] || [];
+
+            // Shuffle and pick
+            quizBatch = [...pool].sort(() => Math.random() - 0.5).slice(0, QUIZ_SIZE);
+            // If the pool has less than QUIZ_SIZE, fill the rest from General
+            if (quizBatch.length < QUIZ_SIZE) {
+                let fallbackFill = pool && pool.length > 0 ? pool : (questionBank[state.activeSyllabusSubject + " (Общая)"] || questionBank["Общая база"] || Object.values(questionBank)[0] || []);
+                const fill = [...fallbackFill].sort(() => Math.random() - 0.5).slice(0, QUIZ_SIZE - quizBatch.length);
+                quizBatch = quizBatch.concat(fill);
+            }
+            
+            openFullscreen('quiz-screen');
+            renderQ();
+        }
+
+        function renderQ() {
+            selected = null;
+            checked = false;
+            const cur = quizBatch[qIdx];
+            document.getElementById('q-box').innerText = cur.q;
+            document.getElementById('q-title').innerText = cur.title;
+            document.getElementById('q-category-badge').innerText = cur.cat;
+            document.getElementById('quiz-step-text').innerText = `${qIdx + 1}/${QUIZ_SIZE}`;
+            document.getElementById('quiz-progress-bar').style.width = `${((qIdx + 1) / QUIZ_SIZE) * 100}%`;
+            document.getElementById('quiz-feedback').innerHTML = '';
+
+            const btn = document.getElementById('quiz-action-btn');
+            btn.innerText = "ПРОВЕРИТЬ";
+            btn.className = "bg-gray-700 text-gray-400 text-xs font-black uppercase tracking-wider py-4 px-7 rounded-2xl cursor-not-allowed opacity-50 transition-all";
+
+            const container = document.getElementById('q-options');
+            container.innerHTML = '';
+
+            cur.opts.forEach((opt, idx) => {
+                const b = document.createElement('button');
+                b.className = "glass-card p-4 text-center text-lg font-black text-white hover:bg-white/[0.06] active:scale-95 transition-all border-2 border-transparent";
+                b.innerText = opt;
+                b.onclick = () => {
+                    if (checked) return;
+                    playSoftTap();
+                    for (let c of container.children) {
+                        c.className = "glass-card p-4 text-center text-lg font-black text-white transition-all border-2 border-transparent";
+                        c.style.background = '';
+                    }
+                    b.className = "glass-card p-4 text-center text-lg font-black text-white transition-all border-2 border-[#1cb0f6] shadow-[0_0_10px_rgba(28,176,246,0.2)]";
+                    b.style.background = 'rgba(28,176,246,0.1)';
+                    selected = idx;
+                    btn.className = "text-white text-xs font-black uppercase tracking-wider py-4 px-7 rounded-2xl active:scale-95 transition-all shadow-lg";
+                    btn.style.background = 'linear-gradient(135deg, #58cc02, #4cb300)';
+                    btn.style.borderBottom = '3px solid #3d9400';
+                    btn.style.cursor = 'pointer';
+                    btn.style.opacity = '1';
+                };
+                container.appendChild(b);
+            });
+        }
+
+        function checkAnswer() {
+            if (selected === null && !checked) return;
+            const cur = quizBatch[qIdx];
+            const btn = document.getElementById('quiz-action-btn');
+            const feed = document.getElementById('quiz-feedback');
+
+            if (!checked) {
+                checked = true;
+                const options = document.getElementById('q-options').children;
+                if (selected === cur.ans) {
+                    playSuccess();
+                    options[selected].style.background = 'rgba(88,204,2,0.2)';
+                    options[selected].style.borderColor = '#58cc02';
+                    feed.innerHTML = `<span class="text-[#58cc02] font-black">${cur.exp}</span>`;
+                    btn.style.background = 'linear-gradient(135deg, #58cc02, #4cb300)';
+                    btn.innerText = "ДАЛЬШЕ →";
+                    if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
+                    showXpPopup(10);
+                } else {
+                    playError();
+                    if (options[selected]) {
+                        options[selected].style.background = 'rgba(255,75,75,0.2)';
+                        options[selected].style.borderColor = '#ff4b4b';
+                        options[selected].className += ' border-2';
+                    }
+                    if (options[cur.ans]) {
+                        options[cur.ans].style.background = 'rgba(88,204,2,0.15)';
+                        options[cur.ans].style.borderColor = '#58cc02';
+                        options[cur.ans].className += ' border-2';
+                    }
+                    feed.innerHTML = `<span class="text-[#ff6b6b] font-black">${cur.exp}</span>`;
+                    btn.style.background = 'linear-gradient(135deg, #ff4b4b, #e03030)';
+                    btn.style.borderBottom = '3px solid #c02020';
+                    btn.innerText = "ПОНЯТНО →";
+                    if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
+                }
+            } else {
+                if (qIdx + 1 < QUIZ_SIZE) {
+                    qIdx++;
+                    renderQ();
+                } else {
+                    closeFullscreen('quiz-screen');
+                    
+                    if (activeExternSection !== null) {
+                        const isEge = state.exam && state.exam.includes('ЕГЭ');
+                        const mainSubj = state.activeSyllabusSubject || 'Математика';
+                        const data = generateCurriculum(isEge, mainSubj);
+                        
+                        if (!state.completedNodes) state.completedNodes = [];
+                        for (let i = 0; i <= activeExternSection; i++) {
+                            data[i].nodes.forEach(node => {
+                                if (!state.completedNodes.includes(node.id)) {
+                                    state.completedNodes.push(node.id);
+                                }
+                            });
+                        }
+                        activeExternSection = null;
+                        if (typeof renderPath === 'function') renderPath();
+                        
+                        state.xp += 500;
+                        showToastMsg('Экстерн сдан!', '+500 XP • Раздел завершен', 'success');
+                        showXpPopup(500);
+                    } else if (activeCurriculumNode) {
+                        if (!state.completedNodes) state.completedNodes = [];
+                        if (!state.completedNodes.includes(activeCurriculumNode)) {
+                            state.completedNodes.push(activeCurriculumNode);
+                        }
+                        activeCurriculumNode = null;
+                        if (typeof renderPath === 'function') renderPath();
+                        
+                        state.xp += 50;
+                        showToastMsg('Урок пройден!', '+50 XP • Вы отлично справились!', 'success');
+                        showXpPopup(50);
+                    } else {
+                        state.xp += 50;
+                        showToastMsg('Тест пройден!', '+50 XP • Стрик зажжён!', 'success');
+                        showXpPopup(50);
+                    }
+
+                    state.coins += 10;
+                    state.rank += 5;
+                    state.streak = Math.max(1, (state.streak || 0) + 1);
+                    state.quizzesDone = (state.quizzesDone || 0) + 1;
+                    toggleQuest(2, true);
+                    saveState();
+                    playSuccess();
+                    if (window.confetti) {
+                        confetti({ particleCount: 120, spread: 90, origin: { y: 0.6 } });
+                        setTimeout(() => confetti({ particleCount: 60, spread: 50, origin: { y: 0.5 } }), 200);
+                    }
+                }
+            }
+        }
+
+        // ==========================================
+        // FLASHCARDS (8 terms)
+        // ==========================================
+        

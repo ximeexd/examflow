@@ -1,0 +1,56 @@
+<div id="textbook-modal" class="fullscreen-modal flex flex-col p-5 max-w-md mx-auto" style="background: #090e14;">
+        <div class="flex items-center justify-between pb-4">
+            <div class="flex items-center space-x-2.5">
+                <button onclick="closeFullscreen('textbook-modal')" class="w-9 h-9 rounded-2xl glass-card flex items-center justify-center text-gray-400 active:scale-90 transition-all">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                </button>
+                <h3 class="text-sm font-black text-white">Справочник ФИПИ</h3>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto space-y-3 pb-4">
+            <div class="glass-card p-4 space-y-2">
+                <div class="text-[11px] font-black text-[#ff9600] uppercase tracking-wider">Формулы сокращенного умножения</div>
+                <div class="text-xs text-gray-300 font-mono bg-black/30 p-3 rounded-xl space-y-1.5">
+                    <div>• (a + b)² = a² + 2ab + b²</div>
+                    <div>• (a - b)² = a² - 2ab + b²</div>
+                    <div>• a² - b² = (a - b)(a + b)</div>
+                    <div>• (a + b)³ = a³ + 3a²b + 3ab² + b³</div>
+                </div>
+            </div>
+
+            <div class="glass-card p-4 space-y-2">
+                <div class="text-[11px] font-black text-[#58cc02] uppercase tracking-wider">Свойства степеней</div>
+                <div class="text-xs text-gray-300 font-mono bg-black/30 p-3 rounded-xl space-y-1.5">
+                    <div>• aⁿ · aᵐ = aⁿ⁺ᵐ</div>
+                    <div>• aⁿ / aᵐ = aⁿ⁻ᵐ</div>
+                    <div>• (aⁿ)ᵐ = aⁿᵐ</div>
+                    <div>• a⁰ = 1 (a ≠ 0)</div>
+                </div>
+            </div>
+
+            <div class="glass-card p-4 space-y-2">
+                <div class="text-[11px] font-black text-[#1cb0f6] uppercase tracking-wider">Орфоэпический минимум</div>
+                <div class="text-xs text-gray-300 bg-black/30 p-3 rounded-xl space-y-1.5">
+                    <div>• т<span class="text-[#58cc02] font-black">О</span>рты (не тортЫ)</div>
+                    <div>• звон<span class="text-[#58cc02] font-black">И</span>т (не звОнит)</div>
+                    <div>• кварт<span class="text-[#58cc02] font-black">А</span>л (не квАртал)</div>
+                    <div>• катал<span class="text-[#58cc02] font-black">О</span>г (не каталОг)</div>
+                </div>
+            </div>
+
+            <div class="glass-card p-4 space-y-2">
+                <div class="text-[11px] font-black text-[#ce82ff] uppercase tracking-wider">Теорема Пифагора</div>
+                <div class="text-xs text-gray-300 bg-black/30 p-3 rounded-xl space-y-1.5">
+                    <div>В прямоугольном треугольнике:</div>
+                    <div class="text-center text-base font-black text-white py-1">c² = a² + b²</div>
+                    <div>где c — гипотенуза, a и b — катеты</div>
+                </div>
+            </div>
+        </div>
+
+        <button onclick="closeFullscreen('textbook-modal')" class="w-full py-3.5 rounded-2xl glass-card text-white font-black text-xs active:scale-[0.98] transition-all">ЗАКРЫТЬ</button>
+    </div>
+
+    
+    

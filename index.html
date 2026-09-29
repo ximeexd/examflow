@@ -2455,13 +2455,12 @@
             if (!pool) pool = questionBank["Общая база"] || Object.values(questionBank)[0] || [];
 
             // Shuffle and pick
-            quizBatch = [...pool].sort(() => Math.random() - 0.5).slice(0, QUIZ_SIZE);
-            // If the pool has less than QUIZ_SIZE, fill the rest from General
-            if (quizBatch.length < QUIZ_SIZE) {
-                let fallbackFill = pool && pool.length > 0 ? pool : (questionBank[state.activeSyllabusSubject + " (Общая)"] || questionBank["Общая база"] || Object.values(questionBank)[0] || []);
-                const fill = [...fallbackFill].sort(() => Math.random() - 0.5).slice(0, QUIZ_SIZE - quizBatch.length);
-                quizBatch = quizBatch.concat(fill);
+            quizBatch = [...pool].sort(() => Math.random() - 0.5).slice(0, Math.min(QUIZ_SIZE, pool.length));
+            if (quizBatch.length === 0) {
+                let fallbackFill = questionBank[state.activeSyllabusSubject + " (Общая)"] || questionBank["Общая база"] || Object.values(questionBank)[0] || [];
+                quizBatch = [...fallbackFill].sort(() => Math.random() - 0.5).slice(0, Math.min(QUIZ_SIZE, fallbackFill.length));
             }
+
             
             openFullscreen('quiz-screen');
             renderQ();
@@ -2474,8 +2473,8 @@
             document.getElementById('q-box').innerText = cur.q;
             document.getElementById('q-title').innerText = cur.title;
             document.getElementById('q-category-badge').innerText = cur.cat;
-            document.getElementById('quiz-step-text').innerText = `${qIdx + 1}/${QUIZ_SIZE}`;
-            document.getElementById('quiz-progress-bar').style.width = `${((qIdx + 1) / QUIZ_SIZE) * 100}%`;
+            document.getElementById('quiz-step-text').innerText = `${qIdx + 1}/${quizBatch.length}`;
+            document.getElementById('quiz-progress-bar').style.width = `${((qIdx + 1) / quizBatch.length) * 100}%`;
             document.getElementById('quiz-feedback').innerHTML = '';
 
             const btn = document.getElementById('quiz-action-btn');
@@ -2546,7 +2545,7 @@
                     if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
                 }
             } else {
-                if (qIdx + 1 < QUIZ_SIZE) {
+                if (qIdx + 1 < quizBatch.length) {
                     qIdx++;
                     renderQ();
                 } else {

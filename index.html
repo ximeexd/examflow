@@ -331,54 +331,6 @@
             animation: shimmer 1.5s infinite;
             border-radius: 12px;
         }
-    
-        
-        /* ---------------- LIGHT THEME OVERRIDES ---------------- */
-        .theme-light .bg-\[\#131f24\] { background-color: #f8fafc !important; }
-
-        body.theme-light { background-color: #f8fafc !important; color: #334155 !important; }
-        .theme-light .text-white { color: #0f172a !important; }
-        .theme-light .text-slate-200, .theme-light .text-gray-300 { color: #334155 !important; }
-        .theme-light .text-gray-400 { color: #64748b !important; }
-        .theme-light .text-gray-500, .theme-light .text-gray-600 { color: #94a3b8 !important; }
-        
-        .theme-light [style*="background: #090e14"], .theme-light [style*="background: rgba(9,14,20"] { background: #f8fafc !important; }
-        
-        .theme-light .glass-card,
-        .theme-light .modal-sheet,
-        .theme-light [style*="background: rgba(10,15,22"],
-        .theme-light [style*="background: rgba(10,16,24"],
-        .theme-light [style*="background: rgba(12,18,28"],
-        .theme-light [style*="background: rgba(14,20,32"],
-        .theme-light [style*="background: rgba(18,28,42"],
-        .theme-light [style*="background: rgba(255,255,255,0.02)"] {
-            background: #ffffff !important;
-            border-color: #e2e8f0 !important;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.04) !important;
-        }
-        
-        .theme-light .bg-\[\#121820\]\/90 { background-color: rgba(255, 255, 255, 0.95) !important; border-color: #e2e8f0 !important; }
-        
-        .theme-light svg[stroke="white"] { stroke: #0f172a !important; }
-        .theme-light svg[fill="white"] { fill: #0f172a !important; }
-        
-        .theme-light [style*="background: linear-gradient"] { color: #ffffff !important; }
-        .theme-light [style*="background: linear-gradient"] .text-white { color: #ffffff !important; }
-        .theme-light [style*="background: linear-gradient"] svg[stroke="white"],
-        .theme-light [style*="background: linear-gradient"] svg[stroke="#0f172a"] { stroke: #ffffff !important; }
-        .theme-light [style*="background: linear-gradient"] svg[fill="white"],
-        .theme-light [style*="background: linear-gradient"] svg[fill="#0f172a"] { fill: #ffffff !important; }
-        
-        .theme-light .bg-\[\#1c242a\] { background-color: #ffffff !important; }
-        .theme-light .border-\[\#131a1e\] { border-color: #e2e8f0 !important; }
-        
-        .theme-light [style*="background: rgba(14,20,32,0.8)"] { background: #e2e8f0 !important; border-color: #cbd5e1 !important; }
-        .theme-light [style*="background: rgba(255,255,255,0.06)"] { background: #e2e8f0 !important; }
-        
-        .theme-light [style*="background: rgba(88,204,2,0.1)"] .text-white { color: #58cc02 !important; }
-        .theme-light [style*="background: rgba(168,85,247,0.1)"] .text-white { color: #a855f7 !important; }
-        .theme-light [style*="background: rgba(255,200,0,0.1)"] .text-white { color: #d4a000 !important; }
-
     </style>
 </head>
 <body class="min-h-screen flex flex-col pb-20 max-w-md mx-auto relative">
@@ -652,10 +604,25 @@
                 </div>
             </div>
 
-            
-                <div class="bg-white text-slate-900 text-[11px] font-extrabold px-4 py-2.5 rounded-xl shadow-lg active:scale-95 transition-transform">Спросить</div>
+            <!-- Mock Exams full-width tile -->
+            <div onclick="showToastMsg('В разработке', 'Пробные варианты появятся в следующем обновлении!', 'info')" class="bento-tile cursor-pointer p-4 flex items-center justify-between" style="background: linear-gradient(145deg, #10b981 0%, #047857 100%); border-bottom: 4px solid #064e3b; border-radius: 22px;">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 rounded-2xl bg-black/20 flex items-center justify-center backdrop-blur-sm">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-[15px] font-extrabold text-white tracking-tight">Пробные варианты</div>
+                        <div class="text-[11px] font-semibold text-white/70 mt-0.5">ФИПИ 2026</div>
+                    </div>
+                </div>
+                <div class="bg-white text-slate-900 text-[11px] font-extrabold px-4 py-2.5 rounded-xl shadow-lg active:scale-95 transition-transform">Решать</div>
             </div>
-        </div>
 
         <!-- LEVEL CARD -->
         <div class="stagger-5 p-4 rounded-2xl flex items-center space-x-4" style="background: linear-gradient(145deg, rgba(18,28,42,0.96), rgba(12,18,30,0.96)); border: 1px solid rgba(255,200,0,0.12); border-radius: 22px; box-shadow: 0 0 0 1px rgba(255,200,0,0.05), 0 8px 32px rgba(0,0,0,0.35);">
@@ -844,15 +811,6 @@
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#58cc02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                         </div>
                         <span class="text-[13px] font-semibold text-white">Профиль</span>
-                    </div>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                </button>
-                <button onclick="toggleTheme()" class="w-full flex items-center justify-between p-3 rounded-xl hover:bg-white/[0.03] active:scale-[0.99] transition-all">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background: rgba(168,85,247,0.1);">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
-                        </div>
-                        <span class="text-[13px] font-semibold text-white">Сменить тему</span>
                     </div>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                 </button>
@@ -1492,21 +1450,6 @@
             cardsLearned: 0,
             quizzesDone: 0
         };
-
-                function toggleTheme() {
-            playSoftTap();
-            state.theme = state.theme === 'light' ? 'dark' : 'light';
-            applyTheme();
-            saveState();
-        }
-
-        function applyTheme() {
-            if (state.theme === 'light') {
-                document.body.classList.add('theme-light');
-            } else {
-                document.body.classList.remove('theme-light');
-            }
-        }
 
         function loadState() {
             const s = localStorage.getItem('examflow_v4_state');

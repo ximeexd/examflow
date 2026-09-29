@@ -5642,7 +5642,7 @@
             selected = null;
             checked = false;
             
-            let rawTopic = topic.replace(/ \(урок \d+\)$/, "").replace(/^Тест: /, "");
+            let rawTopic = topic.replace(/ \(\u0443\u0440\u043e\u043a \d+\)$/, "").replace(/^\u0422\u0435\u0441\u0442: /, "");
             let pool = typeof ProceduralEngine !== 'undefined' ? ProceduralEngine.getQuestions(rawTopic, QUIZ_SIZE) : null;
             if (!pool) pool = questionBank[rawTopic];
             

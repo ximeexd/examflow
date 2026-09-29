@@ -560,11 +560,11 @@
                 </div>
 
                 <!-- Quiz tile -->
-                <div onclick="startDuoQuiz()" class="bento-tile cursor-pointer h-[132px] p-4 flex flex-col justify-between" style="background: linear-gradient(145deg, #a855f7 0%, #7c3aed 100%); border-bottom: 4px solid #5b21b6;">
+                <div onclick="openModal('trainer-modal')" class="bento-tile cursor-pointer h-[132px] p-4 flex flex-col justify-between" style="background: linear-gradient(145deg, #a855f7 0%, #7c3aed 100%); border-bottom: 4px solid #5b21b6;">
                     <div class="flex justify-between items-start">
                         <div>
                             <div class="text-[14px] font-extrabold text-white leading-tight tracking-tight">Тренажёр</div>
-                            <div class="text-[10px] font-semibold text-white/60 mt-0.5">Тесты ФИПИ</div>
+                            <div class="text-[10px] font-semibold text-white/60 mt-0.5">Похожие задания</div>
                         </div>
                         <div class="w-9 h-9 rounded-xl bg-black/20 flex items-center justify-center backdrop-blur-sm">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -627,21 +627,7 @@
             </div>
 
             
-            <!-- Trainer full-width tile -->
-            <div onclick="openModal('trainer-modal')" class="bento-tile cursor-pointer p-4 flex items-center justify-between stagger-4" style="background: linear-gradient(145deg, #8b5cf6 0%, #6d28d9 100%); border-bottom: 4px solid #4c1d95; border-radius: 22px; margin-bottom: 12px;">
-                <div class="flex items-center space-x-3">
-                    <div class="w-12 h-12 rounded-2xl bg-black/20 flex items-center justify-center backdrop-blur-sm">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <div class="text-[15px] font-extrabold text-white tracking-tight">Тренажёр</div>
-                        <div class="text-[11px] font-semibold text-white/70 mt-0.5">Умное повторение</div>
-                    </div>
-                </div>
-                <div class="bg-white text-slate-900 text-[11px] font-extrabold px-4 py-2.5 rounded-xl shadow-lg active:scale-95 transition-transform">Тренировка</div>
-            </div>
+            
 <!-- Mock Exams full-width tile -->
             <div onclick="showToastMsg('В разработке', 'Пробные варианты появятся в следующем обновлении!', 'info')" class="bento-tile cursor-pointer p-4 flex items-center justify-between" style="background: linear-gradient(145deg, #10b981 0%, #047857 100%); border-bottom: 4px solid #064e3b; border-radius: 22px;">
                 <div class="flex items-center space-x-3">

@@ -611,24 +611,7 @@
                 </div>
             </div>
 
-            <!-- AI Tutor full-width tile -->
-            <div onclick="openModal('ai-modal')" class="bento-tile cursor-pointer p-4 flex items-center justify-between" style="background: linear-gradient(145deg, #38bdf8 0%, #0369a1 100%); border-bottom: 4px solid #024e7c;">
-                <div class="flex items-center space-x-3">
-                    <div class="w-11 h-11 rounded-2xl bg-black/20 flex items-center justify-center backdrop-blur-sm">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 8V4H8"/>
-                            <rect x="2" y="8" width="20" height="8" rx="2"/>
-                            <path d="M6 20h4"/>
-                            <path d="M14 20h4"/>
-                            <circle cx="8" cy="12" r="1" fill="white"/>
-                            <circle cx="16" cy="12" r="1" fill="white"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <div class="text-[14px] font-extrabold text-white tracking-tight">Онлайн-куратор</div>
-                        <div class="text-[10px] font-semibold text-white/60">Ответит на любой вопрос за минуту</div>
-                    </div>
-                </div>
+            
                 <div class="bg-white text-slate-900 text-[11px] font-extrabold px-4 py-2.5 rounded-xl shadow-lg active:scale-95 transition-transform">Спросить</div>
             </div>
         </div>
@@ -1044,42 +1027,6 @@
         </div>
 
         <button onclick="closeFullscreen('textbook-modal')" class="w-full py-3.5 rounded-2xl glass-card text-white font-black text-xs active:scale-[0.98] transition-all">ЗАКРЫТЬ</button>
-    </div>
-
-    <!-- AI MODAL -->
-    <div id="ai-modal" class="fullscreen-modal flex flex-col p-4 max-w-md mx-auto" style="background: #090e14;">
-        <div class="flex items-center justify-between pb-3 border-b border-white/[0.06]">
-            <div class="flex items-center space-x-2.5">
-                <button onclick="closeFullscreen('ai-modal')" class="w-9 h-9 rounded-2xl glass-card flex items-center justify-center text-gray-400 active:scale-90 transition-all">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                </button>
-                <div>
-                    <div class="text-sm font-black text-white flex items-center space-x-1.5">
-                        <span>Куратор ExamFlow</span>
-                        <span class="w-2 h-2 rounded-full bg-[#58cc02]" style="box-shadow: 0 0 6px rgba(88,204,2,0.5);"></span>
-                    </div>
-                    <div class="text-[10px] text-gray-500 font-bold">Онлайн — отвечает мгновенно</div>
-                </div>
-            </div>
-        </div>
-
-        <div id="ai-chat-messages" class="flex-1 overflow-y-auto py-4 space-y-3">
-            <div class="flex items-start space-x-2">
-                <div class="w-7 h-7 rounded-full bg-[#1cb0f6]/20 flex items-center justify-center shrink-0 mt-1">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1cb0f6" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg>
-                </div>
-                <div class="glass-card p-3.5 max-w-[85%] text-[12px] font-bold text-gray-200 leading-relaxed">
-                    Привет! Я куратор ExamFlow. Напиши номер задания или вопрос по формуле — разберу подробно!
-                </div>
-            </div>
-        </div>
-
-        <div class="flex items-center space-x-2 pt-2">
-            <input id="ai-input" type="text" placeholder="Напиши вопрос..." class="flex-1 bg-white/[0.04] border border-white/[0.06] rounded-2xl px-4 py-3.5 text-xs text-white font-bold outline-none focus:border-[#1cb0f6]/40 transition-all" onkeydown="if(event.key==='Enter') sendAiMessage()">
-            <button onclick="sendAiMessage()" class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 active:scale-90 transition-all" style="background: linear-gradient(135deg, #1cb0f6, #0d8ecf);">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-            </button>
-        </div>
     </div>
 
     <!-- QUIZ SCREEN -->
@@ -2574,6 +2521,7 @@
                     btn.style.borderBottom = '3px solid #c02020';
                     btn.innerText = "ПОНЯТНО →";
                     if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
+                    quizBatch.push(cur);
                 }
             } else {
                 if (qIdx + 1 < quizBatch.length) {
@@ -2723,46 +2671,7 @@
         // ==========================================
         // AI TUTOR
         // ==========================================
-        function sendAiMessage() {
-            const input = document.getElementById('ai-input');
-            const q = input.value.trim();
-            if (!q) return;
-            input.value = '';
-            playSoftTap();
-            const chat = document.getElementById('ai-chat-messages');
-
-            const u = document.createElement('div');
-            u.className = "flex justify-end";
-            u.style.animation = "slideUp 0.3s cubic-bezier(0.16,1,0.3,1)";
-            u.innerHTML = `<div class="p-3.5 rounded-2xl max-w-[85%] text-[12px] font-bold text-white" style="background: linear-gradient(135deg, #1cb0f6, #0d8ecf);">${q}</div>`;
-            chat.appendChild(u);
-            chat.scrollTop = chat.scrollHeight;
-
-            // Typing indicator
-            const typing = document.createElement('div');
-            typing.className = "flex items-start space-x-2";
-            typing.id = "typing-indicator";
-            typing.innerHTML = `<div class="w-7 h-7 rounded-full bg-[#1cb0f6]/20 flex items-center justify-center shrink-0 mt-1">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1cb0f6" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
-            </div>
-            <div class="glass-card p-3.5 text-[12px] text-gray-400 font-bold"><span class="inline-flex space-x-1"><span class="w-1.5 h-1.5 bg-gray-400 rounded-full" style="animation: pulse-glow 1s infinite;"></span><span class="w-1.5 h-1.5 bg-gray-400 rounded-full" style="animation: pulse-glow 1s 0.2s infinite;"></span><span class="w-1.5 h-1.5 bg-gray-400 rounded-full" style="animation: pulse-glow 1s 0.4s infinite;"></span></span></div>`;
-            chat.appendChild(typing);
-            chat.scrollTop = chat.scrollHeight;
-
-            setTimeout(() => {
-                typing.remove();
-                const b = document.createElement('div');
-                b.className = "flex items-start space-x-2";
-                b.style.animation = "slideUp 0.3s cubic-bezier(0.16,1,0.3,1)";
-                b.innerHTML = `<div class="w-7 h-7 rounded-full bg-[#1cb0f6]/20 flex items-center justify-center shrink-0 mt-1">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1cb0f6" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg>
-                </div>
-                <div class="glass-card p-3.5 max-w-[85%] text-[12px] font-bold text-gray-200 leading-relaxed">Отличный вопрос! Обрати внимание на условие задачи — проверь знаки и единицы измерения. Если нужен подробный разбор, напиши номер задания из ФИПИ.</div>`;
-                chat.appendChild(b);
-                chat.scrollTop = chat.scrollHeight;
-                playSoftTap();
-            }, 1200);
-        }
+        
 
         // ==========================================
         // NOTIFICATIONS

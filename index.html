@@ -331,6 +331,13 @@
             animation: shimmer 1.5s infinite;
             border-radius: 12px;
         }
+    
+        body.theme-light {
+            filter: invert(1) hue-rotate(180deg);
+        }
+        body.theme-light .keep-dark {
+            filter: invert(1) hue-rotate(180deg);
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col pb-20 max-w-md mx-auto relative">
@@ -813,6 +820,15 @@
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#58cc02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                         </div>
                         <span class="text-[13px] font-semibold text-white">Профиль</span>
+                    </div>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+                <button onclick="toggleTheme()" class="w-full flex items-center justify-between p-3 rounded-xl hover:bg-white/[0.03] active:scale-[0.99] transition-all">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background: rgba(168,85,247,0.1);">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+                        </div>
+                        <span class="text-[13px] font-semibold text-white">Сменить тему</span>
                     </div>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                 </button>
@@ -1488,6 +1504,21 @@
             cardsLearned: 0,
             quizzesDone: 0
         };
+
+                function toggleTheme() {
+            playSoftTap();
+            state.theme = state.theme === 'light' ? 'dark' : 'light';
+            applyTheme();
+            saveState();
+        }
+
+        function applyTheme() {
+            if (state.theme === 'light') {
+                document.body.classList.add('theme-light');
+            } else {
+                document.body.classList.remove('theme-light');
+            }
+        }
 
         function loadState() {
             const s = localStorage.getItem('examflow_v4_state');

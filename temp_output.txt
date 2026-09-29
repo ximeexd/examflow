@@ -1,0 +1,12 @@
+>
+                    <div class="text-3xl">🌍</div>
+                    <span class="text-[13px] font-bold text-white mt-1">Общество</span>
+                </button>
+            </div>
+            <button onclick="closeModal('trainer-modal')" class="w-full mt-2 py-4 rounded-2xl text-gray-400 font-bold active:scale-95 transition-all hover:bg-white/5">Закрыть</button>
+        </div>
+    </div>
+
+    <!-- QUIZ SCREEN -->
+    <div id="quiz-screen" class="fullscreen-modal flex flex-col justify-between p-5 max-w-md mx-auto" style="background: #090e14;">
+        <div class="flex items-center space-x-3

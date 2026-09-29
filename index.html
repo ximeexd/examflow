@@ -248,6 +248,19 @@
             transform: translateY(0);
         }
 
+        
+        /* ===== SLIDE-IN RIGHT MODAL ===== */
+        .slide-in-right-modal {
+            position: fixed; inset: 0;
+            z-index: 50;
+            transform: translateX(100%);
+            transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+            background: #090e14;
+        }
+        .slide-in-right-modal.active {
+            transform: translateX(0);
+        }
+
         /* ===== FULLSCREEN MODAL ===== */
         .fullscreen-modal {
             position: fixed; inset: 0;
@@ -999,7 +1012,7 @@
     </div>
 
     <!-- TEXTBOOK MODAL -->
-    <div id="textbook-modal" class="fullscreen-modal flex flex-col pt-12 pb-5 px-4 max-w-md mx-auto relative" style="background: #090e14; z-index: 90;">
+    <div id="textbook-modal" class="slide-in-right-modal flex flex-col pt-12 pb-5 px-4 max-w-md mx-auto relative" style="background: #090e14; z-index: 90;">
         <!-- Background tech grid matching the app -->
         <div class="absolute inset-0 z-0 pointer-events-none opacity-30">
             <div class="absolute inset-0" style="background-image: repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.03) 0, rgba(255, 255, 255, 0.03) 1px, transparent 1px, transparent 12px);"></div>

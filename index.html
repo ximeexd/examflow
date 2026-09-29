@@ -2115,9 +2115,14 @@
         }
 
         function startLesson(id, title) {
-            playSoftTap();
-            activeCurriculumNode = id;
-            startDuoQuiz(title);
+            try {
+                playSoftTap();
+                activeCurriculumNode = id;
+                startDuoQuiz(title);
+            } catch (err) {
+                showToastMsg("Error", err.message + " | " + err.stack.split('\n')[1], "error");
+                console.error(err);
+            }
         }
 
         // ==========================================

@@ -1,16 +1,13 @@
 import re
-import subprocess
 
-with open('index.html', 'r', encoding='utf-8') as f:
-    data = f.read()
+with open('temp_check.js', 'r', encoding='utf-8') as f:
+    code = f.read()
 
-scripts = re.findall(r'<script>(.*?)</script>', data, flags=re.DOTALL)
-for i, script in enumerate(scripts):
-    with open(f'test_script_{i}.js', 'w', encoding='utf-8') as f:
-        f.write(script)
-    
-    result = subprocess.run(['node', '-c', f'test_script_{i}.js'], capture_output=True, text=True)
-    if result.returncode != 0:
-        print(f"Error in script {i}:", result.stderr)
-    else:
-        print(f"Script {i} is OK")
+# Try to find common syntax errors or unbalanced braces
+code_no_strings = re.sub(r'\"(?:\\.|[^\\\"])*\"|\'(?:\\.|[^\\\'])*\'|\`(?:\\.|[^\\\`])*\`', '', code)
+code_no_comments = re.sub(r'//.*?\n|/\*.*?\*/', '', code_no_strings, flags=re.DOTALL)
+
+print('Braces {}:', code_no_comments.count('{'), code_no_comments.count('}'))
+print('Parentheses ():', code_no_comments.count('('), code_no_comments.count(')'))
+print('Brackets []:', code_no_comments.count('['), code_no_comments.count(']'))
+

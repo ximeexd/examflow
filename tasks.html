@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="light">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ExamFlow — Задания</title>
+<link rel="icon" type="image/svg+xml" href="brand-avatar.svg">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<style>
+:root{--bg:#f4f0e6;--card:#fbf9f3;--line:#e6e0d0;--ink:#12291f;--mute:#9a9a8c;--acc:#c3f73a;--acc2:#a9e01f;--accsoft:#eaffb0;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);font-family:Nunito,system-ui,sans-serif;color:var(--ink);display:flex;justify-content:center;min-height:100%;
+background-image:radial-gradient(var(--line) 1.2px,transparent 1.2px);background-size:18px 18px}
+.app{width:100%;max-width:480px;padding:20px 16px calc(100px + env(safe-area-inset-bottom,0px))}
+.txt{color:var(--ink)}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px}
+h1{font-size:30px;font-weight:900;margin:0;letter-spacing:-.5px}
+.xp{display:flex;gap:6px;align-items:center;background:var(--card);border:2px solid var(--line);border-radius:99px;padding:7px 13px;font-weight:900;font-size:14px;transition:transform .2s;white-space:nowrap}
+.xp.pop{transform:scale(1.18)}
+.xp svg{width:16px;height:16px}
+.exam-sw{display:flex;gap:6px;margin-bottom:12px}
+.exam-sw button{flex:1;border:2px solid var(--line);background:var(--card);color:var(--mute);font:800 13px Nunito,sans-serif;padding:8px;border-radius:12px;cursor:pointer}
+.exam-sw button.on{background:var(--ink);color:var(--acc);border-color:var(--ink)}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:none;cursor:grab;touch-action:pan-x;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 24px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 24px),transparent)}
+.tabs:active{cursor:grabbing}
+.tab{flex:none;border:2px solid var(--line);background:var(--card);color:var(--ink);font:800 14px Nunito,sans-serif;padding:10px 16px;border-radius:99px;cursor:pointer;transition:.2s}
+.tab.on{background:var(--acc);border-color:var(--acc2);box-shadow:0 3px 0 var(--acc2)}
+.stat{display:flex;align-items:center;gap:14px;background:var(--accsoft);border:2px solid var(--acc2);border-radius:22px;padding:14px 16px;margin:8px 0 16px;color:var(--ink)}
+.ring{width:54px;height:54px;flex:none}
+.stat b{font-size:18px;font-weight:900;display:block}
+.stat small{font-weight:700;opacity:.65;font-size:13px}
+.card{position:relative;overflow:hidden;border-radius:26px;padding:18px;margin-bottom:14px;color:var(--ink)}
+.cur{background:var(--acc);border:2px solid var(--acc2);box-shadow:0 6px 0 var(--acc2);margin-bottom:22px;animation:rise .5s both}
+.cur .wm,.lock .wm,.done .wm{position:absolute;right:12px;top:-6px;font-size:84px;font-weight:900;color:#fff;opacity:.35;line-height:1;pointer-events:none}
+.lock{background:var(--card);border:2px solid var(--line);opacity:.8;padding:16px 18px}
+.lock .wm{color:var(--line);opacity:.9}
+.lock h3,.lock p{color:var(--mute)}
+.done{background:var(--accsoft);border:2px solid var(--acc2)}
+.badge{display:inline-flex;gap:5px;align-items:center;font-size:12px;font-weight:900;background:rgba(18,41,31,.12);padding:4px 10px;border-radius:99px;margin-bottom:10px}
+.lock .badge{background:var(--line);color:var(--mute)}
+h3{margin:0 0 3px;font-size:21px;font-weight:900;max-width:62%;line-height:1.15}
+.te{font-size:19px;margin-right:7px}
+.lock h3{font-size:19px}
+p{margin:0;font-size:13px;font-weight:700;opacity:.75}
+.art{position:absolute;right:14px;top:46px;width:84px;height:70px;pointer-events:none}
+.lock .art{opacity:.5;filter:grayscale(1)}
+.fl{position:absolute;font-weight:900;color:var(--ink);opacity:.18;animation:fl 5s ease-in-out infinite;pointer-events:none}
+.lock .fl{opacity:.1;animation:none}
+.bar{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin:12px 0 16px}
+.bar i{height:5px;border-radius:9px;background:rgba(18,41,31,.18)}
+.bar i.f{background:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin-bottom:14px}
+.c{aspect-ratio:1;border-radius:16px;display:grid;place-items:center;font-weight:900;font-size:18px;text-decoration:none;color:inherit}
+.c.d{background:var(--ink);box-shadow:0 3px 0 rgba(0,0,0,.35)}
+.c.d svg{width:20px;height:20px}
+.c.n{background:#fff;border:3px solid var(--ink);animation:pulse 1.6s infinite;color:var(--ink)}
+.c.e{background:rgba(18,41,31,.14);color:var(--ink);opacity:.6}
+.btn{display:block;text-align:center;text-decoration:none;width:100%;border:0;border-radius:18px;background:var(--ink);color:var(--acc);font:900 16px Nunito,sans-serif;padding:16px;cursor:pointer;box-shadow:0 5px 0 #000;transition:transform .08s,box-shadow .08s;box-sizing:border-box}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 #000}
+
+.hd{position:relative;min-height:100px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.chev{position:absolute;right:0;top:0;width:30px;height:30px;border-radius:50%;background:rgba(18,41,31,.12);display:grid;place-items:center;font-size:15px;transition:transform .3s}
+.lock .chev{background:var(--line);color:var(--mute)}
+.open .chev{transform:rotate(180deg)}
+.body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s ease}
+.open .body{grid-template-rows:1fr}
+.body>div{overflow:hidden;min-height:0}
+.cur{margin-bottom:14px}
+.c.l{background:var(--line)}
+.btn.alt{background:rgba(18,41,31,.1);color:var(--ink);box-shadow:0 5px 0 rgba(18,41,31,.25)}
+.btn.off{background:var(--line);color:var(--mute);box-shadow:0 5px 0 #d4cdb9;cursor:not-allowed;font-size:14px}
+.card{transition:box-shadow .2s}
+
+nav{position:fixed;left:0;right:0;bottom:0;background:#0f2a1e;display:flex;justify-content:space-around;padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px));max-width:480px;margin:0 auto;border-radius:22px 22px 0 0;z-index:10}
+nav a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 0;border-radius:14px;color:#a9c0b1;font-size:11.5px;font-weight:800;text-decoration:none}
+nav a span{font-size:19px;line-height:1}
+nav a.on{background:var(--acc);color:var(--ink)}
+
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(18,41,31,.45)}50%{box-shadow:0 0 0 8px rgba(18,41,31,0)}}
+@keyframes fl{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-8px) rotate(6deg)}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}}
+.pc{position:fixed;width:9px;height:9px;border-radius:2px;pointer-events:none;z-index:9}
+</style>
+</head>
+<body>
+<div class="app">
+  <header><h1 class="txt">Задания</h1>
+    <div class="xp txt" id="xp"><svg viewBox="0 0 24 24" fill="#ff8a1f"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg><span id="xpv">0</span> XP</div></header>
+  <div class="exam-sw" id="examsw">
+    <button data-e="oge">ОГЭ · 9 класс</button>
+    <button data-e="ege">ЕГЭ · 11 класс</button>
+  </div>
+  <div class="tabs" id="tabs"></div>
+  <div class="stat" id="stat"></div>
+  <div id="list"></div>
+</div>
+<nav>
+  <a href="index.html"><span>⌂</span>Главная</a>
+  <a class="on" href="tasks.html"><span>✎</span>Задания</a>
+  <a href="quests.html"><span>☆</span>Квесты</a>
+  <a href="profile.html"><span>☺</span>Профиль</a>
+</nav>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="school_curriculum.js?v=3"></script>
+<script src="state.js?v=5"></script>
+<script src="sync.js?v=5"></script>
+<script>
+EFS.init().then(start).catch(EFS.showBootError);
+function start(){
+const CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="#c3f73a" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg>';
+const LOCK='<svg width="12" height="12" viewBox="0 0 24 24" fill="#c9a24a"><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="#c9a24a" stroke-width="3"/></svg>';
+const I='stroke="#12291f" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"';
+const ART={
+ q:`<svg class="art" viewBox="0 0 92 76"><path d="M8 66h78M46 6v62" ${I} opacity=".35"/><path d="M12 10Q46 118 80 10" ${I}/><circle cx="26" cy="46" r="5" fill="#fff" stroke="#12291f" stroke-width="3"/><circle cx="66" cy="46" r="5" fill="#fff" stroke="#12291f" stroke-width="3"/></svg>`,
+ n:`<svg class="art" viewBox="0 0 92 76"><path d="M6 44h80" ${I}/><circle cx="34" cy="44" r="7" fill="#fff" stroke="#12291f" stroke-width="3"/><path d="M41 44h45" stroke="#12291f" stroke-width="9" stroke-linecap="round" opacity=".35"/><path d="m60 20 12 8-12 8" ${I}/></svg>`,
+ f:`<svg class="art" viewBox="0 0 92 76"><path d="M10 6v62h76" ${I} opacity=".4"/><path d="M14 58C30 58 36 22 50 30S70 14 84 10" ${I}/><circle cx="84" cy="10" r="5" fill="#fff" stroke="#12291f" stroke-width="3"/></svg>`,
+ p:`<svg class="art" viewBox="0 0 92 76"><path d="M8 66h20v-14h20v-14h20v-14h20" ${I}/><rect x="10" y="52" width="16" height="14" rx="3" fill="#fff" opacity=".5"/><rect x="30" y="38" width="16" height="28" rx="3" fill="#fff" opacity=".5"/><rect x="50" y="24" width="16" height="42" rx="3" fill="#fff" opacity=".5"/></svg>`,
+};
+const emo=e=>`<div class="art" style="display:grid;place-items:center;font-size:52px;width:80px">${e}</div>`;
+const CONF={
+ 'Математика':{acc:'#c3f73a',a2:'#a9e01f',soft:'#eaffb0',fl:['x²','π','∑','√','%'],em:'📐',eml:['🧮','📐','%','√']},
+ 'Базовая математика':{acc:'#c3f73a',a2:'#a9e01f',soft:'#eaffb0',fl:['x²','π','∑','√','%'],em:'📐',eml:['🧮','%','√','🌊']},
+ 'Профильная математика':{acc:'#c3f73a',a2:'#a9e01f',soft:'#eaffb0',fl:['∫','dx','∑','√','lim'],em:'📐',eml:['📐','🌊','∫','🎲']},
+ 'Русский язык':{acc:'#ffb3d1',a2:'#f58ab5',soft:'#ffe3ef',fl:['Ё','Ъ','Я','?','!'],em:'✍️',eml:['✍️','❗','📝','📖']},
+ 'Информатика':{acc:'#c9b8ff',a2:'#8f7bd6',soft:'#e9e2ff',fl:['01','&lt;/&gt;','&amp;','|','Σ'],em:'💻',eml:['ℹ️','💻','📁','🔤']},
+ 'Обществознание':{acc:'#9fdcff',a2:'#5cbff2',soft:'#d9f1ff',fl:['§','⚖','№','€','★'],em:'⚖️',eml:['⚖️','📈','🏛️','💰']},
+ 'Физика':{acc:'#9fe0ff',a2:'#53aed6',soft:'#dcf2ff',fl:['F','λ','Ω','⚡','v'],em:'🧲',eml:['📏','🔥','♨️','🧊']},
+ 'Биология':{acc:'#8ff0b4',a2:'#4cbf7d',soft:'#dffbea',fl:['DNA','🌿','α','β','+'],em:'🧬',eml:['🔬','🦠','🌿','🦊']},
+ 'Химия':{acc:'#ffadca',a2:'#d96b94',soft:'#ffe0ec',fl:['H₂O','⚗','Na','pH','Δ'],em:'⚗️',eml:['🧪','⚛️','💥','⚖️']},
+ 'История':{acc:'#f4d9a6',a2:'#d9a85e',soft:'#fbeecd',fl:['★','⚔','1812','§','✝'],em:'🏛️',eml:['🏺','🏰','👑','🎖️']},
+ 'Английский':{acc:'#b8e6ff',a2:'#6dbfe8',soft:'#e1f4ff',fl:['Aa','?','!','abc','★'],em:'🇬🇧',eml:['⏳','🔮','🧱','👨‍👩‍👧']},
+ 'Литература':{acc:'#ffc9a6',a2:'#e08e5a',soft:'#ffe8d9',fl:['§','✎','Аа','★','"'],em:'📖',eml:['📖','🛡️','⚡','🌸']},
+ 'География':{acc:'#a9e8d8',a2:'#55bd9d',soft:'#dcf7ef',fl:['🌍','N°','°C','≈','▲'],em:'🌍',eml:['🗺️','🧭','🌋','🏔️']}
+};
+const cf=n=>CONF[n]||{acc:'#c3f73a',a2:'#a9e01f',soft:'#eaffb0',fl:['★','?','+','§','!'],em:'📚',eml:['📚','⭐','🎯','📘']};
+function artFor(title,subj,i){
+ const t=title.toLowerCase();
+ if(/уравнен/.test(t))return ART.q;
+ if(/неравенс/.test(t))return ART.n;
+ if(/функц|график|производ|интеграл|логарифм|показательн|тригоном|массив|цикл/.test(t))return ART.f;
+ if(/прогресси|последовательн|процент/.test(t))return ART.p;
+ const e=emFor(title);if(e)return emo(e);
+ const l=cf(subj).eml||[cf(subj).em];
+ return emo(l[(i||0)%l.length]);
+}
+const MATH_R=[[/числ|вычислен|арифмет|дробь|дробн/,'🧮'],[/процент|пропорц|смес|сплав/,'%'],[/степен|корн|радикал/,'√'],[/тригонометр|синус|косинус/,'🌊'],[/производн|интеграл|логарифм|показательн/,'∫'],[/вероятн|комбинатор|статистик|случайн/,'🎲'],[/геометр|треугольн|угол|окружн|площад|объём|вектор/,'📐'],[/неравенс/,'≠'],[/уравнен|систем/,'x²'],[/функц|график/,'🌊'],[/прогресси|последовательн/,'📈']];
+const SUBJMAP={
+'Математика':MATH_R,'Базовая математика':MATH_R,'Профильная математика':MATH_R,
+'Русский язык':[[/орфограф|приставк|суффикс|окончан|правописан|букв|корень/,'✍️'],[/пунктуац|запят|тире|двоеточ|знак/,'❗'],[/сочинен|изложен|эссе|анализ текста|прочитанн/,'📝'],[/речь|речи|морфолог|синтаксис|лексик|фразеолог/,'📖']],
+'Информатика':[[/компьютер|программ|файл|каталог|устройств|памят/,'💻'],[/кодирован|информац|измерен.*информ/,'ℹ️'],[/язык|алгоритм|python|моделир|систем.*счисл/,'🔤'],[/сет|интернет|баз.*данн|таблиц/,'�']],
+'Обществознание':[[/право|закон|конституц|юридич|правонаруш/,'⚖️'],[/эконом|рынок|деньг|банк|финанс|налог|инфляц/,'📈'],[/полит|власт|государств|выбор|партия/,'🏛️'],[/социальн|обществ|семь|человек|культур|религи/,'💰']],
+'Физика':[[/тепл|нагрев|состоян.*веществ|плавлен|испарен/,'♨️'],[/электр|ток|магнит|цепь|заряд/,'⚡'],[/волн|звук|свет|оптик|излучен/,'🌊'],[/атом|ядр|квант/,'�']],
+'Биология':[[/днк|клетк|генет|наследств/,'�🧬'],[/растен|гриб|бактери|фотосинтез/,'🌿'],[/животн|зоолог|эволюц|организм/,'🦊']],
+'Химия':[[/реакци|окисл|восстанов|горен/,'💥'],[/атом|молекул|элемент|периодич|строен/,'⚛️'],[/раствор|кислот|щелоч|сол|веществ|смес/,'🧪'],[/расчёт|количеств|молярн/,'⚖️']],
+'История':[[/древн|античн|егип|рим|грец|первобыт/,'🏺'],[/средневек|русь|княз|монгол|xv|xvi|xvii/,'🏰'],[/войн|битв|революц|велик.*отечеств|xx век/,'🎖️'],[/импер|цар|монарх|двор|xviii|xix/,'👑']],
+'Английский':[[/врем|грамматик|present|past|future|perfect/,'⏳'],[/слов|лексич|образован|word/,'🧱'],[/семь|друз|отношен|общен|family/,'👨\u200d👩\u200d👧'],[/чтен|аудир|письмен|говорен|reading|listening/,'🔮']],
+'Литература':[[/теор|анализ|жанр|род|средств.*выраз/,'📖'],[/древнерус|полку игорев|былин|летопис|фольклор/,'🛡️'],[/пушкин|лермонтов|поэзи|стих|лирик/,'⚡'],[/гоголь|тургенев|чехов|проза|роман|повест|достоевск|толст/,'🌸']],
+'География':[[/карт|координат|источник|глобус|масштаб/,'🗺️'],[/компас|направлен|ориентир/,'🧭'],[/земл|литосфер|вулкан|землетряс|рельеф.*земл/,'🌋'],[/росси|материк|океан|регион|населен|природ|климат|ресурс/,'�️']]
+};
+function emFor(title,subj){
+ const t=title.toLowerCase();
+ for(const[re,e]of(SUBJMAP[subj]||[]))if(re.test(t))return e;
+ return null;
+}
+const S=EF.get();
+let cur=S.active, open=new Set();
+const LK='<svg width="16" height="16" viewBox="0 0 24 24" fill="#a9a595"><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="#a9a595" stroke-width="3"/></svg>';
+const $=id=>document.getElementById(id);
+const qs=location.search.match(/[?&]s=([^&]+)/);
+if(qs)cur=decodeURIComponent(qs[1]);
+function topics(){return EF.topics(cur)}
+function ci(){return topics().findIndex(t=>EF.lessonsDone(cur,t.key)<10)}
+function resetOpen(){const c=ci();open=new Set([c<0?0:c])}
+function theme(){const c=cf(cur),r=document.documentElement.style;r.setProperty('--acc',c.acc);r.setProperty('--acc2',c.a2);r.setProperty('--accsoft',c.soft)}
+const les=(t,l)=>`lesson.html?s=${encodeURIComponent(cur)}&t=${encodeURIComponent(t.key)}&l=${l}`;
+function render(){
+ theme();
+ const subs=EF.subjects();
+ if(!subs.includes(cur))cur=subs[0];
+ $('examsw').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.e===S.exam));
+ $('xpv').textContent=S.xp;
+ $('tabs').innerHTML=subs.map(n=>`<button class="tab ${n===cur?'on':''}" data-k="${n}">${n}</button>`).join('');
+ const t=topics(),c=ci();
+ const pl=(n,f)=>n+' '+f[(n%10===1&&n%100!==11)?0:(n%10>=2&&n%10<=4&&(n%100<10||n%100>=20)?1:2)];
+ const passed=EF.passedCount(cur),lessons=t.reduce((a,x)=>a+EF.lessonsDone(cur,x.key),0),pct=Math.round(lessons/(t.length*10)*100)||0;
+ const C=2*Math.PI*22;
+ $('stat').innerHTML=`<svg class="ring" viewBox="0 0 54 54"><circle cx="27" cy="27" r="22" fill="none" stroke="rgba(18,41,31,.15)" stroke-width="7"/><circle cx="27" cy="27" r="22" fill="none" stroke="#12291f" stroke-width="7" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-pct/100)}" transform="rotate(-90 27 27)"/><text x="27" y="31" text-anchor="middle" font-size="12" font-weight="900" fill="#12291f">${pct}%</text></svg><div><b>Пройдено тем: ${passed} из ${t.length}</b><small>${pl(lessons,['занятие','занятия','занятий'])} · ${pct}% курса</small></div>`;
+ $('list').innerHTML=t.map((topic,i)=>{
+  const d=EF.lessonsDone(cur,topic.key);
+  const st=d>=10?'done':i===c?'cur':(c<0||i<c)?'done':'lock';
+  const unlocked=EF.isUnlocked(cur,i),locked=!unlocked&&st!=='done';
+  const dd=locked?0:d;
+  const num=String(i+1).padStart(2,'0'),op=open.has(i)?' open':'';
+  const FL=cf(cur).fl;
+ const fl=FL.map((f,j)=>{
+  const k=j+i*2;
+  const l=[8,42,70,28,88,55,15][k%7],tp=[58,12,70,80,46,30,64][(i+j*3)%7];
+  return `<span class="fl" style="left:${l}%;top:${tp}%;font-size:${14+((i+j)%5)*4}px;animation-delay:${(k*.5)%3}s">${FL[(i+j)%FL.length]}</span>`;
+ }).join('');
+  const badge=locked?LOCK+' Закрыто':d>=10?'✓ Пройдено':'● Сейчас';
+  const cells=Array.from({length:10},(_,k)=>{
+   if(locked)return `<div class="c l">${LK}</div>`;
+   if(k<dd)return `<a class="c d" href="${les(topic,k+1)}">${CHECK}</a>`;
+   if(k===dd)return `<a class="c n" href="${les(topic,k+1)}">${dd+1}</a>`;
+   return `<div class="c e">·</div>`;
+  }).join('');
+  const btn=locked?`<button class="btn off" disabled>Откроется после предыдущей темы</button>`
+    :d>=10?`<a class="btn alt" href="lesson.html?s=${encodeURIComponent(cur)}&t=${encodeURIComponent(topic.key)}&mode=mix">Повторить тему</a>`
+    :`<a class="btn" href="${les(topic,dd+1)}">${d?'Продолжить':'Начать'} · занятие ${dd+1}</a>`;
+  return `<div class="card ${st}${op}">${fl}<div class="wm">${num}</div>${artFor(topic.title,cur,i)}<div class="hd" data-i="${i}"><span class="badge">${badge}</span><h3>${topic.title}</h3><p>${dd} из 10 занятий</p><div class="chev">▾</div></div><div class="body"><div><div class="bar">${Array.from({length:10},(_,k)=>`<i class="${k<dd?'f':''}"></i>`).join('')}</div><div class="grid">${cells}</div>${btn}</div></div></div>`;
+ }).join('');
+}
+document.addEventListener('click',e=>{
+ const x=e.target.closest('#examsw button');if(x){EF.setExam(x.dataset.e);cur=EF.get().active;resetOpen();render();return}
+ const t=e.target.closest('.tab');if(t){cur=t.dataset.k;EF.get().active=cur;EF.save();resetOpen();render();return}
+ const h=e.target.closest('.hd');if(h){const i=+h.dataset.i;open.has(i)?open.delete(i):open.add(i);h.closest('.card').classList.toggle('open');return}
+});
+resetOpen();
+render();
+// drag & wheel scroll for subject tabs
+const tabsEl=$('tabs');
+tabsEl.addEventListener('wheel',e=>{if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){tabsEl.scrollLeft+=e.deltaY;e.preventDefault()}},{passive:false});
+let drag=null,wasDrag=false;
+tabsEl.addEventListener('pointerdown',e=>{drag={x:e.clientX,l:tabsEl.scrollLeft};wasDrag=false});
+tabsEl.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.x;if(Math.abs(dx)>4)wasDrag=true;tabsEl.scrollLeft=drag.l-dx});
+['pointerup','pointercancel','pointerleave'].forEach(ev=>tabsEl.addEventListener(ev,()=>{drag=null}));
+tabsEl.addEventListener('click',e=>{if(wasDrag){e.stopPropagation();e.preventDefault();wasDrag=false}},true);
+}
+</script>
+</body>
+</html>

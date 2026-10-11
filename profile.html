@@ -64,10 +64,9 @@ a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{o
 <nav><a href="index.html"><span>⌂</span>Главная</a><a href="tasks.html"><span>✎</span>Задания</a><a href="quests.html"><span>☆</span>Квесты</a><a class="on" href="profile.html"><span>☺</span>Профиль</a></nav>
 <div id="bk"></div><div id="sh" role="dialog" aria-modal="true"></div><div id="ts" role="status"></div>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="school_curriculum.js?v=3"></script>
-<script src="state.js?v=5"></script>
-<script src="sync.js?v=5"></script>
+<script src="state.js?v=6"></script>
+<script src="sync.js?v=6"></script>
 <script>
 EFS.init().then(start).catch(EFS.showBootError);
 function start(){
@@ -106,7 +105,7 @@ $("app").innerHTML='<div class="top"><h1>Профиль</h1><span class="pill">�
 '<h2>Подробнее</h2><details class="ac" open><summary><span>Предметы</span><small>'+SUBJ.length+' предметов</small></summary><div>'+SUBJ.map(function(s){return '<div class="sj"><span class="g" style="background:'+s[2]+'">'+s[1]+'</span><div><b>'+s[0]+'<small>'+s[3]+' из '+s[4]+'</small></b><div class="bar"><b style="width:'+Math.round(s[3]/s[4]*100)+'%"></b></div></div></div>'}).join("")+'</div></details>'+
 '<details class="ac"><summary><span>Неделя</span><small>занятий: '+w.sum+'</small></summary><div><div class="wk">'+w.h+'</div></div></details>'+
 '<details class="ac"><summary><span>Настройки</span><small>цель, напоминания</small></summary><div><div class="set"><div><b>Цель на день</b><small>Минут занятий</small></div><div class="seg">'+[5,10,15].map(function(g){return '<button data-g="'+g+'" class="'+(st.goal==g?"on":"")+'">'+g+'</button>'}).join("")+'</div></div><div class="set"><div><b>Напоминания</b><small>Ежедневно</small></div><div style="display:flex;gap:8px;align-items:center"><input class="tm" type="time" id="tm" value="'+st.time+'" aria-label="Время напоминания"'+(st.remind?"":" hidden")+'><button class="sw" role="switch" aria-checked="'+st.remind+'" aria-label="Напоминания" data-sw="remind"></button></div></div><div class="set"><div><b>Звуки</b><small>Эффекты при ответах</small></div><button class="sw" role="switch" aria-checked="'+st.sound+'" aria-label="Звуки" data-sw="sound"></button></div></div></details>'+
-'<button class="out" data-out="1">Сбросить прогресс</button>'+(EFS.mode==='legacy'&&EFS.user?'<button class="out" data-signout="1" style="margin-top:8px">Выйти из аккаунта</button>':'')+'<p class="foot">ExamFlow — готовься к ОГЭ и ЕГЭ маленькими шагами каждый день.</p>';
+'<button class="out" data-out="1">Сбросить прогресс</button><p class="foot">ExamFlow — готовься к ОГЭ и ЕГЭ маленькими шагами каждый день.</p>';
 requestAnimationFrame(function(){requestAnimationFrame(function(){var r=$("rc");if(r)r.style.strokeDashoffset=289*(1-EF.levelPct()/100)})})}
 function openSh(h){$("sh").innerHTML=h;$("sh").classList.add("on");$("bk").classList.add("on")}
 function closeSh(){$("sh").classList.remove("on");$("bk").classList.remove("on")}
@@ -119,10 +118,7 @@ else if(b.dataset.b){var x=BD[+b.dataset.b];}
 else if(b.dataset.close)closeSh();
 else if(b.dataset.g){st.goal=+b.dataset.g;save();b.parentNode.querySelectorAll("button").forEach(function(x){x.classList.toggle("on",x==b)});var T2=EF.today();$("tgt").textContent=(T2.lessons*5)+" из "+st.goal+" мин";$("tgb").style.width=Math.min(100,T2.lessons*5/st.goal*100)+"%"}
 else if(b.dataset.sw){st[b.dataset.sw]=!st[b.dataset.sw];save();b.setAttribute("aria-checked",st[b.dataset.sw]);if(b.dataset.sw=="remind")$("tm").hidden=!st.remind}
-else if(b.dataset.out){if(confirm("Сбросить весь прогресс? Это действие нельзя отменить.")){EF.reset()}}
-else if(b.dataset.signout){EFS.signOut().then(function(){var g=null;try{g=localStorage.getItem(KEY+':guest')}catch(e){}
- if(g!==null)localStorage.setItem(KEY,g);else localStorage.removeItem(KEY);
- localStorage.removeItem("ef_guest");location.reload()})}});
+else if(b.dataset.out){if(confirm("Сбросить весь прогресс? Это действие нельзя отменить.")){EF.reset()}}});
 document.addEventListener("change",function(e){if(e.target.id=="tm"){st.time=e.target.value;save();toast("Напомним в "+st.time)}});
 // badge detail sheet needs BD at click time — rebuild via render
 var _render=render;render=function(){_render();window.__BD=[["Первый шаг","book",Math.min(EF.totalLessons(),1),1,"Заверши первое занятие"],["Серия 7","flame",Math.min(EF.get().streak,7),7,"Занимайся 7 дней подряд"],["Первая тема","star",Math.min(EF.subjects().reduce(function(a,n){return a+EF.passedCount(n)},0),1),1,"Пройди все 10 занятий темы"],["100 ответов","check",Math.min(EF.get().totalCorrect,100),100,"Дай 100 верных ответов"],["Пять тем","trophy",Math.min(EF.subjects().reduce(function(a,n){return a+EF.passedCount(n)},0),5),5,"Пройди 5 тем"],["Без ошибок ×5","target",Math.min(EF.get().cleanTotal,5),5,"Пройди 5 занятий без ошибок"]]};

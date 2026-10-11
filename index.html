@@ -114,16 +114,6 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--gold);outline-offse
 .obbtn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--lime-d)}
 .obbtn:disabled{background:var(--line);color:var(--mute);box-shadow:0 4px 0 #d3cdbb;cursor:not-allowed}
 .pc{position:fixed;width:9px;height:9px;border-radius:2px;pointer-events:none;z-index:30}
-/* auth */
-#auth{display:none;position:fixed;inset:0;z-index:25;justify-content:center;align-items:center;background:var(--bg);background-image:radial-gradient(#e2dccb 1.2px,transparent 1.2px);background-size:18px 18px;padding:18px}
-.acard{width:100%;max-width:380px;background:var(--card);border:2px solid var(--line);border-radius:24px;padding:24px 20px;box-shadow:0 6px 0 var(--line);text-align:center}
-.acard .mascot{width:96px;margin:0 auto 8px;display:block}
-.acard h2{font-size:23px;font-weight:800;margin:0 0 4px}
-.acard p{font-size:13.5px;color:var(--mute);font-weight:700;margin:0 0 16px}
-.inp{width:100%;border:1.5px solid var(--line);background:var(--bg);border-radius:12px;padding:12px 14px;font:700 15px Onest,sans-serif;margin-bottom:10px}
-.inp:focus{outline:3px solid var(--lime);border-color:var(--lime-d)}
-.aerr{color:#c0392b;font-size:13px;font-weight:700;min-height:18px;margin-bottom:8px}
-.alink{background:none;border:0;color:var(--mute);font:700 13px Onest,sans-serif;text-decoration:underline;cursor:pointer;margin-top:12px}
 </style>
 </head>
 <body>
@@ -170,12 +160,10 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--gold);outline-offse
   <a href="profile.html"><span>☺</span>Профиль</a>
 </nav>
 <div id="ob"></div>
-<div id="auth"></div>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="school_curriculum.js?v=3"></script>
-<script src="state.js?v=5"></script>
-<script src="sync.js?v=5"></script>
+<script src="state.js?v=6"></script>
+<script src="sync.js?v=6"></script>
 <script>
 EFS.init().then(start).catch(EFS.showBootError);
 function start(){
@@ -220,45 +208,11 @@ $('ob').addEventListener('click',e=>{
  if(e.target.closest('#obn')){if(ob.step<4){ob.step++;obr()}else{
   S.exam=ob.exam;S.subs=ob.subs;S.goal=ob.goal;S.onboarded=1;
   if(!EF.subjects().includes(S.active))S.active=EF.subjects()[0];
-  EF.save();location.reload()}return}
+  EF.save();Promise.resolve(EFS.flush()).catch(()=>{}).then(()=>location.reload())}return}
  if(e.target.closest('#obb')){ob.step--;obr();return}
 });
-/* === auth: вход/регистрация перед входом в приложение === */
-let amode='in';
-function arender(){
- const a=$('auth');
- a.innerHTML=`<div class="acard">${MASCOT.replace('class="mas"','class="mascot"')}
-  <h2>${amode=='in'?'С возвращением!':'Создаём аккаунт'}</h2>
-  <p>${amode=='in'?'Войди, чтобы продолжить серию':'Прогресс сохранится на всех устройствах'}</p>
-  <input class="inp" id="aem" type="email" placeholder="Почта" autocomplete="email">
-  <input class="inp" id="apw" type="password" placeholder="Пароль (мин. 6 символов)" autocomplete="${amode=='in'?'current-password':'new-password'}">
-  <div class="aerr" id="aerr"></div>
-  <button class="obbtn" id="ago">${amode=='in'?'Войти':'Зарегистрироваться'}</button>
-  <button class="alink" id="asw">${amode=='in'?'Нет аккаунта? Регистрация':'Уже есть аккаунт? Войти'}</button>
-  <button class="alink" id="askip" style="display:block;margin:8px auto 0">Продолжить без аккаунта</button></div>`;
- a.style.display='flex';
- $('asw').onclick=()=>{amode=amode=='in'?'up':'in';arender()};
- $('askip').onclick=()=>{a.style.display='none';localStorage.setItem('ef_guest','1');maybeOb()};
- $('ago').onclick=async()=>{
-  const em=$('aem').value.trim(),pw=$('apw').value,er=$('aerr');
-  er.textContent='';
-  if(!em||pw.length<6){er.textContent='Введи почту и пароль (мин. 6 символов)';return}
-  $('ago').disabled=true;
-  try{
-   let r;
-   EFS.authenticating=true;
-   try{r=amode=='in'?await EFS.signIn(em,pw):await EFS.signUp(em,pw)}
-   finally{EFS.authenticating=false}
-   if(r.error)throw r.error;
-   if(amode=='up'&&!r.data.session){er.textContent='Проверь почту — пришло письмо для подтверждения';$('ago').disabled=false;return}
-   EFS.user=r.data.user;
-   await EFS.pull(); await EFS.pushProgress();
-   a.style.display='none';localStorage.removeItem('ef_guest');location.reload();
-  }catch(e){er.textContent=e.message||'Ошибка входа';$('ago').disabled=false}
- };
-}
 function maybeOb(){if(!EF.get().onboarded){ob={step:0,fresh:1,exam:null,subs:[],goal:null};$('ob').style.display='flex';obr()}}
-if(EFS.user||localStorage.getItem('ef_guest'))maybeOb();else arender();
+maybeOb();
 
 const ARTS={
  'Математика':{b:"X²",f:"ax²+bx+c",s:"D = b² − 4ac",c:"#c6f94d",d:"#8fbd1f"},

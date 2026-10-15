@@ -50,6 +50,46 @@
         return { q, correct: String(correct), wrong: uniq3(correct, wrongF).map(String), exp };
     };
 
+    // Parse only this bank's boolean grammar; never execute expression text.
+    function logicValue(expression, A, B, C) {
+        const tokens = expression.match(/НЕ|ИЛИ|И|[ABC()]/g) || [];
+        if (tokens.join('') !== expression.replace(/\s+/g, '')) throw new Error('некорректное логическое выражение');
+        const values = { A: !!A, B: !!B, C: !!C };
+        let pos = 0;
+        function atom() {
+            const token = tokens[pos++];
+            if (token === 'НЕ') return !atom();
+            if (token === '(') {
+                const value = disjunction();
+                if (tokens[pos++] !== ')') throw new Error('не закрыта скобка');
+                return value;
+            }
+            if (!Object.prototype.hasOwnProperty.call(values, token)) throw new Error('ожидалась переменная');
+            return values[token];
+        }
+        function conjunction() {
+            let value = atom();
+            while (tokens[pos] === 'И') {
+                pos++;
+                const right = atom();
+                value = value && right;
+            }
+            return value;
+        }
+        function disjunction() {
+            let value = conjunction();
+            while (tokens[pos] === 'ИЛИ') {
+                pos++;
+                const right = conjunction();
+                value = value || right;
+            }
+            return value;
+        }
+        const value = disjunction();
+        if (pos !== tokens.length) throw new Error('лишние символы в выражении');
+        return value;
+    }
+
     // ---------- общие вычислители (независимое решение, не таблица ответов) ----------
     const countWays = (s, n, forbid) => { // программы +1 и *2 из s в n (s < n)
         const w = new Array(n + 1).fill(0); w[s] = 1;
@@ -277,8 +317,7 @@
                 ['(A ИЛИ НЕ B) И C', 1, 0, 1], ['НЕ (A И B) ИЛИ C', 1, 1, 0],
                 ['(НЕ A ИЛИ B) И (A ИЛИ C)', 1, 0, 0], ['A ИЛИ (НЕ B И НЕ C)', 0, 0, 0]
             ][i];
-            const f = new Function('A', 'B', 'C', 'return ' + t[0].replace(/НЕ /g, '!').replace(/ И /g, '&&').replace(/ ИЛИ /g, '||'));
-            const v = f(t[1], t[2], t[3]) ? 1 : 0;
+            const v = logicValue(t[0], t[1], t[2], t[3]) ? 1 : 0;
             return numeric(`Вычислите значение выражения ${t[0]} при A = ${t[1]}, B = ${t[2]}, C = ${t[3]}.`, v, [1 - v, -1, 2], `Подстановка: ${t[0]} = ${v ? 'истина (1)' : 'ложь (0)'} при (${t[1]}, ${t[2]}, ${t[3]}).`);
         },
         i => { // символьное тождество — ровно один эквивалентный вариант
@@ -294,7 +333,7 @@
                 ['A ИЛИ (B И C)', ['(A ИЛИ B) И (A ИЛИ C)', 'A И B ИЛИ C', '(A И B) ИЛИ (A И C)', 'НЕ A ИЛИ B ИЛИ C']],
                 ['НЕ (A И B) ИЛИ C', ['НЕ A ИЛИ НЕ B ИЛИ C', 'A И B И C', 'A ИЛИ B ИЛИ C', 'НЕ A И НЕ B ИЛИ C']]
             ][i];
-            const compile = e => new Function('A', 'B', 'C', 'return ' + e.replace(/НЕ /g, '!').replace(/ И /g, '&&').replace(/ ИЛИ /g, '||'));
+            const compile = e => (A, B, C) => logicValue(e, A, B, C);
             const lhs = compile(cases[0]);
             const eqs = cases[1].map(o => { const r = compile(o); return [o, [0, 1].every(A => [0, 1].every(B => [0, 1].every(C => !lhs(A, B, C) === !r(A, B, C))))]; });
             const corr = eqs.filter(e => e[1]).map(e => e[0]);

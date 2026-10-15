@@ -48,7 +48,8 @@
         cloud_read: 'Не удалось прочитать облако Telegram — проверь связь',
         cloud_write: 'Не удалось сохранить в облако Telegram — проверь связь',
         cloud_conflict: 'В облаке есть более новая версия прогресса',
-        cloud_unsupported: 'Обнови Telegram до последней версии и открой ExamFlow из бота снова'
+        cloud_unsupported: 'Обнови Telegram до последней версии и открой ExamFlow из бота снова',
+        cloud_sdk: 'Не удалось подключиться к Telegram — закрой мини-приложение и открой ExamFlow из бота ещё раз'
     };
     function ruErr(e) { return (e && e.cloud && ERR_RU[e.cloud]) || (e && e.message) || 'Ошибка синхронизации'; }
 
@@ -171,22 +172,51 @@
     const manRefs = (man, id) => !!man && ((man.current && man.current.id === id) || (man.previous && man.previous.id === id));
 
     /* --- settings --- */
+    const DANGER_KEYS = { __proto__: 1, constructor: 1, prototype: 1 };
+    const validDateStr = v => typeof EF !== 'undefined' && EF.validDate ? EF.validDate(v) :
+        (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v));
+    const validTimeStr = v => typeof v === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(v);
     EFS.normalizeSettings = function (x) {
         const o = (typeof x === 'object' && x && !Array.isArray(x)) ? x : {};
-        const s = Object.assign({}, SETTINGS_DEF, o);
-        s.dates = Object.assign({}, SETTINGS_DEF.dates, (typeof s.dates === 'object' && s.dates && !Array.isArray(s.dates)) ? s.dates : {});
-        s.cust = (typeof s.cust === 'object' && s.cust && !Array.isArray(s.cust)) ? Object.assign({}, s.cust) : {};
-        s.goal = Math.min(120, Math.max(5, Number(s.goal) || SETTINGS_DEF.goal));
-        s.time = (typeof s.time === 'string' && s.time) ? s.time : SETTINGS_DEF.time;
-        s.remind = !!s.remind;
-        s.sound = !!s.sound;
-        delete s.exam;
+        const s = { goal: SETTINGS_DEF.goal, remind: SETTINGS_DEF.remind, time: SETTINGS_DEF.time, sound: SETTINGS_DEF.sound, dates: Object.assign({}, SETTINGS_DEF.dates), cust: {} };
+        const g = Number(o.goal);
+        if (Number.isFinite(g)) s.goal = Math.min(120, Math.max(5, Math.floor(g)));
+        if (typeof o.time === 'string' && validTimeStr(o.time)) s.time = o.time;
+        if (typeof o.remind === 'boolean') s.remind = o.remind;
+        if (typeof o.sound === 'boolean') s.sound = o.sound;
+        if (typeof o.dates === 'object' && o.dates && !Array.isArray(o.dates)) {
+            for (const k of Object.keys(o.dates)) {
+                if (DANGER_KEYS[k] || (k !== 'oge' && k !== 'ege')) continue;
+                if (validDateStr(o.dates[k])) s.dates[k] = o.dates[k];
+            }
+        }
+        if (typeof o.cust === 'object' && o.cust && !Array.isArray(o.cust)) {
+            for (const k of Object.keys(o.cust)) {
+                if (DANGER_KEYS[k] || (k !== 'oge' && k !== 'ege')) continue;
+                s.cust[k] = !!o.cust[k];
+            }
+        }
         return s;
     };
+    // in-memory settings mirror: authoritative when localStorage writes fail
+    // (quota), reset whenever a different account scope is restored
+    let settingsMem = null;
+    EFS.setSettings = function (st) {
+        const n = EFS.normalizeSettings(st);
+        settingsMem = n;
+        let ok = true;
+        try { localStorage.setItem(PROFILE_KEY, JSON.stringify(n)); } catch (e) { ok = false; }
+        const scope = (typeof EF !== 'undefined' && EF.userId) ? EF.userId() : null;
+        if (scope) { try { localStorage.setItem(scopedSettingsKey(scope), JSON.stringify(n)); } catch (e) { ok = false; } }
+        try { window.dispatchEvent(new CustomEvent('ef:profile-saved', { detail: { persisted: ok } })); } catch (e) { }
+        return n;
+    };
     function readSettings() {
+        if (settingsMem) return settingsMem;
         try { return EFS.normalizeSettings(JSON.parse(localStorage.getItem(PROFILE_KEY))); }
         catch (e) { return EFS.normalizeSettings(null); }
     }
+    EFS.readSettings = readSettings;
     function guestBackup(key) {
         try {
             const cur = localStorage.getItem(key);
@@ -196,48 +226,80 @@
         } catch (e) { }
     }
     const scopedSettingsKey = scope => PROFILE_KEY + ':' + scope;
-    function restoreScopedSettings(scope) {
+    // restore this scope's settings; when a remote payload is supplied it is
+    // authoritative — a quota-blocked scoped cache must not overwrite it
+    function restoreScopedSettings(scope, remote) {
         const sk = scopedSettingsKey(scope);
-        let scoped = null;
-        try { scoped = JSON.parse(localStorage.getItem(sk)); } catch (e) { }
-        try {
-            if (scoped === null) localStorage.setItem(PROFILE_KEY, JSON.stringify(EFS.normalizeSettings(null)));
-            else localStorage.setItem(PROFILE_KEY, JSON.stringify(EFS.normalizeSettings(scoped)));
-        } catch (e) { }
+        let src = null;
+        if (arguments.length > 1) src = remote;
+        else { try { src = JSON.parse(localStorage.getItem(sk)); } catch (e) { } }
+        const st = EFS.normalizeSettings(src);
+        settingsMem = st; // per-scope isolation even under quota failures
+        try { localStorage.setItem(PROFILE_KEY, JSON.stringify(st)); } catch (e) { }
+        try { localStorage.setItem(sk, JSON.stringify(st)); } catch (e) { }
     }
     function persistScopedSettings(scope, st) {
         try { localStorage.setItem(scopedSettingsKey(scope), JSON.stringify(EFS.normalizeSettings(st))); } catch (e) { }
     }
 
-    /* --- per-scope local meta: expectedId + dirty + own pending generation --- */
+    /* --- per-scope local meta: expectedId + dirty + own pending generation.
+       Memory is authoritative — a quota/full localStorage must never fake a
+       clean state or lose the pending-generation descriptor. --- */
+    const metaMem = {};
+    // independent local-write failure flags — a successful state write must
+    // never mask a still-failed settings/meta write (and vice versa)
+    const localFail = { state: false, settings: false, meta: false };
+    const LOCAL_WARN = 'Нет связи и локальная копия не записана — прогресс может не сохраниться после закрытия';
+    function cleanMeta(raw) {
+        const d = { expectedId: null, dirty: 0, own: null, garbage: [] };
+        if (!raw || typeof raw !== 'object') return d;
+        if (typeof raw.expectedId === 'string' || raw.expectedId === null) d.expectedId = raw.expectedId;
+        if (raw.dirty) d.dirty = 1;
+        if (validDesc(raw.own)) d.own = raw.own;
+        if (Array.isArray(raw.garbage)) {
+            const seen = {};
+            d.garbage = raw.garbage.filter(d2 => validDesc(d2) && !seen[d2.id] && (seen[d2.id] = 1));
+        }
+        return d;
+    }
     function metaGet(scope) {
-        const d = { expectedId: null, dirty: 0, own: null };
-        try {
-            const m = JSON.parse(localStorage.getItem(META_PREFIX + scope)) || {};
-            if (typeof m.expectedId === 'string' || m.expectedId === null) d.expectedId = m.expectedId;
-            if (m.dirty) d.dirty = 1;
-            if (validDesc(m.own)) d.own = m.own;
-        } catch (e) { }
+        if (metaMem[scope]) return cleanMeta(metaMem[scope]);
+        let raw = null;
+        try { raw = JSON.parse(localStorage.getItem(META_PREFIX + scope)); } catch (e) { }
+        const d = cleanMeta(raw);
+        metaMem[scope] = d;
         return d;
     }
     function metaSet(scope, m) {
-        try {
-            localStorage.setItem(META_PREFIX + scope, JSON.stringify({
-                expectedId: typeof m.expectedId === 'string' ? m.expectedId : null,
-                dirty: m.dirty ? 1 : 0,
-                own: validDesc(m.own) ? m.own : null
-            }));
-        } catch (e) { }
+        const d = cleanMeta(m);
+        metaMem[scope] = d;
+        try { localStorage.setItem(META_PREFIX + scope, JSON.stringify(d)); localFail.meta = false; }
+        catch (e) { localFail.meta = true; }
+        return d;
     }
 
     /* --- status chip --- */
     function setStatus(s, msg) {
-        EFS.status = s; EFS.error = msg || null;
+        EFS.status = s;
+        // closing confirmation tracks real pending work (native call is
+        // guarded and no-ops outside Telegram)
+        try {
+            if (window.EFTelegram && typeof EFTelegram.setPendingSave === 'function')
+                EFTelegram.setPendingSave(s === 'saving' || s === 'offline' || s === 'conflict' || s === 'error');
+        } catch (e) { }
+        // any still-failed local write turns a generic offline status into an
+        // explicit warning — callers must not overwrite it with reassuring text
+        if (s === 'offline' && (localFail.state || localFail.settings || localFail.meta)) msg = LOCAL_WARN;
+        EFS.error = msg || null;
         const st = document.getElementById('sync-status');
         if (st) {
             if (EFS.mode === 'guest') {
                 if (EFS.telegramData() && EFS.status === 'idle') { st.hidden = true; }
-                else { st.hidden = false; st.textContent = 'Демо: прогресс только в этом браузере'; st.onclick = null; }
+                else {
+                    st.hidden = false; st.onclick = null;
+                    st.textContent = s === 'error' ? 'Ошибка: ' + (msg || 'не сохранено')
+                        : 'Демо: прогресс только в этом браузере';
+                }
             } else {
                 st.hidden = false;
                 st.textContent = s === 'saved' ? 'Сохранено в Telegram ✓' :
@@ -253,10 +315,10 @@
         if (document.getElementById('sync-status')) return;
         const b = document.createElement('button');
         b.id = 'sync-status'; b.type = 'button'; b.setAttribute('role', 'status'); b.setAttribute('aria-live', 'polite');
-        b.style.cssText = 'position:fixed;left:10px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:15;max-width:78vw;font:700 12px Onest,sans-serif;color:var(--ink);background:var(--card);border:1.5px solid var(--line);border-radius:99px;padding:7px 12px;cursor:pointer;box-shadow:0 3px 0 var(--line)';
+        b.style.cssText = 'position:fixed;left:calc(10px + var(--ef-safe-left,env(safe-area-inset-left,0px)));bottom:calc(84px + var(--ef-safe-bottom,env(safe-area-inset-bottom,0px)));z-index:15;max-width:78vw;font:700 12px Onest,sans-serif;color:var(--ink);background:var(--card);border:1.5px solid var(--line);border-radius:99px;padding:7px 12px;cursor:pointer;box-shadow:0 3px 0 var(--line)';
         b.onclick = onChipClick;
         document.body.appendChild(b);
-        setStatus(EFS.status);
+        setStatus(EFS.status, EFS.error);
     }
     function onChipClick() {
         if (EFS.mode !== 'account') return;
@@ -317,9 +379,30 @@
         p.finally(() => { if (drain === p) drain = null; }).catch(() => {});
         return drain;
     }
-    window.addEventListener('ef:state-saved', () => { if (EFS.mode === 'account') scheduleSave(); });
-    window.addEventListener('ef:profile-saved', () => {
+    // Unify the duplicated daily-goal field: progress goal and profile settings
+    // goal must agree. A stored non-default profile goal is the older authored
+    // preference and wins; otherwise the onboarding/progress goal wins.
+    function reconcileGoal() {
+        try {
+            const st = readSettings(), progGoal = EF.get().goal;
+            const goal = st.goal !== SETTINGS_DEF.goal ? st.goal : progGoal;
+            if (goal !== st.goal || goal !== progGoal) {
+                EF.get().goal = goal; EF.save();
+                if (goal !== st.goal) { st.goal = goal; EFS.setSettings(st); }
+            }
+        } catch (e) { }
+    }
+    window.addEventListener('ef:state-saved', e => {
+        if (e && e.detail) localFail.state = e.detail.persisted === false;
+        if (EFS.mode === 'account') scheduleSave();
+        else if (localFail.state)
+            setStatus('error', 'Не удалось сохранить прогресс в этом браузере');
+    });
+    window.addEventListener('ef:profile-saved', e => {
+        if (e && e.detail) localFail.settings = e.detail.persisted === false;
         if (EFS.mode === 'account') { persistScopedSettings(EF.userId(), readSettings()); scheduleSave(); }
+        else if (localFail.settings)
+            setStatus('error', 'Не удалось сохранить настройки в этом браузере');
     });
     EFS.pushProgress = function () { scheduleSave(); return drain || Promise.resolve(); };
     EFS.saveProfile = function () {
@@ -332,12 +415,34 @@
 
     async function uploadOnce(scope, g) {
         const meta = metaGet(scope);
-        // discard only own leftover chunks from an earlier interrupted write
+        // discard only own leftover chunks from an earlier interrupted write;
+        // if removal fails keep the descriptor and reject this retry rather
+        // than starting a new generation and forgetting the orphan record
         if (meta.own) {
-            try {
-                const man0 = await getManifest();
-                if (!manRefs(man0, meta.own.id)) { await cRemove(descKeys(meta.own)).catch(() => { }); meta.own = null; metaSet(scope, meta); }
-            } catch (e) { }
+            const man0 = await getManifest();
+            if (!manRefs(man0, meta.own.id)) {
+                try { await cRemove(descKeys(meta.own)); meta.own = null; }
+                catch (e) { meta.garbage = metaGet(scope).garbage; metaSet(scope, meta); throw e; }
+            } else meta.own = null;
+            meta.garbage = metaGet(scope).garbage; metaSet(scope, meta);
+        }
+        // retry previously failed post-commit cleanups (own recorded garbage only);
+        // merge against the LATEST meta — a cleanup elsewhere may have queued a
+        // new descriptor while we were awaiting, and it must never be dropped
+        if (meta.garbage.length) {
+            const attempted = {}, keep = [];
+            for (const d of meta.garbage) {
+                attempted[d.id] = 1;
+                try {
+                    const man = await getManifest();
+                    if (manRefs(man, d.id)) continue;
+                    await cRemove(descKeys(d));
+                } catch (e) { keep.push(d); }
+            }
+            const latest = metaGet(scope);
+            const merged = latest.garbage.filter(g => !attempted[g.id]);
+            for (const k of keep) if (!merged.some(g => g.id === k.id)) merged.push(k);
+            latest.garbage = merged; metaSet(scope, latest);
         }
         const env = { version: 1, progress: EF.get(), settings: readSettings() };
         const payload = JSON.parse(JSON.stringify(env));
@@ -350,10 +455,11 @@
         const startMan = await getManifest();
         const startCur = startMan && startMan.current ? startMan.current : null;
         if ((startCur ? startCur.id : null) !== meta.expectedId) {
-            meta.dirty = 1; metaSet(scope, meta); setStatus('conflict'); throw cloudErr('cloud_conflict');
+            meta.dirty = 1; meta.garbage = metaGet(scope).garbage; metaSet(scope, meta);
+            setStatus('conflict'); throw cloudErr('cloud_conflict');
         }
         // record our in-flight generation BEFORE writing chunks so a retry can clean it up
-        meta.own = desc; metaSet(scope, meta);
+        meta.own = desc; meta.garbage = metaGet(scope).garbage; metaSet(scope, meta);
         await pmap(chunks.map((c, i) => [chunkKey(id, i), c]), 4, p => cSet(p[0], p[1]));
         const man2 = await getManifest();
         const cur2 = man2 && man2.current ? man2.current : null;
@@ -361,26 +467,38 @@
             setStatus('conflict'); throw cloudErr('cloud_conflict');
         }
         await cSet(MANIFEST_KEY, JSON.stringify({ version: 1, current: desc, previous: startCur }));
-        metaSet(scope, { expectedId: id, dirty: gen > g ? 1 : 0, own: null });
+        // keep pending cleanup records — a failed obsolete-removal retry must
+        // not be silently dropped when the new generation commits
+        // merge against the LATEST garbage — meta may be stale by several awaits
+        metaSet(scope, { expectedId: id, dirty: gen > g ? 1 : 0, own: null, garbage: metaGet(scope).garbage });
         // only claim saved when no newer local change is still unacknowledged
         setStatus(gen > g ? 'saving' : 'saved');
+        // await the obsolete-generation cleanup so a resolved flush always
+        // reflects the final garbage metadata; the drain queue serializes us
         const obsolete = startMan && startMan.previous;
-        if (obsolete && validDesc(obsolete)) cleanupObsolete(obsolete);
+        if (obsolete && validDesc(obsolete)) await cleanupObsolete(scope, obsolete);
     }
-    async function cleanupObsolete(desc) {
+    async function cleanupObsolete(scope, desc) {
         try {
             const man = await getManifest();
             if (manRefs(man, desc.id)) return;
             await cRemove(descKeys(desc));
-        } catch (e) { console.warn('cleanup', e); }
+        } catch (e) {
+            // record the failed cleanup so the next save retries it — never a
+            // global getKeys sweep, only this known own-obsolete generation
+            const meta = metaGet(scope);
+            if (!meta.garbage.some(d => d.id === desc.id)) {
+                meta.garbage.push(desc); metaSet(scope, meta);
+            }
+            console.warn('cleanup', e);
+        }
     }
 
     /* --- account entry --- */
     async function pullIntoLocal(scope, man) {
         const r = await readCurrentGeneration(man);
         EF.restore(r.env.progress);
-        persistScopedSettings(scope, r.env.settings);
-        restoreScopedSettings(scope);
+        restoreScopedSettings(scope, r.env.settings);
         const m = metaGet(scope); m.expectedId = r.id; m.dirty = 0; metaSet(scope, m);
     }
     EFS.pullCurrent = async function () {
@@ -429,7 +547,8 @@
         return drainOnce();
     };
     async function enterAccount(scope, firstName) {
-        const hadOwn = localStorage.getItem(EF.cacheKey(scope)) !== null;
+        let hadOwn = false;
+        try { hadOwn = localStorage.getItem(EF.cacheKey(scope)) !== null; } catch (e) { }
         let man = null;
         try { man = await getManifest(); }
         catch (e) {
@@ -490,7 +609,18 @@
         if (initPromise) return initPromise;
         initPromise = (async () => {
             const initData = EFS.telegramData();
-            if (!initData) { EFS.mode = 'guest'; setStatus('idle'); return null; }
+            if (!initData) {
+                // Telegram launch without a working SDK (script blocked, old
+                // webview): the URL carries tgWebAppData but initData is empty.
+                // Refuse account mode — never enter guest and silently discard
+                // the account cache. The hash is only checked for presence;
+                // its payload is never parsed or trusted.
+                try {
+                    if (new URLSearchParams(location.hash.slice(1)).has('tgWebAppData'))
+                        throw cloudErr('cloud_sdk');
+                } catch (e) { if (e && e.cloud) throw e; }
+                EFS.mode = 'guest'; setStatus('idle'); reconcileGoal(); return null;
+            }
             const tw = window.Telegram.WebApp;
             const cs = tw.CloudStorage;
             const apiOK = cs && typeof cs.getItem === 'function' && typeof cs.getItems === 'function'
@@ -507,11 +637,20 @@
             guestBackup(PROFILE_KEY);
             guestBackup('examflow_state_v1');
             await enterAccount(scope, u.first_name);
+            reconcileGoal();
             return EFS.user;
         })().catch(e => {
             EFS.mode = 'guest';
             throw e;
         });
+        // the boot overlay comes down on success AND failure — a boot error
+        // must stay visible instead of being hidden behind it
+        const finishBoot = () => {
+            try {
+                if (window.EFTelegram && typeof EFTelegram.finishBoot === 'function') EFTelegram.finishBoot();
+            } catch (e) { }
+        };
+        initPromise.then(finishBoot, finishBoot);
         EFS.ready = initPromise;
         return initPromise;
     };
@@ -519,9 +658,9 @@
         setStatus('error', ruErr(e));
         const d = document.createElement('div');
         d.id = 'boot-error';
-        d.style.cssText = 'position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;background:var(--bg,#f6f3ea);padding:20px';
+        d.style.cssText = 'position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;background:var(--bg,#f6f3ea);padding:calc(20px + var(--ef-safe-top,env(safe-area-inset-top,0px))) calc(20px + var(--ef-safe-right,env(safe-area-inset-right,0px))) calc(20px + var(--ef-safe-bottom,env(safe-area-inset-bottom,0px))) calc(20px + var(--ef-safe-left,env(safe-area-inset-left,0px)))';
         d.innerHTML = '<div style="max-width:340px;width:100%;background:var(--card,#fffdf7);border:2px solid var(--line,#e6e1d1);border-radius:22px;padding:22px;text-align:center;box-shadow:0 5px 0 var(--line,#e6e1d1)">' +
-            '<img src="brand-avatar.svg" alt="" style="width:72px;height:72px;border-radius:18px;display:block;margin:0 auto 10px">' +
+            '<img src="brand-avatar.png?v=1" alt="" style="width:72px;height:72px;border-radius:18px;display:block;margin:0 auto 10px">' +
             '<h2 style="font:800 20px Onest,sans-serif;margin:0 0 6px;color:var(--ink,#12261c)">Не удалось открыть ExamFlow</h2>' +
             '<p style="font:700 13px Onest,sans-serif;color:var(--mute,#6b7a70);margin:0 0 14px">' + String(ruErr(e)).replace(/</g, '&lt;') + '</p>' +
             '<button id="boot-retry" style="width:100%;background:var(--lime,#c6f94d);color:var(--dark,#0f2a1e);font:800 15px Onest,sans-serif;border:0;border-radius:14px;padding:13px;cursor:pointer;box-shadow:0 4px 0 var(--lime-d,#9fcf2a)">Попробовать снова</button></div>';

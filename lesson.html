@@ -2,16 +2,18 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://telegram.org; script-src-attr 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="color-scheme" content="light">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ExamFlow — Занятие</title>
-<link rel="icon" type="image/svg+xml" href="brand-avatar.svg">
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<link rel="icon" type="image/png" href="brand-avatar.png?v=1">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#f4f0e6;--card:#fbf9f3;--line:#e6e0d0;--ink:#12291f;--mute:#9a9a8c;--acc:#c3f73a;--acc2:#a9e01f;--accsoft:#eaffb0;--dark:#0f2a1e}
 *{box-sizing:border-box;margin:0}
-body{background:var(--bg) radial-gradient(var(--line) 1.2px,transparent 1.2px) 0 0/18px 18px;font-family:Nunito,system-ui,sans-serif;color:var(--ink);display:flex;justify-content:center;min-height:100vh}
-.app{width:100%;max-width:480px;padding:20px 16px 40px;display:flex;flex-direction:column;min-height:100vh}
+body{background:var(--bg) radial-gradient(var(--line) 1.2px,transparent 1.2px) 0 0/18px 18px;font-family:Nunito,system-ui,sans-serif;color:var(--ink);display:flex;justify-content:center;min-height:100vh;min-height:var(--ef-tg-vh,100dvh)}
+.app{width:100%;max-width:480px;padding:20px 16px calc(40px + var(--ef-safe-bottom,env(safe-area-inset-bottom,0px)));display:flex;flex-direction:column;min-height:100vh;min-height:var(--ef-tg-vh,100dvh)}
 .top{display:flex;align-items:center;gap:12px;margin-bottom:18px}
 .back{width:38px;height:38px;flex:none;border-radius:12px;background:var(--card);border:2px solid var(--line);display:grid;place-items:center;text-decoration:none;color:var(--ink);font-size:18px}
 .prog{flex:1;height:12px;border-radius:9px;background:var(--line);overflow:hidden}
@@ -48,6 +50,7 @@ h1{font-size:23px;font-weight:900;line-height:1.25;margin-bottom:20px}
 @keyframes up{from{opacity:0;transform:translateY(10px)}}
 .pc{position:fixed;width:9px;height:9px;border-radius:2px;pointer-events:none;z-index:9}
 </style>
+<link rel="stylesheet" href="telegram-ui.css?v=8">
 </head>
 <body>
 <div class="app">
@@ -59,104 +62,10 @@ h1{font-size:23px;font-weight:900;line-height:1.25;margin-bottom:20px}
   <div id="stage"></div>
 </div>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="telegram-ui.js?v=10"></script>
 <script src="school_curriculum.js?v=3"></script>
-<script src="fipi_curriculum_topics.js?v=3"></script>
-<script src="fipi_question_bank.js?v=3"></script>
-<script src="sqb_math_oge.js?v=3"></script>
-<script src="sqb_math_ege_base.js?v=3"></script>
-<script src="sqb_math_ege_prof.js?v=3"></script>
-<script src="sqb_informatics_oge.js?v=3"></script>
-<script src="sqb_physics_oge.js?v=3"></script>
-<script src="sqb_physics_ege.js?v=3"></script>
-<script src="sqb_informatics_ege.js?v=3"></script>
-<script src="sqb_biology_oge.js?v=3"></script>
-<script src="sqb_biology_ege.js?v=3"></script>
-<script src="sqb_geography_oge.js?v=3"></script>
-<script src="sqb_geography_ege.js?v=3"></script>
-<script src="sqb_literature_oge.js?v=3"></script>
-<script src="sqb_literature_ege.js?v=3"></script>
-<script src="sqb_russian_oge.js?v=3"></script>
-<script src="sqb_russian_ege.js?v=3"></script>
-<script src="sqb_social_oge.js?v=3"></script>
-<script src="sqb_social_ege.js?v=3"></script>
-<script src="sqb_chemistry_oge.js?v=3"></script>
-<script src="sqb_chemistry_ege.js?v=3"></script>
-<script src="sqb_history_oge.js?v=3"></script>
-<script src="sqb_history_ege.js?v=3"></script>
-<script src="sqb_english_oge.js?v=3"></script>
-<script src="sqb_english_ege.js?v=3"></script>
-<script src="school_question_bank.js?v=3"></script>
-<script src="state.js?v=6"></script>
-<script src="sync.js?v=6"></script>
-<script>
-EFS.init().then(startLessonPage).catch(EFS.showBootError);
-function startLessonPage(){
-const $=id=>document.getElementById(id);
-const P=new URLSearchParams(location.search);
-const subj=P.get('s')||EF.get().active, tk=P.get('t'), mode=P.get('mode')||'', li=+(P.get('l')||1);
-const exam=EF.get().exam;
-const S=EF.get(),T=EF.today();
-let qs=[];
-if(mode==='mistakes'){qs=S.mistakes.slice(0,5)}
-else if(mode==='mix'){const all=(window.getSchoolTopicQuestions&&getSchoolTopicQuestions(exam,subj,tk))||[];const rec=EF.topics(subj).find(x=>x.key===tk);const all2=all.length?all:(rec?getSchoolTopicQuestions(exam,subj,rec.title)||[]:[]);qs=[...all2].sort(()=>Math.random()-.5).slice(0,5)}
-else{qs=(window.getSchoolLessonQuestions&&getSchoolLessonQuestions(exam,subj,tk,li))||[]}
-
-const topicTitle=(EF.topics(subj).find(x=>x.key===tk)||{title:tk}).title;
-$('back').href='tasks.html?s='+encodeURIComponent(subj);
-$('xpv').textContent=S.xp;
-function syncXP(){$('xpv').textContent=EF.get().xp}
-const stage=$('stage');
-
-if(!qs.length){
- stage.innerHTML=`<div class="done-hero"><div class="em">📭</div><h2>Занятие не найдено</h2><p>Для этой темы пока нет заданий в банке.</p></div><div class="next"><a class="btn" href="tasks.html">К заданиям</a></div>`;
-}else{
- EF.startLesson(); syncXP();
- let i=0,right=0,answered=false;
- const boom=el=>{const r=(el||document.body).getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2,cols=['#c3f73a','#ff8a1f','#ff7eb6','#5cbff2','#12291f','#ffd93d'];
-  for(let k=0;k<26;k++){const p=document.createElement('i');p.className='pc';p.style.cssText=`left:${x}px;top:${y}px;background:${cols[k%6]}`;document.body.appendChild(p);
-   const a=Math.random()*6.28,d=60+Math.random()*110;
-   p.animate([{transform:'translate(0,0) rotate(0)',opacity:1},{transform:`translate(${Math.cos(a)*d}px,${Math.sin(a)*d+60}px) rotate(${Math.random()*540}deg)`,opacity:0}],{duration:900+Math.random()*400,easing:'cubic-bezier(.2,.8,.3,1)'}).onfinish=()=>p.remove()}};
- function q(){
-  const item=qs[i];answered=false;
-  $('bar').style.width=(i/qs.length*100)+'%';
-  const ord=item.opts.map((o,ix)=>({o,ix})).sort(()=>Math.random()-.5);
-  stage.innerHTML=`<div class="kick">${mode==='mistakes'?'Работа над ошибками':mode==='mix'?'Повторение темы':'Занятие '+li+' · '+topicTitle}</div>
-   <h1>${item.q}</h1>
-   <div class="opts">${ord.map(({o,ix})=>`<button class="opt" data-a="${ix===item.ans}">${o}</button>`).join('')}</div>
-   <div class="exp" id="exp"></div>
-   <div class="next"><button class="btn" id="next" style="display:none">Дальше</button></div>`;
-  stage.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
-   if(answered)return;answered=true;
-   const ok=b.dataset.a==='true',ex=$('exp');
-   stage.querySelectorAll('.opt').forEach(x=>{x.disabled=true;
-    if(x.dataset.a==='true')x.classList.add('ok');else if(x===b)x.classList.add('bad');else x.classList.add('dim')});
-   if(ok){right++;EF.addXP(2);const bonus=EF.recordCorrect();if(mode==='mistakes'){EF.dropMistake(item.id);EF.recordMistakeFixed()}
-    ex.className='exp show ok';ex.innerHTML=`<b>Верно! +2 XP${bonus?' (+'+bonus+' за 5 правильных)':''}</b><p>${item.exp}</p>`;
-    syncXP();$('xp').classList.add('pop');setTimeout(()=>$('xp').classList.remove('pop'),250);}
-   else{EF.addMistake(item);
-    ex.className='exp show bad';ex.innerHTML=`<b>Неверно. Правильный ответ выделен зелёным</b><p>${item.exp}</p>`;}
-   const nx=$('next');nx.style.display='block';nx.textContent=i+1<qs.length?'Дальше':'Завершить';
-  });
-  $('next').onclick=()=>{i++;i<qs.length?q():finish()};
- }
- function finish(){
-  $('bar').style.width='100%';
-  if(mode!=='mistakes')EFS.lesson(subj,tk,right); // сервер считает XP/монеты сам
-  let xpg=0,cg=0,extra='';
-  if(mode==='mix'||mode==='mistakes'){EF.addXP(5);xpg+=5}
-  else{const r=EF.finishLesson(subj,tk);if(r.isNew){EF.addXP(20);EF.addCoins(10);xpg+=20;cg+=10;if(r.doneNow){EF.addXP(30);EF.addCoins(15);xpg+=30;cg+=15;extra='Тема пройдена! 🎉'}}else{EF.addXP(5);xpg+=5}}
-  if(right===qs.length)EF.recordClean();
-  syncXP();
-  const em=right===qs.length?'🏆':right>=3?'💪':'📚';
-  stage.innerHTML=`<div class="done-hero"><div class="em">${em}</div><h2>${right} из ${qs.length} верно</h2><p>${extra||topicTitle}</p>
-   <div class="rw"><span class="l">+${xpg+right*2} XP</span>${cg?`<span class="g">+${cg} ◎</span>`:''}</div></div>
-   <div class="next"><a class="btn" href="${mode?'tasks.html?s='+encodeURIComponent(subj):'lesson.html?s='+encodeURIComponent(subj)+'&t='+encodeURIComponent(tk)+'&l='+Math.min(10,li+1)}">${mode||li>=10?'К заданиям':'Следующее занятие →'}</a>
-   <a class="btn ghost" href="tasks.html?s=${encodeURIComponent(subj)}">К списку тем</a></div>`;
-  boom(stage.querySelector('.done-hero'));
- }
- q();
-}
-}
-</script>
+<script src="state.js?v=8"></script>
+<script src="sync.js?v=10"></script>
+<script src="lesson-view.js?v=12"></script>
 </body>
 </html>

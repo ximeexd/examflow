@@ -6,13 +6,37 @@
     'use strict';
     const KEY = 'examflow_state_v1';
     const PROFILE_KEY = 'examflow_profile_v2';
-    const todayStr = () => new Date().toISOString().slice(0, 10);
-    const yesterStr = () => { const d = new Date(); d.setDate(d.getDate() - 1); return d.toISOString().slice(0, 10); };
+    // local calendar day keys (not UTC — quests/streaks are local-day based)
+    const dayKey = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const todayStr = () => dayKey(new Date());
+    const yesterStr = () => { const d = new Date(); d.setDate(d.getDate() - 1); return dayKey(d); };
+    // true only for a real calendar date 'YYYY-MM-DD'
+    function validDate(v) {
+        if (typeof v !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return false;
+        const d = new Date(v + 'T00:00:00');
+        return !isNaN(d) && dayKey(d) === v;
+    }
 
     const num = (v, d, min, max) => {
         v = Number(v);
-        return Number.isFinite(v) ? Math.min(max, Math.max(min, v)) : d;
+        return Number.isFinite(v) ? Math.min(max, Math.max(min, Math.floor(v))) : d;
     };
+    const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    // iterate only own enumerable string-keyed entries, skipping keys that can
+    // mutate the prototype chain when copied onto a fresh object
+    const DANGER_KEYS = { __proto__: 1, constructor: 1, prototype: 1 };
+    function eachSafe(o, fn) {
+        if (!o || typeof o !== 'object') return;
+        for (const k of Object.keys(o)) if (!DANGER_KEYS[k]) fn(k, o[k]);
+    }
+    const DAILY_IDS = ['d1', 'd2', 'd3', 'd4'], WEEKLY_IDS = ['w1', 'w2', 'w3'];
+    function freshToday(date) {
+        return { date: date || '', started: 0, lessons: 0, correct: 0, mistakes: 0, clean: 0, claimed: 0, claimedIds: [], chest: 0, xp: 0 };
+    }
+    function freshWeek(wk) {
+        return { wk: wk || '', correct: 0, lessons: 0, claimed: [] };
+    }
     function freshDefaults() {
         return {
             name: 'Даниил',
@@ -27,8 +51,8 @@
             lastActive: '',
             days: [],
             prog: {},          // 'exam:subject:topicKey' -> lessons done 0..10
-            today: { date: '', started: 0, lessons: 0, correct: 0, mistakes: 0, clean: 0, claimed: 0, claimedIds: [], chest: 0 },
-            week: { wk: '', correct: 0, lessons: 0, claimed: [] },
+            today: freshToday(),
+            week: freshWeek(),
             totalCorrect: 0,
             cleanTotal: 0,
             dayLog: {},          // 'YYYY-MM-DD' -> lessons count
@@ -44,67 +68,145 @@
     }
     const wkStr = () => isoWeek(new Date());
 
+    // A stored question/mistake record: only known fields, strict shape so a
+    // corrupted record degrades to an empty review instead of a .map crash.
+    // 'id' is deliberately absent — it is validated above and preserved whole
+    const QUESTION_FIELDS = ['topicId', 'subject', 'exam', 'topicKey', 'topic', 'courseTopic', 'title', 'cat', 'topicMatch', 'source'];
+    function cleanQuestion(m) {
+        if (!m || typeof m !== 'object') return null;
+        const id = (typeof m.id === 'string' && m.id) || (typeof m.id === 'number' && Number.isFinite(m.id)) ? m.id : null;
+        if (id === null) return null;
+        // question text/explanation are preserved verbatim — the cloud byte cap
+        // already guards storage, truncation could silently change an answer
+        if (typeof m.q !== 'string' || !m.q) return null;
+        const opts = m.opts;
+        if (!Array.isArray(opts) || opts.length !== 4) return null;
+        if (opts.some(o => typeof o !== 'string' || o === '') || new Set(opts).size !== 4) return null;
+        if (typeof m.ans !== 'number' || !Number.isInteger(m.ans) || m.ans < 0 || m.ans > 3) return null;
+        if (typeof m.exp !== 'string') return null;
+        const out = { id, q: m.q, opts, ans: m.ans, exp: m.exp };
+        for (const f of QUESTION_FIELDS) {
+            const v = m[f];
+            if (typeof v === 'string') out[f] = v.slice(0, 300);
+            else if (typeof v === 'number' && isFinite(v)) out[f] = v;
+            else if (typeof v === 'boolean') out[f] = v;
+        }
+        return out;
+    }
+
     // raw -> sanitized complete state with fresh nested objects.
-    // Repairs corrupted/self-written values exactly like the original loader.
+    // Only whitelisted fields are copied; maps drop __proto__/constructor keys.
     function normalizeState(raw) {
-        const s = Object.assign(freshDefaults(), (typeof raw === 'object' && raw) ? raw : {});
-        s.today = Object.assign(freshDefaults().today, (typeof s.today === 'object' && s.today) ? s.today : {});
-        s.week = Object.assign(freshDefaults().week, (typeof s.week === 'object' && s.week) ? s.week : {});
-        s.xp = num(s.xp, 0, 0, 1e7);
-        s.coins = num(s.coins, 0, 0, 1e7);
-        s.streak = num(s.streak, 0, 0, 1e4);
-        s.totalCorrect = num(s.totalCorrect, 0, 0, 1e7);
-        s.cleanTotal = num(s.cleanTotal, 0, 0, 1e6);
-        s.goal = num(s.goal, 10, 5, 120);
-        s.onboarded = s.onboarded ? 1 : 0;
-        s.name = String(s.name || 'Ученик').replace(/[<>&"']/g, '').slice(0, 50) || 'Ученик';
-        s.exam = s.exam === 'ege' ? 'ege' : 'oge';
-        s.active = String(s.active || 'Математика').slice(0, 60);
-        s.lastActive = /^\d{4}-\d{2}-\d{2}$/.test(s.lastActive) ? s.lastActive : '';
-        if (!Array.isArray(s.days)) s.days = [];
-        s.days = s.days.filter(d => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d)).slice(-120);
-        if (!Array.isArray(s.mistakes)) s.mistakes = [];
-        s.mistakes = s.mistakes.filter(m => m && typeof m === 'object' && m.id != null).slice(0, 60);
-        if (s.subs !== null && !Array.isArray(s.subs)) s.subs = null;
-        if (Array.isArray(s.subs)) s.subs = s.subs.filter(x => typeof x === 'string').slice(0, 30);
-        if (typeof s.prog !== 'object' || !s.prog || Array.isArray(s.prog)) s.prog = {};
-        for (const k in s.prog) {
-            const v = num(s.prog[k], 0, 0, 10);
-            if (v !== s.prog[k]) { if (v <= 0) delete s.prog[k]; else s.prog[k] = v; }
+        const r = (typeof raw === 'object' && raw && !Array.isArray(raw)) ? raw : {};
+        const s = freshDefaults();
+        if (typeof r.name === 'string') s.name = r.name;
+        if (r.exam === 'ege' || r.exam === 'oge') s.exam = r.exam;
+        if (typeof r.active === 'string') s.active = r.active.slice(0, 60);
+        s.onboarded = r.onboarded ? 1 : 0;
+        if (Array.isArray(r.subs)) s.subs = r.subs.filter(x => typeof x === 'string').map(x => x.slice(0, 60)).slice(0, 30);
+        else if (r.subs !== null && r.subs !== undefined) s.subs = null;
+        s.goal = num(r.goal, 10, 5, 120);
+        s.xp = num(r.xp, 0, 0, 1e7);
+        s.coins = num(r.coins, 0, 0, 1e7);
+        s.streak = num(r.streak, 0, 0, 1e4);
+        s.totalCorrect = num(r.totalCorrect, 0, 0, 1e7);
+        s.cleanTotal = num(r.cleanTotal, 0, 0, 1e6);
+        s.lastActive = validDate(r.lastActive) ? r.lastActive : '';
+        if (Array.isArray(r.days)) s.days = r.days.filter(validDate).slice(-120);
+        if (typeof r.prog === 'object' && r.prog && !Array.isArray(r.prog)) {
+            eachSafe(r.prog, (k, v) => {
+                const val = num(v, 0, 0, 10);
+                if (val > 0 && typeof k === 'string' && k.length <= 300) s.prog[k] = val;
+            });
         }
-        if (typeof s.dayLog !== 'object' || !s.dayLog || Array.isArray(s.dayLog)) s.dayLog = {};
-        for (const k in s.dayLog) {
-            const v = num(s.dayLog[k], 0, 0, 1e4);
-            if (v !== s.dayLog[k]) { if (v <= 0) delete s.dayLog[k]; else s.dayLog[k] = v; }
+        if (typeof r.dayLog === 'object' && r.dayLog && !Array.isArray(r.dayLog)) {
+            eachSafe(r.dayLog, (k, v) => {
+                const val = num(v, 0, 0, 1e4);
+                if (val > 0 && validDate(k)) s.dayLog[k] = val;
+            });
         }
-        ['started', 'lessons', 'correct', 'mistakes', 'clean', 'claimed', 'chest'].forEach(f => {
-            s.today[f] = num(s.today[f], 0, 0, 1e6);
-        });
-        if (!Array.isArray(s.today.claimedIds)) s.today.claimedIds = [];
-        ['correct', 'lessons'].forEach(f => { s.week[f] = num(s.week[f], 0, 0, 1e6); });
-        if (!Array.isArray(s.week.claimed)) s.week.claimed = [];
-        if (s.today.date !== todayStr()) s.today = Object.assign(freshDefaults().today, { date: todayStr() });
-        if (s.week.wk !== wkStr()) s.week = { wk: wkStr(), correct: 0, lessons: 0, claimed: [] };
+        if (typeof r.today === 'object' && r.today) {
+            const t = s.today;
+            if (validDate(r.today.date)) t.date = r.today.date;
+            ['started', 'lessons', 'correct', 'mistakes', 'clean', 'claimed', 'chest', 'xp'].forEach(f => { t[f] = num(r.today[f], 0, 0, 1e6); });
+            if (Array.isArray(r.today.claimedIds)) t.claimedIds = [...new Set(r.today.claimedIds.filter(x => DAILY_IDS.indexOf(x) >= 0))];
+            // the 'claimed' rollup is always derived from the real id list
+            t.claimed = DAILY_IDS.every(id => t.claimedIds.indexOf(id) >= 0) ? 1 : 0;
+        }
+        if (typeof r.week === 'object' && r.week) {
+            if (typeof r.week.wk === 'string' && /^\d{4}-W\d{1,2}$/.test(r.week.wk)) s.week.wk = r.week.wk;
+            s.week.correct = num(r.week.correct, 0, 0, 1e6);
+            s.week.lessons = num(r.week.lessons, 0, 0, 1e6);
+            if (Array.isArray(r.week.claimed)) s.week.claimed = [...new Set(r.week.claimed.filter(x => WEEKLY_IDS.indexOf(x) >= 0))];
+        }
+        if (Array.isArray(r.mistakes)) {
+            for (const m of r.mistakes) {
+                const q = cleanQuestion(m);
+                if (q) s.mistakes.push(q);
+                if (s.mistakes.length >= 60) break;
+            }
+        }
+        s.name = s.name.replace(/[<>&"']/g, '').slice(0, 50) || 'Ученик';
+        // active must be inside the chosen subject list for the current exam
+        const cur = (window.SCHOOL_CURRICULUM || {})[s.exam] || {};
+        const skip = s.exam === 'ege' ? ['Математика'] : ['Базовая математика', 'Профильная математика'];
+        let list = Object.keys(cur).filter(n => skip.indexOf(n) < 0);
+        if (Array.isArray(s.subs) && s.subs.length) {
+            const sel = list.filter(n => s.subs.indexOf(n) >= 0);
+            if (sel.length) list = sel;
+        }
+        if (typeof s.active !== 'string' || list.indexOf(s.active) < 0) s.active = list[0] || 'Математика';
+        refreshPeriods(s);
         return s;
+    }
+
+    // Roll daily/weekly buckets over in place (same object refs for T/WK).
+    // Returns true when a reset happened; never dispatches save itself.
+    function refreshPeriods(st) {
+        const s = st || s2;
+        let changed = false;
+        if (s.today.date !== todayStr()) {
+            const t = freshToday(todayStr());
+            for (const k in s.today) delete s.today[k];
+            Object.assign(s.today, t); changed = true;
+        }
+        if (s.week.wk !== wkStr()) {
+            const w = freshWeek(wkStr());
+            for (const k in s.week) delete s.week[k];
+            Object.assign(s.week, w); changed = true;
+        }
+        // streak continuity: legacy records without lastActive derive it from
+        // the last recorded practice day; a lastActive older than yesterday
+        // means the streak is already broken — history itself stays untouched
+        if (!s.lastActive && s.streak > 0) {
+            const last = s.days.filter(d => validDate(d) && d <= todayStr()).sort().pop();
+            if (last) s.lastActive = last; else s.streak = 0;
+            changed = true;
+        }
+        if (s.lastActive && s.lastActive < yesterStr() && s.streak !== 0) { s.streak = 0; changed = true; }
+        if (changed && st === undefined) writeSilent();
+        return changed;
     }
 
     let scope = null;                    // null = guest cache, string = account user id
     const storageKey = () => scope ? KEY + ':' + scope : KEY;
     const cacheKey = (userId) => userId ? KEY + ':' + userId : KEY;
+    function safeGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
     function load() {
         let raw = null;
-        try { raw = JSON.parse(localStorage.getItem(storageKey())); } catch (e) {}
+        try { raw = JSON.parse(safeGet(storageKey())); } catch (e) {}
         return normalizeState(raw || {});
     }
 
     let s = load();
+    const s2 = s; // reference used by refreshPeriods when called without arg
 
-    // Local write that does NOT trigger the sync listener.
-    function writeSilent() { try { localStorage.setItem(storageKey(), JSON.stringify(s)); } catch (e) {} }
+    // Local write that does NOT trigger the sync listener; false on quota error.
+    function writeSilent() { try { localStorage.setItem(storageKey(), JSON.stringify(s)); return true; } catch (e) { return false; } }
 
     function save() {
-        writeSilent();
-        try { window.dispatchEvent(new CustomEvent('ef:state-saved')); } catch (e) {}
+        const persisted = writeSilent();
+        try { window.dispatchEvent(new CustomEvent('ef:state-saved', { detail: { persisted } })); } catch (e) {}
     }
 
     // Replace every key of s in place so existing EF.get() references stay valid.
@@ -113,11 +215,26 @@
         Object.assign(s, next);
     }
 
+    const DAILY_QUESTS = {
+        d1: t => t.lessons >= 1,
+        d2: t => t.correct >= 5,
+        d3: t => t.mistakes >= 1,
+        d4: t => t.clean >= 1
+    };
+    const WEEKLY_QUESTS = {
+        w1: () => EF.weekDaysCount() >= 5,
+        w2: () => EF.week().correct >= 50,
+        w3: () => EF.get().streak >= 7
+    };
+
     const EF = {
-        get: () => s,
+        get: () => { refreshPeriods(); return s; },
         save,
-        today: () => s.today,
-        week: () => s.week,
+        escapeHTML: esc,
+        validDate,
+        today: () => { refreshPeriods(); return s.today; },
+        week: () => { refreshPeriods(); return s.week; },
+        refreshPeriods: () => refreshPeriods(),
         day: todayStr,
         storageKey,
         cacheKey,
@@ -126,13 +243,16 @@
         profileKey: () => (scope ? PROFILE_KEY + ':' + scope : PROFILE_KEY),
         profileBaseKey: PROFILE_KEY,
         userId: () => scope,
-        weekDaysCount() { const wk = wkStr(); return s.days.filter(d => isoWeek(new Date(d + 'T12:00:00')) === wk).length; },
+        weekDaysCount() {
+            const wk = wkStr(), td = todayStr();
+            return new Set(s.days.filter(d => validDate(d) && d <= td && isoWeek(new Date(d + 'T12:00:00')) === wk)).size;
+        },
 
         // Switch storage scope to a guest (null) or an account (user id).
         // Loads that scope's cache; returns whether a scoped cache existed.
         bindAccount(userId) {
             scope = userId || null;
-            const existed = localStorage.getItem(storageKey()) !== null;
+            const existed = safeGet(storageKey()) !== null;
             replaceInPlace(load());
             return existed;
         },
@@ -143,7 +263,10 @@
         },
 
         examName: () => s.exam === 'ege' ? 'ЕГЭ' : 'ОГЭ',
-        setExam(exam) { if (s.exam !== exam) { s.exam = exam; const subs = EF.subjects(); if (!subs.includes(s.active)) s.active = subs[0]; save(); } },
+        setExam(exam) {
+            if (exam !== 'oge' && exam !== 'ege') return;
+            if (s.exam !== exam) { s.exam = exam; const subs = EF.subjects(); if (!subs.includes(s.active)) s.active = subs[0]; save(); }
+        },
 
         subjects() {
             const cur = (window.SCHOOL_CURRICULUM || {})[s.exam] || {};
@@ -185,10 +308,15 @@
         levelPct() { return Math.round((s.xp % 500) / 5); },
 
         addXP(n) {
-            n = Math.min(50, Math.max(0, Math.floor(Number(n) || 0))); // не больше 50 за раз
+            refreshPeriods();
+            n = Number(n);
+            if (!Number.isFinite(n)) return 0;
+            n = Math.min(Math.max(0, Math.floor(n)), Math.max(0, 1e7 - s.xp));
             s.xp += n; s.today.xp = (s.today.xp || 0) + n; save();
+            return n;
         },
         addCoins(n) {
+            refreshPeriods();
             n = Math.min(100, Math.max(0, Math.floor(Number(n) || 0)));
             s.coins += n; save();
         },
@@ -207,35 +335,65 @@
             const d = new Date(); const dow = (d.getDay() + 6) % 7;
             for (let i = 0; i < 7; i++) {
                 const x = new Date(d); x.setDate(d.getDate() - dow + i);
-                const iso = x.toISOString().slice(0, 10);
+                const iso = dayKey(x);
                 out.push({ label: 'Пн Вт Ср Чт Пт Сб Вс'.split(' ')[i], on: s.days.includes(iso), future: iso > todayStr() });
             }
             return out;
         },
 
         startLesson() {
+            refreshPeriods();
             const first = s.today.started === 0;
             s.today.started++; if (first) EF.addXP(5); EF.markActive(); save(); return first;
         },
-        recordCorrect() { s.today.correct++; s.week.correct++; s.totalCorrect++; const bonus = s.today.correct === 5 ? 15 : 0; if (bonus) EF.addXP(bonus); save(); return bonus; },
-        recordMistakeFixed() { s.today.mistakes++; save(); },
-        recordClean() { s.today.clean++; s.cleanTotal++; save(); },
-        claimDaily(id) { if (s.today.claimedIds.includes(id)) return false; s.today.claimedIds.push(id); save(); return true; },
-        claimWeekly(id) { if (s.week.claimed.includes(id)) return false; s.week.claimed.push(id); save(); return true; },
-        // Returns {isNew, doneNow}
-        finishLesson(subject, topicKey) {
+        recordCorrect() { refreshPeriods(); s.today.correct++; s.week.correct++; s.totalCorrect++; const bonus = s.today.correct === 5 ? 15 : 0; if (bonus) EF.addXP(bonus); save(); return bonus; },
+        recordMistakeFixed() { refreshPeriods(); s.today.mistakes++; save(); },
+        recordClean() { refreshPeriods(); s.today.clean++; s.cleanTotal++; save(); },
+        // Known quest ids only, with their real conditions; no repeats.
+        // The id check happens BEFORE the dict lookup — prototype-inherited
+        // members (constructor/toString) must never act as valid quests.
+        claimDaily(id) {
+            refreshPeriods();
+            if (DAILY_IDS.indexOf(id) < 0) return false;
+            const cond = DAILY_QUESTS[id];
+            if (!cond || !cond(s.today) || s.today.claimedIds.includes(id)) return false;
+            s.today.claimedIds.push(id); save(); return true;
+        },
+        claimWeekly(id) {
+            refreshPeriods();
+            if (WEEKLY_IDS.indexOf(id) < 0) return false;
+            const cond = WEEKLY_QUESTS[id];
+            if (!cond || !cond() || s.week.claimed.includes(id)) return false;
+            s.week.claimed.push(id); save(); return true;
+        },
+        dailyConditions() { const t = EF.today(); return Object.keys(DAILY_QUESTS).map(id => condReady(id, t)); },
+        claimChest() {
+            refreshPeriods();
+            if (s.today.chest || !EF.dailyConditions().every(Boolean)) return false;
+            s.today.chest = 1; save(); return true;
+        },
+        // Returns {isNew, doneNow}. Advances progress only for the real next
+        // lesson (li === done+1 <= 10) of a known, unlocked topic. Replays still
+        // count as daily/weekly practice; locked/future lessons mutate nothing.
+        finishLesson(subject, topicKey, lessonNumber) {
+            refreshPeriods();
+            const t = EF.topics(subject);
+            const idx = t.findIndex(x => x.key === topicKey);
+            if (idx < 0 || !EF.isUnlocked(subject, idx)) return { isNew: false, doneNow: false };
             const k = EF.progKey(subject, topicKey), cur = s.prog[k] || 0;
-            const isNew = cur < 10;
-            const n = EF.next(subject);
-            if (n && n.topic.key === topicKey) { s.prog[k] = Math.min(10, cur + 1); }
+            const want = (lessonNumber == null) ? cur + 1 : Number(lessonNumber);
+            if (!Number.isInteger(want) || want < 1 || want > 10 || want > cur + 1) return { isNew: false, doneNow: false };
+            const advance = want === cur + 1 && cur < 10;
+            if (advance) s.prog[k] = cur + 1;
             s.today.lessons++; s.week.lessons++;
             s.dayLog[todayStr()] = (s.dayLog[todayStr()] || 0) + 1;
-            const doneNow = (s.prog[k] || 0) >= 10 && cur < 10;
             save();
-            return { isNew, doneNow };
+            return { isNew: advance, doneNow: advance && s.prog[k] >= 10 };
         },
         addMistake(q) {
-            if (!s.mistakes.some(m => m.id === q.id)) s.mistakes.unshift(q);
+            const clean = cleanQuestion(q);
+            if (!clean) return;
+            if (!s.mistakes.some(m => m.id === clean.id)) s.mistakes.unshift(clean);
             s.mistakes = s.mistakes.slice(0, 60); save();
         },
         dropMistake(id) { s.mistakes = s.mistakes.filter(m => m.id !== id); save(); },
@@ -248,5 +406,6 @@
             Promise.resolve(flush).catch(() => {}).finally(() => location.reload());
         }
     };
+    function condReady(id, t) { return DAILY_QUESTS[id](t); }
     window.EF = EF;
 })();

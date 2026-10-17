@@ -112,7 +112,10 @@
             id: uuid(), kind: kind, payload: payload || {},
             day: EF.day(), wk: (EF.week() || {}).wk || ''
         };
-        const q = loadQueue();
+        let q = loadQueue();
+        // pending profile snapshots supersede each other — only the newest
+        // one matters to the server
+        if (kind === 'profile') q = q.filter(e => e.kind !== 'profile');
         q.push(ev);
         saveQueue(q);
         flush();
@@ -162,18 +165,17 @@
         }
     }
 
-    // Profile/settings changes are debounced into a single snapshot event so
-    // every EF mutation path is covered without touching each call site.
-    let profileTimer = null, lastProfile = '';
+    // Profile/settings changes are queued IMMEDIATELY into the durable
+    // localStorage queue — a debounce window here loses the last snapshot if
+    // the app closes right after onboarding (infinite-onboarding bug).
+    // Coalescing inside queue() keeps only the newest pending snapshot.
+    let lastProfile = '';
     function profileChanged() {
         if (!active()) return;
-        clearTimeout(profileTimer);
-        profileTimer = setTimeout(() => {
-            const snap = JSON.stringify(profileSnapshot());
-            if (snap === lastProfile) return;
-            lastProfile = snap;
-            queue('profile', profileSnapshot());
-        }, 2500);
+        const snap = JSON.stringify(profileSnapshot());
+        if (snap === lastProfile) return;
+        lastProfile = snap;
+        queue('profile', profileSnapshot());
     }
 
     window.EFServer = {

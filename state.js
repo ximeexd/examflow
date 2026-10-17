@@ -455,7 +455,9 @@
                 if (typeof profile.active === 'string') s.active = profile.active.slice(0, 60);
                 if (profile.subs === null) s.subs = null;
                 else if (Array.isArray(profile.subs)) s.subs = profile.subs.filter(x => typeof x === 'string').map(x => x.slice(0, 60)).slice(0, 30);
-                if (profile.onboarded !== undefined) s.onboarded = profile.onboarded ? 1 : 0;
+                // onboarding is a UX flag, not economy: never downgrade it —
+                // a stale server 0 must not reopen the welcome screen
+                if (profile.onboarded !== undefined) s.onboarded = s.onboarded || (profile.onboarded ? 1 : 0);
                 if (typeof profile.goal === 'number') s.goal = num(profile.goal, s.goal, 5, 120);
                 if (typeof profile.settings === 'object' && profile.settings && window.EFS && EFS.setSettings) {
                     try { EFS.setSettings(profile.settings); } catch (x) { }

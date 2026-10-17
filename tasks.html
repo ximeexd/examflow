@@ -12,7 +12,7 @@
 <style>
 :root{--bg:#f4f0e6;--card:#fbf9f3;--line:#e6e0d0;--ink:#12291f;--mute:#9a9a8c;--acc:#c3f73a;--acc2:#a9e01f;--accsoft:#eaffb0;
 box-sizing:border-box}
-*{box-sizing:border-box}
+html{touch-action:manipulation;-webkit-tap-highlight-color:transparent} *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--bg);font-family:Nunito,system-ui,sans-serif;color:var(--ink);display:flex;justify-content:center;min-height:100%;
 background-image:radial-gradient(var(--line) 1.2px,transparent 1.2px);background-size:18px 18px}
@@ -110,7 +110,7 @@ nav a.on{background:var(--acc);color:var(--ink)}
 <script src="telegram-ui.js?v=10"></script>
 <script src="school_curriculum.js?v=3"></script>
 <script src="state.js?v=10"></script>
-<script src="sync.js?v=10"></script>
+<script src="sync.js?v=11"></script>
 <script src="server-sync.js?v=2"></script>
 <script src="tasks-view.js?v=8"></script>
 </body>

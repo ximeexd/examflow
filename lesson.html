@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#f4f0e6;--card:#fbf9f3;--line:#e6e0d0;--ink:#12291f;--mute:#9a9a8c;--acc:#c3f73a;--acc2:#a9e01f;--accsoft:#eaffb0;--dark:#0f2a1e}
-*{box-sizing:border-box;margin:0}
+html{touch-action:manipulation;-webkit-tap-highlight-color:transparent} *{box-sizing:border-box;margin:0}
 body{background:var(--bg) radial-gradient(var(--line) 1.2px,transparent 1.2px) 0 0/18px 18px;font-family:Nunito,system-ui,sans-serif;color:var(--ink);display:flex;justify-content:center;min-height:100vh;min-height:var(--ef-tg-vh,100dvh)}
 .app{width:100%;max-width:480px;padding:20px 16px calc(40px + var(--ef-safe-bottom,env(safe-area-inset-bottom,0px)));display:flex;flex-direction:column;min-height:100vh;min-height:var(--ef-tg-vh,100dvh)}
 .top{display:flex;align-items:center;gap:12px;margin-bottom:18px}
@@ -65,7 +65,7 @@ h1{font-size:23px;font-weight:900;line-height:1.25;margin-bottom:20px}
 <script src="telegram-ui.js?v=10"></script>
 <script src="school_curriculum.js?v=3"></script>
 <script src="state.js?v=10"></script>
-<script src="sync.js?v=10"></script>
+<script src="sync.js?v=11"></script>
 <script src="server-sync.js?v=2"></script>
 <script src="lesson-view.js?v=13"></script>
 </body>

@@ -251,9 +251,10 @@
     const localFail = { state: false, settings: false, meta: false };
     const LOCAL_WARN = 'Нет связи и локальная копия не записана — прогресс может не сохраниться после закрытия';
     function cleanMeta(raw) {
-        const d = { expectedId: null, dirty: 0, own: null, garbage: [] };
+        const d = { expectedId: null, dirty: 0, own: null, garbage: [], lastHash: null };
         if (!raw || typeof raw !== 'object') return d;
         if (typeof raw.expectedId === 'string' || raw.expectedId === null) d.expectedId = raw.expectedId;
+        if (typeof raw.lastHash === 'string') d.lastHash = raw.lastHash;
         if (raw.dirty) d.dirty = 1;
         if (validDesc(raw.own)) d.own = raw.own;
         if (Array.isArray(raw.garbage)) {
@@ -355,8 +356,17 @@
         if (EFS.mode !== 'account') return;
         markDirty();
         clearTimeout(saveTimer);
-        saveTimer = setTimeout(() => { drainOnce().catch(() => { }); }, 150);
+        // 2.5s debounce: hammering CloudStorage with a full chunked
+        // re-upload after every answer click saturated the webview and made
+        // buttons feel laggy. The server event queue + localStorage already
+        // cover crashes — the cloud copy only needs to converge eventually.
+        saveTimer = setTimeout(() => { drainOnce().catch(() => { }); }, 2500);
     }
+    // last-chance flush when the app is backgrounded/closed
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden || EFS.mode !== 'account') return;
+        try { const m = metaGet(EF.userId()); if (m.dirty) drainOnce().catch(() => { }); } catch (e) { }
+    });
     function drainOnce() {
         if (drain) return drain;
         const p = (async () => {
@@ -451,6 +461,14 @@
         for (let i = 0; i < b64.length; i += CHUNK_SIZE) chunks.push(b64.slice(i, i + CHUNK_SIZE));
         if (chunks.length > MAX_CHUNKS) { setStatus('error', ERR_RU.cloud_oversize); throw cloudErr('cloud_oversize'); }
         const hash = await sha256hex(b64), id = newId();
+        // identical content -> skip the whole CloudStorage round: the
+        // serialized state did not change since the last acknowledged upload
+        // (e.g. after a server overlay that rewrote nothing persisted)
+        if (meta.lastHash === hash && meta.expectedId) {
+            meta.dirty = 0; metaSet(scope, meta);
+            setStatus('saved');
+            return;
+        }
         const desc = { id, count: chunks.length, hash };
         const startMan = await getManifest();
         const startCur = startMan && startMan.current ? startMan.current : null;
@@ -470,7 +488,7 @@
         // keep pending cleanup records — a failed obsolete-removal retry must
         // not be silently dropped when the new generation commits
         // merge against the LATEST garbage — meta may be stale by several awaits
-        metaSet(scope, { expectedId: id, dirty: gen > g ? 1 : 0, own: null, garbage: metaGet(scope).garbage });
+        metaSet(scope, { expectedId: id, dirty: gen > g ? 1 : 0, own: null, garbage: metaGet(scope).garbage, lastHash: hash });
         // only claim saved when no newer local change is still unacknowledged
         setStatus(gen > g ? 'saving' : 'saved');
         // await the obsolete-generation cleanup so a resolved flush always

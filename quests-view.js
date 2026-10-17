@@ -68,10 +68,18 @@ function start() {
             var q = daily().concat(weekly()).filter(function (x) { return x.id == t.dataset.c })[0];
             if (q && rd(q)) {
                 var ok = q.id[0] == 'd' ? EF.claimDaily(q.id) : EF.claimWeekly(q.id);
-                if (ok) { EFS.claimQuest(q.id); gain(q.xp, q.c) }
+                if (ok) {
+                    try { if (window.EFServer) EFServer.claim(q.id[0] == 'd' ? 'daily' : 'weekly', q.id) } catch (e) { }
+                    EFS.claimQuest(q.id); gain(q.xp, q.c)
+                }
             } return
         }
-        if (t.dataset.chest) { if (EF.claimChest()) gain(100, 50); return }
+        if (t.dataset.chest) {
+            if (EF.claimChest()) {
+                try { if (window.EFServer) EFServer.claim('chest') } catch (e) { }
+                gain(100, 50)
+            } return
+        }
     });
     // quests reset at local midnight — refresh on focus/visible and a minute tick
     document.addEventListener('visibilitychange', function () { if (!document.hidden) render() });

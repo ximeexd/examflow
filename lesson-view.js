@@ -127,11 +127,13 @@ async function startLessonPage() {
     }
 
     // --- run the lesson ---
+    const startedAt = Date.now(); // server checks a minimum plausible duration
     EF.startLesson(); syncXP();
     // closing confirmation while a real lesson is mid-flight (guarded no-op
     // outside Telegram and on pages without the bridge)
     try { if (window.EFTelegram && EFTelegram.setLessonActive) EFTelegram.setLessonActive(true); } catch (e) { }
     let i = 0, right = 0, answered = false, finished = false;
+    const picks = []; // [{id, pick}] — materialized option index, server-verified
     const boom = el => {
         if (REDUCED) return;
         const r = (el || document.body).getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2,
@@ -151,11 +153,12 @@ async function startLessonPage() {
         const ord = shuffle(item.opts.map((o, ix) => ({ o, ix })));
         stage.innerHTML = `<div class="kick">${mode === 'mistakes' ? 'Работа над ошибками' : mode === 'mix' ? 'Повторение темы' : 'Занятие ' + li + ' · ' + esc(topicTitle)}</div>
    <h1>${esc(item.q)}</h1>
-   <div class="opts">${ord.map(({ o, ix }) => `<button class="opt" data-a="${ix === item.ans}">${esc(o)}</button>`).join('')}</div>
+   <div class="opts">${ord.map(({ o, ix }) => `<button class="opt" data-a="${ix === item.ans}" data-ix="${ix}">${esc(o)}</button>`).join('')}</div>
    <div class="exp" id="exp"></div>
    <div class="next"><button class="btn" id="next" style="display:none">Дальше</button></div>`;
         stage.querySelectorAll('.opt').forEach(b => b.onclick = () => {
             if (answered) return; answered = true;
+            picks.push({ id: item.id, pick: Number(b.dataset.ix) });
             const ok = b.dataset.a === 'true', ex = $('exp');
             beep(ok);
             stage.querySelectorAll('.opt').forEach(x => {
@@ -180,6 +183,12 @@ async function startLessonPage() {
         try { if (window.EFTelegram && EFTelegram.setLessonActive) EFTelegram.setLessonActive(false); } catch (e) { }
         $('bar').style.width = '100%';
         let xpg = 0, cg = 0, extra = '';
+        try {
+            if (window.EFServer) {
+                if (mode === 'mix' || mode === 'mistakes') EFServer.practice(mode, picks);
+                else EFServer.finishLesson(subj, tk, li, picks, startedAt);
+            }
+        } catch (e) { }
         if (mode === 'mix' || mode === 'mistakes') { EF.addXP(5); xpg += 5; }
         else {
             const r = EF.finishLesson(subj, tk, li);

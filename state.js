@@ -393,15 +393,92 @@
         addMistake(q) {
             const clean = cleanQuestion(q);
             if (!clean) return;
+            clean._new = 1; // survives applyServer until the server confirms it
             if (!s.mistakes.some(m => m.id === clean.id)) s.mistakes.unshift(clean);
             s.mistakes = s.mistakes.slice(0, 60); save();
         },
         dropMistake(id) { s.mistakes = s.mistakes.filter(m => m.id !== id); save(); },
 
+        // Server-authoritative overlay (examflow-api). Only whitelisted
+        // economy fields are replaced; settings-like fields come via profile.
+        applyServer(econ, profile) {
+            if (!econ || typeof econ !== 'object') return;
+            const e = econ;
+            s.xp = num(e.xp, s.xp, 0, 1e7);
+            s.coins = num(e.coins, s.coins, 0, 1e7);
+            s.streak = num(e.streak, s.streak, 0, 1e4);
+            s.totalCorrect = num(e.totalCorrect, s.totalCorrect, 0, 1e7);
+            s.cleanTotal = num(e.cleanTotal, s.cleanTotal, 0, 1e6);
+            if (e.lastActive === '') s.lastActive = '';
+            else if (validDate(e.lastActive)) s.lastActive = e.lastActive;
+            if (Array.isArray(e.days)) s.days = e.days.filter(validDate).slice(-120);
+            if (typeof e.prog === 'object' && e.prog && !Array.isArray(e.prog)) {
+                const p = {};
+                eachSafe(e.prog, (k, v) => {
+                    const val = num(v, 0, 0, 10);
+                    if (val > 0 && typeof k === 'string' && k.length <= 300) p[k] = val;
+                });
+                s.prog = p;
+            }
+            if (typeof e.dayLog === 'object' && e.dayLog && !Array.isArray(e.dayLog)) {
+                const d = {};
+                eachSafe(e.dayLog, (k, v) => {
+                    const val = num(v, 0, 0, 1e4);
+                    if (val > 0 && validDate(k)) d[k] = val;
+                });
+                s.dayLog = d;
+            }
+            if (typeof e.today === 'object' && e.today) {
+                const t = freshToday();
+                if (validDate(e.today.date)) t.date = e.today.date;
+                ['started', 'lessons', 'correct', 'mistakes', 'clean', 'chest', 'xp'].forEach(f => { t[f] = num(e.today[f], 0, 0, 1e6); });
+                if (Array.isArray(e.today.claimedIds)) t.claimedIds = [...new Set(e.today.claimedIds.filter(x => DAILY_IDS.indexOf(x) >= 0))];
+                t.claimed = DAILY_IDS.every(id => t.claimedIds.indexOf(id) >= 0) ? 1 : 0;
+                s.today = t;
+            }
+            if (typeof e.week === 'object' && e.week) {
+                const w = freshWeek();
+                if (typeof e.week.wk === 'string' && /^\d{4}-W\d{1,2}$/.test(e.week.wk)) w.wk = e.week.wk;
+                w.correct = num(e.week.correct, 0, 0, 1e6);
+                w.lessons = num(e.week.lessons, 0, 0, 1e6);
+                if (Array.isArray(e.week.claimed)) w.claimed = [...new Set(e.week.claimed.filter(x => WEEKLY_IDS.indexOf(x) >= 0))];
+                s.week = w;
+            }
+            if (Array.isArray(e.mistakeIds)) {
+                const ids = new Set(e.mistakeIds.filter(x => typeof x === 'string'));
+                s.mistakes = s.mistakes.filter(m => ids.has(m.id) || m._new);
+                for (const m of s.mistakes) if (ids.has(m.id)) delete m._new;
+            }
+            if (profile && typeof profile === 'object') {
+                if (typeof profile.name === 'string') s.name = profile.name.replace(/[<>&"']/g, '').slice(0, 50) || s.name;
+                if (profile.exam === 'oge' || profile.exam === 'ege') s.exam = profile.exam;
+                if (typeof profile.active === 'string') s.active = profile.active.slice(0, 60);
+                if (profile.subs === null) s.subs = null;
+                else if (Array.isArray(profile.subs)) s.subs = profile.subs.filter(x => typeof x === 'string').map(x => x.slice(0, 60)).slice(0, 30);
+                if (profile.onboarded !== undefined) s.onboarded = profile.onboarded ? 1 : 0;
+                if (typeof profile.goal === 'number') s.goal = num(profile.goal, s.goal, 5, 120);
+                if (typeof profile.settings === 'object' && profile.settings && window.EFS && EFS.setSettings) {
+                    try { EFS.setSettings(profile.settings); } catch (x) { }
+                }
+            }
+            // keep active inside the visible subject list for the current exam
+            const cur = (window.SCHOOL_CURRICULUM || {})[s.exam] || {};
+            const skip = s.exam === 'ege' ? ['Математика'] : ['Базовая математика', 'Профильная математика'];
+            let list = Object.keys(cur).filter(n => skip.indexOf(n) < 0);
+            if (Array.isArray(s.subs) && s.subs.length) {
+                const sel = list.filter(n => s.subs.indexOf(n) >= 0);
+                if (sel.length) list = sel;
+            }
+            if (list.indexOf(s.active) < 0) s.active = list[0] || s.active;
+            refreshPeriods();
+            save();
+        },
+
         // Save a clean state under the current scope, upload it if sync is up, reload.
         reset() {
             EF.restore(EF.defaults());
             save();
+            try { if (window.EFServer) EFServer.reset(); } catch (e) { }
             const flush = window.EFS && EFS.flush ? EFS.flush() : Promise.resolve();
             Promise.resolve(flush).catch(() => {}).finally(() => location.reload());
         }

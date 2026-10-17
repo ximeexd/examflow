@@ -22,6 +22,14 @@ function start() {
     function save() { st = EFS.setSettings ? EFS.setSettings(st) : st }
     var SUBJC = { "Математика": ["∑", "#c6f94d"], "Базовая математика": ["∑", "#c6f94d"], "Профильная математика": ["∫", "#c6f94d"], "Русский язык": ["Аа", "#ffc29a"], "Информатика": ["</>", "#c9b8ff"], "Обществознание": ["⚖", "#9fe0ff"], "Физика": ["⚡", "#9fe0ff"], "Биология": ["🧬", "#8ff0b4"], "Химия": ["⚗", "#ffadca"], "История": ["★", "#f4d9a6"], "Английский": ["Aa", "#b8e6ff"], "Литература": ["📖", "#ffc9a6"], "География": ["🌍", "#a9e8d8"] };
     var $ = function (i) { return document.getElementById(i) }, esc = EF.escapeHTML;
+    function avatarUrl() {
+        try {
+            var u = window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user;
+            var p = u && u.photo_url;
+            if (p && /^https:\/\/([a-z0-9-]+\.)*(t\.me|telesco\.pe)\//i.test(p)) return p;
+        } catch (e) { }
+        return 'brand-avatar.png?v=1';
+    }
     var DEF = { oge: "2027-05-22", ege: "2027-05-29" };
     function cur() { return EF.validDate(st.dates[EF.get().exam]) ? st.dates[EF.get().exam] : DEF[EF.get().exam] }
     function apx() { return !st.cust[EF.get().exam] }
@@ -49,7 +57,7 @@ function start() {
         var mins = T.lessons * 5, tg = Math.min(100, mins / st.goal * 100);
         var lv = EF.level(), need = lv * 500 - S.xp;
         $("app").innerHTML = '<div class="top"><h1>Профиль</h1><span class="pill">⚡ ' + S.xp + ' XP</span><span class="pill">◎ ' + S.coins + '</span></div>' +
-            '<section class="pp"><button class="edit" data-edit="1" aria-label="Редактировать профиль">✎</button><div class="rgw"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="none" stroke="#2d5340" stroke-width="6"/><circle id="rc" cx="50" cy="50" r="46" fill="none" stroke="#c6f94d" stroke-width="6" stroke-linecap="round" stroke-dasharray="289" stroke-dashoffset="289" transform="rotate(-90 50 50)"/></svg><img class="av" src="brand-avatar.png?v=1" alt="Аватар ExamFlow"></div><b>' + esc(S.name) + '</b><span class="ttl">Уровень ' + lv + ' · ' + lvlName(lv) + '</span><p class="nx">' + (S.xp % 500) + ' из 500 XP · до ' + (lv + 1) + '-го уровня ' + need + '</p></section>' +
+            '<section class="pp"><button class="edit" data-edit="1" aria-label="Редактировать профиль">✎</button><div class="rgw"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="none" stroke="#2d5340" stroke-width="6"/><circle id="rc" cx="50" cy="50" r="46" fill="none" stroke="#c6f94d" stroke-width="6" stroke-linecap="round" stroke-dasharray="289" stroke-dashoffset="289" transform="rotate(-90 50 50)"/></svg><img class="av" src="' + esc(avatarUrl()) + '" alt="Аватар"></div><b>' + esc(S.name) + '</b><span class="ttl">Уровень ' + lv + ' · ' + lvlName(lv) + '</span><p class="nx">' + (S.xp % 500) + ' из 500 XP · до ' + (lv + 1) + '-го уровня ' + need + '</p></section>' +
             '<div class="tri"><div><strong>' + S.streak + '</strong><span>дней подряд</span></div><div><strong>' + S.coins + '</strong><span>монет</span></div><div><strong>' + EF.totalLessons() + '</strong><span>занятий</span></div></div>' +
             '<button class="exl" data-edit="1"><div class="r"><div><b>До ' + (S.exam == "oge" ? "ОГЭ" : "ЕГЭ") + '</b><small>' + (apx() ? "примерно " : "") + esc(dtext()) + '</small></div><div class="n">' + (d === null ? "—" : (apx() ? "≈" : "") + Math.max(0, d)) + '<span>дней</span></div></div><div class="bar"><b style="width:' + pc + '%"></b></div><small style="margin-top:6px">Курс пройден на ' + pc + '%</small>' + '</button>' +
             '<div class="box td"><div class="r"><span>Цель на сегодня</span><small id="tgt">' + mins + ' из ' + st.goal + ' мин</small></div><div class="bar"><b id="tgb" style="width:' + tg + '%"></b></div></div>' +
@@ -57,13 +65,9 @@ function start() {
             '<h2>Подробнее</h2><details class="ac" open><summary><span>Предметы</span><small>' + SUBJ.length + ' предметов</small></summary><div>' + SUBJ.map(function (s) { return '<div class="sj"><span class="g" style="background:' + s[2] + '">' + esc(s[1]) + '</span><div><b>' + esc(s[0]) + '<small>' + s[3] + ' из ' + s[4] + '</small></b><div class="bar"><b style="width:' + Math.round(s[3] / s[4] * 100) + '%"></b></div></div></div>' }).join("") + '</div></details>' +
             '<details class="ac"><summary><span>Неделя</span><small>занятий: ' + w.sum + '</small></summary><div><div class="wk">' + w.h + '</div></div></details>' +
             '<details class="ac"><summary><span>Настройки</span><small>цель, напоминания</small></summary><div><div class="set"><div><b>Цель на день</b><small>Минут занятий</small></div><div class="seg goal-set">' + [5, 10, 15, 20, 30].map(function (g) { return '<button data-g="' + g + '" class="' + (st.goal == g ? "on" : "") + '">' + g + '</button>' }).join("") + '</div></div><div class="set"><div><b>План занятий</b><small>Время для занятий · уведомления пока не отправляются</small></div><div style="display:flex;gap:8px;align-items:center"><input class="tm" type="time" id="tm" value="' + esc(st.time) + '" aria-label="Время для занятий"' + (st.remind ? "" : " hidden") + '><button class="sw" role="switch" aria-checked="' + st.remind + '" aria-label="Время для занятий" data-sw="remind"></button></div></div><div class="set"><div><b>Звуки</b><small>Эффекты при ответах</small></div><button class="sw" role="switch" aria-checked="' + st.sound + '" aria-label="Звуки" data-sw="sound"></button></div></div></details>' +
-            '<details class="ac"><summary><span>Данные и сохранение</span><small>где хранится прогресс</small></summary><div>' +
-            '<p class="dt">Прогресс хранится в CloudStorage твоего Telegram-аккаунта — для этого бота и этого пользователя. Открытие по ссылке в браузере — отдельная демо-версия, она хранит данные только в этом браузере.</p>' +
-            '<p class="dt">Перед закрытием дождись статуса «Сохранено в Telegram» — иначе последние изменения могут остаться только на этом устройстве.</p>' +
-            '<p class="dt">XP и монеты — личная мотивация, а не проверенный результат: настоящей защиты от накрутки здесь нет.</p>' +
-            '<p class="dt">Напоминания пока не отправляются — время занятий сохраняется только как план.</p>' +
-            '<p class="dt">«Сбросить прогресс» удаляет твой учебный прогресс, когда запись в облако успешна. Аккаунт Telegram это не затрагивает.</p></div></details>' +
             '<button class="out" data-out="1">Сбросить прогресс</button><p class="foot">ExamFlow — готовься к ОГЭ и ЕГЭ маленькими шагами каждый день.</p>';
+        var av = document.querySelector('.av');
+        if (av) av.addEventListener('error', function () { this.src = 'brand-avatar.png?v=1' }, { once: true });
         requestAnimationFrame(function () { requestAnimationFrame(function () { var r = $("rc"); if (r) r.style.strokeDashoffset = 289 * (1 - EF.levelPct() / 100) }) })
     }
     // focus-managed bottom sheet: remembers opener, Escape closes, Tab trapped.

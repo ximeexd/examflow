@@ -301,14 +301,14 @@
                     st.textContent = s === 'error' ? 'Ошибка: ' + (msg || 'не сохранено')
                         : 'Демо: прогресс только в этом браузере';
                 }
-            } else {
+            } else if (s === 'offline' || s === 'conflict' || s === 'error') {
+                // the chip appears only when the user can act on it; routine
+                // saved/saving/idle statuses stay silent
                 st.hidden = false;
-                st.textContent = s === 'saved' ? 'Сохранено в Telegram ✓' :
-                    s === 'saving' ? 'Сохраняем…' :
-                        s === 'offline' ? (msg || 'Нет связи — нажми, чтобы повторить') :
-                            s === 'conflict' ? 'Конфликт данных — нажми' :
-                                s === 'error' ? 'Ошибка: ' + (msg || 'sync') : '';
-            }
+                st.textContent = s === 'offline' ? (msg || 'Нет связи — нажми, чтобы повторить') :
+                    s === 'conflict' ? 'Конфликт данных — нажми' :
+                        'Ошибка: ' + (msg || 'не сохранено');
+            } else st.hidden = true;
         }
         try { document.dispatchEvent(new CustomEvent('ef:sync-status', { detail: { status: s, error: msg || null } })); } catch (e) { }
     }

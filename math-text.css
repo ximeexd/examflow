@@ -1,0 +1,4 @@
+/* ExamFlow — stacked numeric fractions emitted by math-text.js */
+.ef-fraction{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;line-height:1.15;font-size:.8em;white-space:nowrap;padding:0 .2em}
+.ef-fraction-num{display:block;padding:0 .14em .06em}
+.ef-fraction-den{display:block;border-top:1.5px solid currentColor;padding:.06em .14em 0}

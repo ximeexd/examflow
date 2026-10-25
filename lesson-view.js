@@ -58,6 +58,7 @@ function beep(ok) {
 async function startLessonPage() {
     const $ = id => document.getElementById(id);
     const esc = EF.escapeHTML;
+    const fmt = (window.EFMathText && EFMathText.format) || esc;
     const P = new URLSearchParams(location.search);
     const mode = P.get('mode') || '';
     const exam = EF.get().exam;
@@ -152,8 +153,8 @@ async function startLessonPage() {
         $('bar').style.width = (i / qs.length * 100) + '%';
         const ord = shuffle(item.opts.map((o, ix) => ({ o, ix })));
         stage.innerHTML = `<div class="kick">${mode === 'mistakes' ? 'Работа над ошибками' : mode === 'mix' ? 'Повторение темы' : 'Занятие ' + li + ' · ' + esc(topicTitle)}</div>
-   <h1>${esc(item.q)}</h1>
-   <div class="opts">${ord.map(({ o, ix }) => `<button class="opt" data-a="${ix === item.ans}" data-ix="${ix}">${esc(o)}</button>`).join('')}</div>
+   <h1>${fmt(item.q)}</h1>
+   <div class="opts">${ord.map(({ o, ix }) => `<button class="opt" data-a="${ix === item.ans}" data-ix="${ix}">${fmt(o)}</button>`).join('')}</div>
    <div class="exp" id="exp"></div>
    <div class="next"><button class="btn" id="next" style="display:none">Дальше</button></div>`;
         stage.querySelectorAll('.opt').forEach(b => b.onclick = () => {
@@ -168,11 +169,11 @@ async function startLessonPage() {
             if (ok) {
                 right++; EF.addXP(2); const bonus = EF.recordCorrect();
                 if (mode === 'mistakes') { EF.dropMistake(item.id); EF.recordMistakeFixed(); }
-                ex.className = 'exp show ok'; ex.innerHTML = `<b>Верно! +2 XP${bonus ? ' (+' + bonus + ' за 5 правильных)' : ''}</b><p>${esc(item.exp)}</p>`;
+                ex.className = 'exp show ok'; ex.innerHTML = `<b>Верно! +2 XP${bonus ? ' (+' + bonus + ' за 5 правильных)' : ''}</b><p>${fmt(item.exp)}</p>`;
                 syncXP(); $('xp').classList.add('pop'); setTimeout(() => $('xp').classList.remove('pop'), 250);
             } else {
                 EF.addMistake(item);
-                ex.className = 'exp show bad'; ex.innerHTML = `<b>Неверно. Правильный ответ выделен зелёным</b><p>${esc(item.exp)}</p>`;
+                ex.className = 'exp show bad'; ex.innerHTML = `<b>Неверно. Правильный ответ выделен зелёным</b><p>${fmt(item.exp)}</p>`;
             }
             const nx = $('next'); nx.style.display = 'block'; nx.textContent = i + 1 < qs.length ? 'Дальше' : 'Завершить';
         });

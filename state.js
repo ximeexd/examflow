@@ -251,7 +251,9 @@
         // Switch storage scope to a guest (null) or an account (user id).
         // Loads that scope's cache; returns whether a scoped cache existed.
         bindAccount(userId) {
-            scope = userId || null;
+            const next = userId || null;
+            if (scope === next) return safeGet(storageKey()) !== null;
+            scope = next;
             const existed = safeGet(storageKey()) !== null;
             replaceInPlace(load());
             return existed;

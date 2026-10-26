@@ -9,6 +9,10 @@
     const CHUNK_SIZE = 4000, MAX_CHUNKS = 128;
     const META_PREFIX = 'ef_cloud_meta:';
     const SCOPE_PREFIX = 'tgcloud-v1:';
+    const FULL_SYNC_PREFIX = 'ef_full_sync_v1:';
+    const CACHE_RELOAD_PREFIX = 'ef_cache_reload_v1:';
+    const FULL_SYNC_TTL = 30000;
+    const CACHE_RELOAD_TTL = 10000;
     const SETTINGS_DEF = { goal: 10, remind: true, time: '18:00', sound: true, dates: { oge: '2027-05-22', ege: '2027-05-29' }, cust: {} };
 
     const EFS = window.EFS = { user: null, ready: null, mode: 'guest', status: 'idle', error: null, cloud: null };
@@ -350,7 +354,7 @@
         gen++;
         const scope = EF.userId(), m = metaGet(scope);
         m.dirty = 1; metaSet(scope, m);
-        if (EFS.status !== 'conflict') setStatus('saving');
+        if (EFS.status !== 'conflict' && EFS.status !== 'offline') setStatus('saving');
     }
     function scheduleSave() {
         if (EFS.mode !== 'account') return;
@@ -526,7 +530,10 @@
         if (metaGet(scope).expectedId) { setStatus('conflict'); throw cloudErr('cloud_conflict'); }
         return false;
     };
+    let savesWired = false;
     function wireSaves() {
+        if (savesWired) return;
+        savesWired = true;
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'hidden' && EF.userId() && metaGet(EF.userId()).dirty) EFS.flush().catch(() => { });
         });
@@ -547,6 +554,29 @@
             EFS.flush().then(nav, nav);
         }, true);
     }
+    let cacheInteraction = false;
+    function watchCacheInteraction() {
+        if (cacheInteraction) return;
+        const mark = () => { cacheInteraction = true; };
+        ['pointerdown', 'keydown', 'input', 'change'].forEach(type => {
+            window.addEventListener(type, mark, { capture: true, once: true });
+        });
+    }
+    function cacheReloadIfChanged(scope, snapshot) {
+        if (location.pathname.split('/').pop() === 'lesson.html' || cacheInteraction) return;
+        let changed = false;
+        try { changed = JSON.stringify(EF.get()) !== snapshot; } catch (e) { return; }
+        if (!changed) return;
+        const key = CACHE_RELOAD_PREFIX + location.pathname + ':' + scope;
+        let previous = 0;
+        try { previous = Number(sessionStorage.getItem(key) || 0); } catch (e) { }
+        if (previous && Date.now() - previous < CACHE_RELOAD_TTL) return;
+        try { sessionStorage.setItem(key, String(Date.now())); } catch (e) { }
+        location.reload();
+    }
+    EFS.setStatus = setStatus;
+    EFS.ruErr = ruErr;
+    EFS.cacheReloadIfChanged = cacheReloadIfChanged;
     EFS.resolveConflict = async function (how) {
         const scope = EF.userId(), man = await getManifest();
         const cur = man && man.current ? man.current : null;
@@ -611,6 +641,31 @@
         }
         wireSaves();
     }
+    function backgroundAccountSync(scope, firstName) {
+        const key = FULL_SYNC_PREFIX + scope;
+        let last = 0;
+        try { last = Number(sessionStorage.getItem(key) || 0); } catch (e) { }
+        if (last && Date.now() - last < FULL_SYNC_TTL) {
+            EFS.backgroundSyncSkipped = true;
+            if (metaGet(scope).dirty) {
+                return drainOnce().catch(e => {
+                    setStatus(e.cloud === 'cloud_conflict' ? 'conflict' : 'offline', ruErr(e));
+                });
+            }
+            return Promise.resolve();
+        }
+        EFS.backgroundSyncSkipped = false;
+        return Promise.resolve().then(async () => {
+            try {
+                await enterAccount(scope, firstName);
+                if (EFS.status !== 'offline' && EFS.status !== 'conflict' && EFS.status !== 'error') {
+                    try { sessionStorage.setItem(key, String(Date.now())); } catch (e) { }
+                }
+            } catch (e) {
+                setStatus(e.cloud === 'cloud_conflict' ? 'conflict' : 'offline', ruErr(e));
+            }
+        });
+    }
 
     /* --- init --- */
     function verOK(tw) {
@@ -654,6 +709,19 @@
             EFS.mode = 'account';
             guestBackup(PROFILE_KEY);
             guestBackup('examflow_state_v1');
+            let hadOwn = false;
+            try { hadOwn = localStorage.getItem(EF.cacheKey(scope)) !== null; } catch (e) { }
+            if (hadOwn) {
+                EF.bindAccount(scope);
+                restoreScopedSettings(scope);
+                wireSaves();
+                reconcileGoal();
+                watchCacheInteraction();
+                EFS.cacheFirst = true;
+                EFS.backgroundSnapshot = JSON.stringify(EF.get());
+                EFS.backgroundSync = backgroundAccountSync(scope, u.first_name);
+                return EFS.user;
+            }
             await enterAccount(scope, u.first_name);
             reconcileGoal();
             return EFS.user;

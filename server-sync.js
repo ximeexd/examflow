@@ -110,7 +110,7 @@
         };
     }
 
-    async function boot() {
+    async function boot(skipState) {
         const ctx = identity(); if (ctx === null) return;
         const sk = SESSION_KEY + ':' + ctx;
         try {
@@ -124,13 +124,15 @@
             // unscoped key is deliberately never read for credentials
             if (stored && ownsSession(stored, ctx)) {
                 session = stored;
-                const r = await call({ action: 'state', session });
-                if (identity() !== ctx) return;
-                if (r.status === 401) {
-                    session = null;
-                    try { localStorage.removeItem(sk); } catch (e) { }
+                if (!skipState) {
+                    const r = await call({ action: 'state', session });
+                    if (identity() !== ctx) return;
+                    if (r.status === 401) {
+                        session = null;
+                        try { localStorage.removeItem(sk); } catch (e) { }
+                    }
+                    else if (r.status === 200) state = r.data.state;
                 }
-                else if (r.status === 200) state = r.data.state;
             } else if (stored) {
                 try { localStorage.removeItem(sk); } catch (e) { }
             }
@@ -140,7 +142,7 @@
                 if (!r) return;
                 state = r.state;
             }
-            if (state === null || state === undefined) {
+            if (!skipState && (state === null || state === undefined)) {
                 const m = await call({ action: 'migrate', session, progress: EF.get(), profile: profileSnapshot() });
                 if (identity() !== ctx) return;
                 if (m.status === 200) state = m.data.state;
@@ -149,6 +151,10 @@
             await flush();
         } catch (e) {
             // offline or server down — the app stays fully usable on local state
+            if (EFS.cacheFirst && EFS.setStatus) {
+                EFS.setStatus(e.cloud === 'cloud_conflict' ? 'conflict' : 'offline',
+                    EFS.ruErr ? EFS.ruErr(e) : 'Нет связи — нажми, чтобы повторить');
+            }
         }
     }
 
@@ -260,7 +266,23 @@
     if (window.EFS && typeof EFS.init === 'function') {
         const origInit = EFS.init.bind(EFS);
         EFS.init = function () {
-            return origInit().then(async (r) => { try { await boot(); } catch (e) { } return r; });
+            return origInit().then(async (r) => {
+                if (!EFS.cacheFirst) {
+                    try { await boot(false); } catch (e) { }
+                    return r;
+                }
+                const cloud = EFS.backgroundSync || Promise.resolve();
+                const server = boot(!!EFS.backgroundSyncSkipped);
+                Promise.all([cloud, server]).then(() => {
+                    if (EFS.backgroundSnapshot && EFS.cacheReloadIfChanged) {
+                        EFS.cacheReloadIfChanged(EF.userId(), EFS.backgroundSnapshot);
+                    }
+                }).catch(e => {
+                    if (EFS.setStatus) EFS.setStatus('offline',
+                        EFS.ruErr ? EFS.ruErr(e) : 'Нет связи — нажми, чтобы повторить');
+                });
+                return r;
+            });
         };
     }
 })();

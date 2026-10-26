@@ -43,6 +43,7 @@
             exam: 'oge',
             active: 'Математика',
             onboarded: 0,
+            examUnsure: 0,
             subs: null,          // chosen subjects from onboarding, null = all
             goal: 10,
             xp: 0,
@@ -103,6 +104,7 @@
         if (r.exam === 'ege' || r.exam === 'oge') s.exam = r.exam;
         if (typeof r.active === 'string') s.active = r.active.slice(0, 60);
         s.onboarded = r.onboarded ? 1 : 0;
+        s.examUnsure = r.examUnsure ? 1 : 0;
         if (Array.isArray(r.subs)) s.subs = r.subs.filter(x => typeof x === 'string').map(x => x.slice(0, 60)).slice(0, 30);
         else if (r.subs !== null && r.subs !== undefined) s.subs = null;
         s.goal = num(r.goal, 10, 5, 120);

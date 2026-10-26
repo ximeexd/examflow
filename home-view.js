@@ -82,7 +82,7 @@ function start() {
         }
         if (e.target.closest('#obn')) {
             if (ob.step < 4) { ob.step++; obr() } else {
-                S.exam = ob.exam; S.subs = ob.subs; S.goal = ob.goal; S.onboarded = 1;
+                S.exam = ob.exam; S.examUnsure = ob.examChoice == 'unsure' ? 1 : 0; S.subs = ob.subs; S.goal = ob.goal; S.onboarded = 1;
                 if (!EF.subjects().includes(S.active)) S.active = EF.subjects()[0];
                 EF.save(); persistGoal(ob.goal);
                 Promise.resolve(EFS.flush()).catch(() => { }).then(() => location.reload())

@@ -73,6 +73,7 @@ function start() {
         theme();
         const subs = EF.subjects();
         if (!subs.includes(cur)) cur = subs[0];
+        $('examsw').style.display = S.examUnsure ? '' : 'none';
         $('examsw').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.e === S.exam));
         $('xpv').textContent = S.xp;
         $('tabs').innerHTML = subs.map(n => `<button class="tab ${n === cur ? 'on' : ''}" data-k="${esc(n)}">${esc(n)}</button>`).join('');

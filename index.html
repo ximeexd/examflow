@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="utf-8">
@@ -67,7 +67,7 @@ h2 small{font-size:12px;font-weight:500;color:var(--mute)}
 .tool b{display:block;font-size:14px}.tool p{font-size:12px;color:var(--mute)}
 nav{position:fixed;left:var(--ef-safe-left,env(safe-area-inset-left,0px));right:var(--ef-safe-right,env(safe-area-inset-right,0px));bottom:0;background:var(--dark);display:flex;justify-content:space-around;padding:8px 10px calc(8px + var(--ef-safe-bottom,env(safe-area-inset-bottom,0px)));max-width:480px;margin:0 auto;border-radius:22px 22px 0 0}
 nav a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 0;border-radius:14px;color:#a9c0b1;font-size:11.5px;font-weight:700;text-decoration:none}
-nav a span{font-size:19px;line-height:1}
+nav a span{font-size:19px;line-height:1;display:flex}nav a span svg{width:24px;height:24px;display:block}
 nav a.on{background:var(--lime);color:var(--dark)}
 a:focus-visible,button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 /* onboarding */
@@ -159,18 +159,18 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--gold);outline-offse
 </div>
 
 <nav>
-  <a class="on" href="index.html"><span>⌂</span>Главная</a>
-  <a href="tasks.html"><span>✎</span>Задания</a>
-  <a href="quests.html"><span>☆</span>Квесты</a>
-  <a href="profile.html"><span>☺</span>Профиль</a>
+  <a class="on" href="index.html"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.2 12 4l8 7.2V19a1.5 1.5 0 0 1-1.5 1.5H15v-5.5H9v5.5H5.5A1.5 1.5 0 0 1 4 19z"/></svg></span>Главная</a>
+  <a href="tasks.html"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8.5 12.2l2.4 2.4 4.6-5"/></svg></span>Задания</a>
+  <a href="quests.html"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.8l2.5 5.2 5.7.8-4.1 4 1 5.7-5.1-2.7-5.1 2.7 1-5.7-4.1-4 5.7-.8z"/></svg></span>Квесты</a>
+  <a href="profile.html"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="9" cy="10.2" r=".6" fill="currentColor"/><circle cx="15" cy="10.2" r=".6" fill="currentColor"/><path d="M8.5 14.3c1.8 2 5.2 2 7 0"/></svg></span>Профиль</a>
 </nav>
 <div id="ob"></div>
 <script src="tg-sdk.js?v=1"></script>
 <script src="telegram-ui.js?v=10"></script>
 <script src="school_curriculum.js?v=3"></script>
-<script src="state.js?v=12"></script>
+<script src="state.js?v=13"></script>
 <script src="sync.js?v=13"></script>
-<script src="server-sync.js?v=4"></script>
+<script src="server-sync.js?v=5"></script>
 <script src="home-view.js?v=12"></script>
 </body>
 </html>

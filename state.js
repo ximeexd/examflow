@@ -405,7 +405,7 @@
 
         // Server-authoritative overlay (examflow-api). Only whitelisted
         // economy fields are replaced; settings-like fields come via profile.
-        applyServer(econ, profile) {
+        applyServer(econ, profile, keepProg) {
             if (!econ || typeof econ !== 'object') return;
             const e = econ;
             s.xp = num(e.xp, s.xp, 0, 1e7);
@@ -422,6 +422,7 @@
                     const val = num(v, 0, 0, 10);
                     if (val > 0 && typeof k === 'string' && k.length <= 300) p[k] = val;
                 });
+                if (keepProg) for (const k in s.prog) if ((s.prog[k] || 0) > (p[k] || 0)) p[k] = s.prog[k];
                 s.prog = p;
             }
             if (typeof e.dayLog === 'object' && e.dayLog && !Array.isArray(e.dayLog)) {

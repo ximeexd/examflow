@@ -86,7 +86,14 @@
 
     function applyServerState(state) {
         if (!state || typeof state !== 'object') return;
-        try { if (window.EF && EF.applyServer) EF.applyServer(state.econ, state.profile); } catch (e) { }
+        try {
+            // events not yet acknowledged (e.g. a just-finished lesson) are
+            // missing from a stale server snapshot — never let it roll back progress
+            const id = identity();
+            const q = id === null ? [] : loadQueueKey(QUEUE_KEY + ':' + id);
+            const keep = q.some(e => e && e.kind === 'finish_lesson') && !q.some(e => e && e.kind === 'reset');
+            if (window.EF && EF.applyServer) EF.applyServer(state.econ, state.profile, keep);
+        } catch (e) { }
         try { window.dispatchEvent(new CustomEvent('ef:server-state')); } catch (e) { }
     }
 

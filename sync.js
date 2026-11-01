@@ -13,7 +13,7 @@
     const CACHE_RELOAD_PREFIX = 'ef_cache_reload_v1:';
     const FULL_SYNC_TTL = 30000;
     const CACHE_RELOAD_TTL = 10000;
-    const SETTINGS_DEF = { goal: 10, remind: true, time: '18:00', sound: true, dates: { oge: '2027-05-22', ege: '2027-05-29' }, cust: {} };
+    const SETTINGS_DEF = { goal: 10, remind: true, time: '18:00', tz: 180, sound: true, dates: { oge: '2027-05-22', ege: '2027-05-29' }, cust: {} };
 
     const EFS = window.EFS = { user: null, ready: null, mode: 'guest', status: 'idle', error: null, cloud: null };
 
@@ -182,11 +182,17 @@
     const validTimeStr = v => typeof v === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(v);
     EFS.normalizeSettings = function (x) {
         const o = (typeof x === 'object' && x && !Array.isArray(x)) ? x : {};
-        const s = { goal: SETTINGS_DEF.goal, remind: SETTINGS_DEF.remind, time: SETTINGS_DEF.time, sound: SETTINGS_DEF.sound, dates: Object.assign({}, SETTINGS_DEF.dates), cust: {} };
+        const s = { goal: SETTINGS_DEF.goal, remind: SETTINGS_DEF.remind, time: SETTINGS_DEF.time, tz: SETTINGS_DEF.tz, sound: SETTINGS_DEF.sound, dates: Object.assign({}, SETTINGS_DEF.dates), cust: {} };
         const g = Number(o.goal);
         if (Number.isFinite(g)) s.goal = Math.min(120, Math.max(5, Math.floor(g)));
         if (typeof o.time === 'string' && validTimeStr(o.time)) s.time = o.time;
         if (typeof o.remind === 'boolean') s.remind = o.remind;
+        // device tz (minutes east of UTC) refreshes on every normalize/save so
+        // server reminders fire at the user's local settings.time; a stored
+        // value only fills in when the device value can't be computed
+        const tzDev = -new Date().getTimezoneOffset();
+        const tzSrc = Number.isFinite(tzDev) ? tzDev : Number(o.tz);
+        if (Number.isFinite(tzSrc)) s.tz = Math.min(840, Math.max(-720, Math.round(tzSrc)));
         if (typeof o.sound === 'boolean') s.sound = o.sound;
         if (typeof o.dates === 'object' && o.dates && !Array.isArray(o.dates)) {
             for (const k of Object.keys(o.dates)) {

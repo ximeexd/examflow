@@ -64,7 +64,7 @@ function start() {
             '<h2>Достижения <small>' + done + ' из ' + BD.length + '</small></h2><div class="bd">' + BD.map(function (b, i) { var ok = b[2] >= b[3]; return '<button class="bg ' + (ok ? "" : "lk") + '" data-b="' + i + '"><div class="ic">' + ic(b[1]) + '</div><small>' + esc(b[0]) + '</small>' + (ok ? "" : '<em>' + b[2] + ' из ' + b[3] + '</em>') + '</button>' }).join("") + '</div>' +
             '<h2>Подробнее</h2><details class="ac" open><summary><span>Предметы</span><small>' + SUBJ.length + ' предметов</small></summary><div>' + SUBJ.map(function (s) { return '<div class="sj"><span class="g" style="background:' + s[2] + '">' + esc(s[1]) + '</span><div><b>' + esc(s[0]) + '<small>' + s[3] + ' из ' + s[4] + '</small></b><div class="bar"><b style="width:' + Math.round(s[3] / s[4] * 100) + '%"></b></div></div></div>' }).join("") + '</div></details>' +
             '<details class="ac"><summary><span>Неделя</span><small>занятий: ' + w.sum + '</small></summary><div><div class="wk">' + w.h + '</div></div></details>' +
-            '<details class="ac"><summary><span>Настройки</span><small>цель, напоминания</small></summary><div><div class="set"><div><b>Цель на день</b><small>Минут занятий</small></div><div class="seg goal-set">' + [5, 10, 15, 20, 30].map(function (g) { return '<button data-g="' + g + '" class="' + (st.goal == g ? "on" : "") + '">' + g + '</button>' }).join("") + '</div></div><div class="set"><div><b>План занятий</b><small>Время для занятий · уведомления пока не отправляются</small></div><div style="display:flex;gap:8px;align-items:center"><input class="tm" type="time" id="tm" value="' + esc(st.time) + '" aria-label="Время для занятий"' + (st.remind ? "" : " hidden") + '><button class="sw" role="switch" aria-checked="' + st.remind + '" aria-label="Время для занятий" data-sw="remind"></button></div></div><div class="set"><div><b>Звуки</b><small>Эффекты при ответах</small></div><button class="sw" role="switch" aria-checked="' + st.sound + '" aria-label="Звуки" data-sw="sound"></button></div></div></details>' +
+            '<details class="ac"><summary><span>Настройки</span><small>цель, напоминания</small></summary><div><div class="set"><div><b>Цель на день</b><small>Минут занятий</small></div><div class="seg goal-set">' + [5, 10, 15, 20, 30].map(function (g) { return '<button data-g="' + g + '" class="' + (st.goal == g ? "on" : "") + '">' + g + '</button>' }).join("") + '</div></div><div class="set"><div><b>План занятий</b><small>Время для занятий · напоминание придёт в Telegram</small></div><div style="display:flex;gap:8px;align-items:center"><input class="tm" type="time" id="tm" value="' + esc(st.time) + '" aria-label="Время для занятий"' + (st.remind ? "" : " hidden") + '><button class="sw" role="switch" aria-checked="' + st.remind + '" aria-label="Время для занятий" data-sw="remind"></button></div></div><div class="set"><div><b>Звуки</b><small>Эффекты при ответах</small></div><button class="sw" role="switch" aria-checked="' + st.sound + '" aria-label="Звуки" data-sw="sound"></button></div></div></details>' +
             '<button class="out" data-out="1">Сбросить прогресс</button><p class="foot">ExamFlow — готовься к ОГЭ и ЕГЭ маленькими шагами каждый день.<br><a href="privacy.html" style="color:var(--limed);font-weight:700">Конфиденциальность</a></p>';
         var av = document.querySelector('.av');
         if (av) av.addEventListener('error', function () { this.src = 'brand-avatar.png?v=1' }, { once: true });
@@ -167,4 +167,19 @@ function start() {
     window.addEventListener('focus', maybeRender);
     setInterval(maybeRender, 60000);
     render();
+    // deep link from the reminder's «Настроить напоминания» button:
+    // profile.html?settings=1 opens the settings details and scrolls to it
+    try {
+        if (new URLSearchParams(location.search).get('settings') === '1') {
+            var ds = document.querySelectorAll('#app details.ac');
+            for (var i = 0; i < ds.length; i++) {
+                var sm = ds[i].querySelector('summary span');
+                if (sm && sm.textContent === 'Настройки') {
+                    ds[i].open = true;
+                    ds[i].scrollIntoView({ block: 'start', behavior: 'smooth' });
+                    break;
+                }
+            }
+        }
+    } catch (e) { }
 }

@@ -102,6 +102,16 @@ ok(EFGrowth.hashEven('school:oge:Математика:k:q1') === EFGrowth.hashEv
     ok(g.some(x => x.title === 'Проценты'), 'second key resolved');
     ok(g.some(x => x.title === 'Орфография' && !x.key), 'title-only group keeps label, no key');
     ok(g.some(x => x.title === 'Прочее'), 'no-topic records → Прочее');
+    const g3 = EFGrowth.groupMistakes([
+        { id: 'k', subject: 'Информатика', topicKey: 'informatics-n04n1v', q: 'q', opts: ['1', '2', '3', '4'], ans: 0 },
+        { id: 'l', subject: 'Информатика', topicKey: 'informatics-n04n1v', topic: 'Системы счисления', q: 'q', opts: ['1', '2', '3', '4'], ans: 0 },
+    ], () => []);
+    ok(g3.length === 1 && g3[0].count === 2, 'same key groups together');
+    ok(g3[0].title === 'Системы счисления', 'text title wins, raw key never shown');
+    const g4 = EFGrowth.groupMistakes([
+        { id: 'm', subject: 'Информатика', topicKey: 'informatics-n04n1v', q: 'q', opts: ['1', '2', '3', '4'], ans: 0 },
+    ], () => []);
+    ok(g4[0].title === 'Информатика', 'unresolved key falls back to subject, not the raw key');
     const g2 = EFGrowth.groupMistakes([], null);
     ok(g2.length === 0, 'empty mistakes');
 })();

@@ -177,7 +177,7 @@ function start() {
         if (!ms.length) { mb.innerHTML = ''; return; }
         const groups = (window.EFGrowth
             ? EFGrowth.groupMistakes(ms, s => EF.topics(s)) : []).slice(0, 3);
-        mb.innerHTML = '<div class="mist"><b>Ошибки на виду</b><p>' +
+        mb.innerHTML = '<div class="mist"><b>Слабые места</b><p>' +
             pl(ms.length, ['вопрос', 'вопроса', 'вопросов']) + (ms.length % 10 === 1 && ms.length % 100 !== 11 ? ' ждёт' : ' ждут') + ' разбора</p>' +
             '<a class="btn" href="lesson.html?mode=mistakes">Разобрать ошибки</a>' +
             groups.map(g =>

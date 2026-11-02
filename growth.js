@@ -82,17 +82,18 @@
             const subj = (typeof m.subject === 'string' && m.subject) ||
                 (typeof m.cat === 'string' && m.cat) || '';
             const key = (typeof m.topicKey === 'string' && m.topicKey) || '';
-            const label = key || (typeof m.topic === 'string' && m.topic) ||
+            const label = (typeof m.topic === 'string' && m.topic) ||
                 (typeof m.title === 'string' && m.title) ||
                 (typeof m.courseTopic === 'string' && m.courseTopic) || '';
             const gk = subj + '|' + (key || label);
             let g = map.get(gk);
             if (!g) { g = { subject: subj, key: key, label: label, count: 0 }; map.set(gk, g); }
+            if (!g.label && label) g.label = label;
             g.count++;
         }
         const out = [...map.values()];
         for (const g of out) {
-            g.title = g.label || 'Прочее';
+            g.title = g.label || g.subject || 'Прочее';
             if (g.key && g.subject && typeof topicsFn === 'function') {
                 try {
                     const t = (topicsFn(g.subject) || []).find(x => x && x.key === g.key);

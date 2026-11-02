@@ -41,6 +41,14 @@ body{background:var(--bg) radial-gradient(#e2dccb 1px,transparent 1.2px) 0 0/16p
 .hero h1{font-size:26px;max-width:60%}.seg{max-width:150px}
 .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:var(--lime);color:var(--dark);font:800 16px Onest,sans-serif;border:0;border-radius:16px;padding:15px;box-shadow:0 4px 0 var(--lime-d);cursor:pointer;text-decoration:none}
 .btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--lime-d)}
+.mist{background:var(--card);border:1.5px solid var(--line);border-radius:20px;padding:16px;margin-top:14px}
+.mist>b{font-size:17px;font-weight:800}
+.mist>p{font-size:13px;color:var(--mute);margin:4px 0 12px}
+.mist .btn{padding:12px;font-size:15px}
+.mrow{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);margin-top:12px;padding-top:10px}
+.mrow span{font-weight:700;font-size:13.5px;min-width:0}
+.mrow em{font-style:normal;color:var(--mute);font-weight:800;margin-left:6px}
+.mrow a{flex:none;font-weight:800;font-size:13px;color:var(--dark);background:var(--lime);border-radius:99px;padding:7px 14px;text-decoration:none}
 .streak{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;margin-top:14px}
 .srow{display:flex;align-items:center;gap:12px}
 .flame{font-size:34px}
@@ -140,6 +148,8 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--gold);outline-offse
   <a class="btn" id="cta" href="tasks.html">Начать →</a>
 </section>
 
+<div id="mistbox"></div>
+
 <section class="streak">
   <div class="srow"><div class="flame">🔥</div><div><strong id="streak-n">0</strong><span>дней подряд</span></div></div>
   <div class="days" id="days"></div>
@@ -167,10 +177,13 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--gold);outline-offse
 <div id="ob"></div>
 <script src="tg-sdk.js?v=1"></script>
 <script src="telegram-ui.js?v=10"></script>
+<script src="app-config.js?v=1"></script>
 <script src="school_curriculum.js?v=3"></script>
 <script src="state.js?v=14"></script>
 <script src="sync.js?v=14"></script>
-<script src="server-sync.js?v=6"></script>
-<script src="home-view.js?v=12"></script>
+<script src="server-sync.js?v=7"></script>
+<script src="growth.js?v=1"></script>
+<script src="invite.js?v=1"></script>
+<script src="home-view.js?v=14"></script>
 </body>
 </html>

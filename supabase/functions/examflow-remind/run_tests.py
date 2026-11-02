@@ -40,6 +40,13 @@ mt_prelude = (
 mt_src = rd(os.path.join(APP, 'math-text.js'))
 mt_test = rd(os.path.join(APP, 'math-text.test.js'))
 
+# growth bundle: server helpers (growth.ts, export-stripped) + client
+# growth.js helpers + their assertions
+growth_srv = re.sub(r'\bexport\s+', '', rd(os.path.join(
+    DIR, '..', 'examflow-api', 'growth.ts')))
+growth_js = rd(os.path.join(APP, 'growth.js'))
+growth_test = rd(os.path.join(APP, 'growth.test.js'))
+
 lines = []
 with sync_playwright() as p:
     # plain launch: playwright creates + auto-deletes a small temp profile
@@ -56,12 +63,16 @@ with sync_playwright() as p:
     print('=== math-text.test.js ===')
     f2 = pg.evaluate('(()=>{\n' + mt_src + '\n' + mt_prelude + mt_test + '\n;return failed;})()')
 
+    print('=== growth.test.js ===')
+    f3 = pg.evaluate('(()=>{\n' + growth_srv + '\n' + growth_js + '\n'
+                     + growth_test + '\n;return failed;})()')
+
     b.close()
 
 for l in lines:
     print(l)
 
 shutil.rmtree(TMP, ignore_errors=True)
-total = (f1 or 0) + (f2 or 0)
+total = (f1 or 0) + (f2 or 0) + (f3 or 0)
 print(f'\n=== {total} failures ===')
 sys.exit(1 if total else 0)

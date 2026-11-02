@@ -20,6 +20,7 @@
 
     let session = null;
     let flushing = null;
+    let lastInvites = null; // {invited, activated, rewarded} from last auth
 
     function initData() {
         try { return (window.Telegram && Telegram.WebApp && Telegram.WebApp.initData) || ''; }
@@ -105,6 +106,10 @@
         if (r.status !== 200 || !ownsSession(r.data && r.data.session, ctx)) return null;
         session = r.data.session;
         try { localStorage.setItem(SESSION_KEY + ':' + ctx, session); } catch (e) { }
+        try {
+            const inv = r.data && r.data.invites;
+            if (inv && typeof inv === 'object') lastInvites = inv;
+        } catch (e) { }
         return r.data;
     }
 
@@ -247,9 +252,29 @@
         queue('profile', profileSnapshot());
     }
 
+    // Fire-and-forget funnel events (examflow-api `track` action). Silent
+    // no-op for guests/offline; app_open is deduped per tab for 30 minutes
+    // via sessionStorage so page-to-page navigation doesn't spam events.
+    window.EFTrack = {
+        send(name, props) {
+            try {
+                const ctx = identity();
+                if (ctx === null || !session || !ownsSession(session, ctx)) return;
+                if (name === 'app_open') {
+                    const k = 'ef_track_appopen';
+                    const last = Number(sessionStorage.getItem(k) || 0);
+                    if (Date.now() - last < 30 * 60 * 1000) return;
+                    sessionStorage.setItem(k, String(Date.now()));
+                }
+                call({ action: 'track', session, name, props: props || {} }).catch(() => { });
+            } catch (e) { }
+        }
+    };
+
     window.EFServer = {
         get enabled() { return active(); },
         queue, flush, profileChanged,
+        invites() { return lastInvites; },
         finishLesson(subject, topic, lesson, answers, startedAt) {
             return queue('finish_lesson', {
                 exam: EF.get().exam, subject, topic, lesson,

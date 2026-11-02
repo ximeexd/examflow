@@ -4,6 +4,10 @@ function start() {
     const $ = id => document.getElementById(id);
     const esc = EF.escapeHTML;
     const S = EF.get(), T = EF.today();
+    try {
+        if (window.EFTrack) EFTrack.send('app_open',
+            window.EFGrowth ? EFGrowth.srcParam(location.search) : {});
+    } catch (e) { }
 
     /* === onboarding (первый вход) === */
     const MASCOT = '<img class="mas" src="brand-avatar.png?v=1" alt="ExamFlow">';
@@ -85,6 +89,7 @@ function start() {
                 S.exam = ob.exam; S.examUnsure = ob.examChoice == 'unsure' ? 1 : 0; S.subs = ob.subs; S.goal = ob.goal; S.onboarded = 1;
                 if (!EF.subjects().includes(S.active)) S.active = EF.subjects()[0];
                 EF.save(); persistGoal(ob.goal);
+                try { if (window.EFTrack) EFTrack.send('onboarding_done', { exam: S.exam }); } catch (e) { }
                 Promise.resolve(EFS.flush()).catch(() => { }).then(() => location.reload())
             } return
         }
@@ -166,7 +171,27 @@ function start() {
         ];
         $('plan').innerHTML = plan.map((p, i) => `<a class="task" href="${p.href}"><div class="n ${p.done ? 'done' : ''}">${p.done ? '✓' : i + 1}</div><div><b>${esc(p.t)}</b><p>${esc(p.s)}</p></div><em>${p.r}</em></a>`).join('');
         $('mist-cnt').textContent = S.mistakes.length ? ('в копилке: ' + S.mistakes.length) : 'пока пусто';
+        renderMist();
     }
+    // «Ошибки на виду» card under the hero — only while stored mistakes
+    // exist; groups up to 3 weak topics with per-topic training links.
+    function renderMist() {
+        const mb = $('mistbox'); if (!mb) return;
+        const ms = EF.get().mistakes;
+        if (!ms.length) { mb.innerHTML = ''; return; }
+        const groups = (window.EFGrowth
+            ? EFGrowth.groupMistakes(ms, s => EF.topics(s)) : []).slice(0, 3);
+        mb.innerHTML = '<div class="mist"><b>Ошибки на виду</b><p>' +
+            pl(ms.length, ['вопрос', 'вопроса', 'вопросов']) + (ms.length % 10 === 1 && ms.length % 100 !== 11 ? ' ждёт' : ' ждут') + ' разбора</p>' +
+            '<a class="btn" href="lesson.html?mode=mistakes">Разобрать ошибки</a>' +
+            groups.map(g =>
+                '<div class="mrow"><span>' + esc(g.title) + '<em>×' + g.count + '</em></span>' +
+                '<a href="lesson.html?mode=mistakes' +
+                (g.key ? '&topic=' + encodeURIComponent(g.key) : '') +
+                (g.subject ? '&s=' + encodeURIComponent(g.subject) : '') +
+                '">Тренировать</a></div>').join('') + '</div>';
+    }
+    renderMist();
     refreshMetrics();
     document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshMetrics() });
     window.addEventListener('focus', refreshMetrics);

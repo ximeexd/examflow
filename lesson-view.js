@@ -98,13 +98,27 @@ async function startLessonPage() {
     $('back').href = 'tasks.html' + (subjValid ? '?s=' + encodeURIComponent(subj) : '');
     $('xpv').textContent = S.xp;
     const syncXP = () => { $('xpv').textContent = EF.get().xp };
-    const topicTitle = rec ? rec.title : (tk || '');
+    let topicTitle = rec ? rec.title : (tk || '');
 
     // --- question source ---
     let qs = [];
     if (mode === 'mistakes') {
-        qs = S.mistakes.slice(0, 5);
+        // optional ?topic=<key-or-title>&s=<subject> narrows the review set —
+        // plain string compares against the stored record fields only
+        const fTopic = P.get('topic') || '', fSubj = P.get('s') || '';
+        qs = S.mistakes.filter(m => {
+            if (!m || typeof m !== 'object') return false;
+            if (fSubj && m.subject !== fSubj && m.cat !== fSubj) return false;
+            if (fTopic && m.topicKey !== fTopic && m.topic !== fTopic &&
+                m.title !== fTopic && m.courseTopic !== fTopic) return false;
+            return true;
+        }).slice(0, 5);
         if (!qs.length) { fail('Ошибок пока нет', 'Когда ответишь неверно, вопросы появятся здесь.'); return; }
+        if (fTopic) {
+            const t = EF.topics(fSubj || '').find(x => x.key === fTopic);
+            topicTitle = t ? t.title : fTopic;   // shown in the kick line
+        }
+        try { if (window.EFTrack) EFTrack.send('mistakes_open', {}); } catch (e) { }
     } else {
         stage.innerHTML = '<div class="done-hero"><div class="em">⏳</div><h2>Загружаем задания…</h2><p>Один момент.</p></div>';
         const file = bankFile(exam, subj);
@@ -148,35 +162,88 @@ async function startLessonPage() {
                 { duration: 900 + Math.random() * 400, easing: 'cubic-bezier(.2,.8,.3,1)' }).onfinish = () => p.remove();
         }
     };
+    // typed-answer mode: math subjects only, all four options must be plain
+    // numbers, ~50% of eligible questions by a stable hash of the item id
+    const MATH_SUBJ = new Set(['Математика', 'Базовая математика', 'Профильная математика']);
+    const NUMOPT = /^[-−]?\d+([.,]\d+)?$/;
+    const forceOpts = {};           // item.id -> user asked for buttons
+    function numMode(item) {
+        if (!window.EFGrowth || forceOpts[item.id]) return false;
+        if (!MATH_SUBJ.has(item.subject) && !MATH_SUBJ.has(subj)) return false;
+        if (!item.opts.every(o => NUMOPT.test(String(o).trim()))) return false;
+        return EFGrowth.hashEven(item.id);
+    }
+    // shared reveal for option clicks and typed answers; typed is the raw
+    // input string (echoed into the feedback when wrong)
+    function afterAnswer(item, ok, typed) {
+        const ex = $('exp');
+        beep(ok);
+        if (ok) {
+            right++; EF.addXP(2); const bonus = EF.recordCorrect();
+            if (mode === 'mistakes') { EF.dropMistake(item.id); EF.recordMistakeFixed(); }
+            ex.className = 'exp show ok'; ex.innerHTML = `<b>Верно! +2 XP${bonus ? ' (+' + bonus + ' за 5 правильных)' : ''}</b><p>${fmt(item.exp)}</p>`;
+            syncXP(); $('xp').classList.add('pop'); setTimeout(() => $('xp').classList.remove('pop'), 250);
+        } else {
+            EF.addMistake(item);
+            ex.className = 'exp show bad';
+            ex.innerHTML = `<b>Неверно.${typed != null ? ' Ваш ответ: ' + esc(typed) + '.' : ''} Правильный ответ выделен зелёным</b><p>${fmt(item.exp)}</p>`;
+        }
+        const nx = $('next'); nx.style.display = 'block'; nx.textContent = i + 1 < qs.length ? 'Дальше' : 'Завершить';
+    }
     function q() {
         const item = qs[i]; answered = false;
         $('bar').style.width = (i / qs.length * 100) + '%';
         const ord = shuffle(item.opts.map((o, ix) => ({ o, ix })));
-        stage.innerHTML = `<div class="kick">${mode === 'mistakes' ? 'Работа над ошибками' : mode === 'mix' ? 'Повторение темы' : 'Занятие ' + li + ' · ' + esc(topicTitle)}</div>
+        const num = numMode(item);
+        const kick = mode === 'mistakes' ? 'Работа над ошибками' + (topicTitle ? ' · ' + esc(topicTitle) : '')
+            : mode === 'mix' ? 'Повторение темы' : 'Занятие ' + li + ' · ' + esc(topicTitle);
+        const optsHtml = `<div class="opts">${ord.map(({ o, ix }) => `<button class="opt" data-a="${ix === item.ans}" data-ix="${ix}">${fmt(o)}</button>`).join('')}</div>`;
+        const neg = item.opts.some(o => /^\s*[-−]/.test(String(o)));
+        const numHtml = `<div class="numi"><input id="num" inputmode="${neg ? 'text' : 'decimal'}" autocomplete="off" placeholder="Введите ответ" aria-label="Введите ответ"><button class="btn" id="numgo" disabled>Ответить</button></div><div class="numalt"><button type="button" class="lnk" id="showopts">Показать варианты</button></div>`;
+        stage.innerHTML = `<div class="kick">${kick}</div>
    <h1>${fmt(item.q)}</h1>
-   <div class="opts">${ord.map(({ o, ix }) => `<button class="opt" data-a="${ix === item.ans}" data-ix="${ix}">${fmt(o)}</button>`).join('')}</div>
+   ${num ? numHtml : optsHtml}
    <div class="exp" id="exp"></div>
    <div class="next"><button class="btn" id="next" style="display:none">Дальше</button></div>`;
-        stage.querySelectorAll('.opt').forEach(b => b.onclick = () => {
+        stage.querySelectorAll('.opt:not(:disabled)').forEach(b => b.onclick = () => {
             if (answered) return; answered = true;
             picks.push({ id: item.id, pick: Number(b.dataset.ix) });
-            const ok = b.dataset.a === 'true', ex = $('exp');
-            beep(ok);
+            const ok = b.dataset.a === 'true';
             stage.querySelectorAll('.opt').forEach(x => {
                 x.disabled = true;
                 if (x.dataset.a === 'true') x.classList.add('ok'); else if (x === b) x.classList.add('bad'); else x.classList.add('dim');
             });
-            if (ok) {
-                right++; EF.addXP(2); const bonus = EF.recordCorrect();
-                if (mode === 'mistakes') { EF.dropMistake(item.id); EF.recordMistakeFixed(); }
-                ex.className = 'exp show ok'; ex.innerHTML = `<b>Верно! +2 XP${bonus ? ' (+' + bonus + ' за 5 правильных)' : ''}</b><p>${fmt(item.exp)}</p>`;
-                syncXP(); $('xp').classList.add('pop'); setTimeout(() => $('xp').classList.remove('pop'), 250);
-            } else {
-                EF.addMistake(item);
-                ex.className = 'exp show bad'; ex.innerHTML = `<b>Неверно. Правильный ответ выделен зелёным</b><p>${fmt(item.exp)}</p>`;
-            }
-            const nx = $('next'); nx.style.display = 'block'; nx.textContent = i + 1 < qs.length ? 'Дальше' : 'Завершить';
+            afterAnswer(item, ok, null);
         });
+        if (num) {
+            const inp = $('num'), go = $('numgo');
+            const submit = () => {
+                if (answered || !inp.value.trim()) return; answered = true;
+                const typed = inp.value;
+                const res = EFGrowth.numMatch(typed, item.opts, item.ans);
+                picks.push({ id: item.id, pick: res.pick });
+                try { if (window.EFTrack) EFTrack.send('number_input_used', {}); } catch (e) { }
+                const ok = res.pick === item.ans;
+                // swap the input for the standard disabled-option reveal:
+                // correct green, a matched wrong pick red, the rest dimmed
+                stage.querySelector('.numi').outerHTML = optsHtml;
+                const alt = stage.querySelector('.numalt'); if (alt) alt.remove();
+                stage.querySelectorAll('.opt').forEach(x => {
+                    x.disabled = true;
+                    const ix = Number(x.dataset.ix);
+                    if (x.dataset.a === 'true') x.classList.add('ok');
+                    else if (res.matched && ix === res.pick) x.classList.add('bad');
+                    else x.classList.add('dim');
+                });
+                afterAnswer(item, ok, ok ? null : typed);
+            };
+            inp.addEventListener('input', () => { go.disabled = !inp.value.trim(); });
+            inp.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
+            go.onclick = submit;
+            const so = $('showopts');
+            if (so) so.onclick = () => { forceOpts[item.id] = true; q(); };
+            try { inp.focus(); } catch (e) { }
+        }
         $('next').onclick = () => { if (!answered) return; i++; i < qs.length ? q() : finish(); };
     }
     async function finish() {
@@ -205,10 +272,20 @@ async function startLessonPage() {
         const nextHref = (mode || li >= 10)
             ? 'tasks.html?s=' + encodeURIComponent(subj)
             : 'lesson.html?s=' + encodeURIComponent(subj) + '&t=' + encodeURIComponent(tk) + '&l=' + (li + 1);
+        const wrongN = qs.length - right;
+        const mistBtn = (!mode && wrongN > 0)
+            ? `<a class="btn" href="lesson.html?mode=mistakes">Разобрать ошибки (${wrongN})</a>` : '';
+        const invBtn = (!mode && right >= 3)
+            ? '<button class="btn ghost" id="invbtn" type="button">Позвать друга</button>' : '';
         stage.innerHTML = `<div class="done-hero"><div class="em">${em}</div><h2>${right} из ${qs.length} верно</h2><p>${esc(extra || topicTitle)}</p>
    <div class="rw"><span class="l">+${xpg + right * 2} XP</span>${cg ? `<span class="g">+${cg} ◎</span>` : ''}</div></div>
    <div class="next"><a class="btn" href="${nextHref}">${mode || li >= 10 ? 'К заданиям' : 'Следующее занятие →'}</a>
-   <a class="btn ghost" href="tasks.html?s=${encodeURIComponent(subj)}">К списку тем</a></div>`;
+   ${mistBtn}
+   <a class="btn ghost" href="tasks.html?s=${encodeURIComponent(subj)}">К списку тем</a>
+   ${invBtn}</div>`;
+        const ib = $('invbtn');
+        if (ib) ib.onclick = () => { if (window.EF && EF.invite) EF.invite('result'); };
+        try { if (window.EFTrack) EFTrack.send('lesson_finish', { subject: subj, right, mode: mode || 'lesson' }); } catch (e) { }
         boom(stage.querySelector('.done-hero'));
         // flush AFTER all rewards/mutations so the snapshot is complete
         await EFS.lesson(subj, tk, right);

@@ -81,10 +81,10 @@ ok(count(lv, /\$\{fmt\(item\.exp\)\}/g) === 2, 'exp uses fmt twice');
 ok(!/\$\{esc\(item\.q\)\}|\$\{esc\(o\)\}|\$\{esc\(item\.exp\)\}/.test(lv), 'esc gone from q/o/exp');
 const lh = fs.readFileSync(path.join(__dirname, 'lesson.html'), 'utf8');
 ok(/math-text\.js\?v=1/.test(lh) && /math-text\.css\?v=1/.test(lh), 'assets linked');
-ok(/math-text\.js\?v=1"><\/script>\s*<script src="lesson-view\.js\?v=14/.test(lh.replace(/\n/g, ' ')) ||
-   /math-text\.js[^<]*<\/script>\s*<script src="lesson-view\.js\?v=14/.test(lh.replace(/\n/g, ' ')),
-   'math-text loads before lesson-view v14');
-ok(!/lesson-view\.js\?v=13/.test(lh), 'v13 bumped');
+ok(/math-text\.js\?v=1"><\/script>\s*<script src="lesson-view\.js\?v=15/.test(lh.replace(/\n/g, ' ')) ||
+   /math-text\.js[^<]*<\/script>\s*<script src="lesson-view\.js\?v=15/.test(lh.replace(/\n/g, ' ')),
+   'math-text loads before lesson-view v15');
+ok(!/lesson-view\.js\?v=14/.test(lh), 'v14 bumped');
 
 console.log(failed ? '\n' + failed + ' FAILED' : '\nall passed');
 process.exit(failed ? 1 : 0);

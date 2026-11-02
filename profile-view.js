@@ -56,11 +56,16 @@ function start() {
             pc = Math.round(SUBJ.reduce(function (a, x) { return a + x[3] }, 0) / totalCap * 100) || 0;
         var mins = T.lessons * 5, tg = Math.min(100, mins / st.goal * 100);
         var lv = EF.level(), need = lv * 500 - S.xp;
+        var inv = null;
+        try { inv = window.EFServer && EFServer.invites ? EFServer.invites() : null; } catch (e) { }
         $("app").innerHTML = '<div class="top"><h1>Профиль</h1><span class="pill">⚡ ' + S.xp + ' XP</span><span class="pill">◎ ' + S.coins + '</span></div>' +
             '<section class="pp"><button class="edit" data-edit="1" aria-label="Редактировать профиль">✎</button><div class="rgw"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="none" stroke="#2d5340" stroke-width="6"/><circle id="rc" cx="50" cy="50" r="46" fill="none" stroke="#c6f94d" stroke-width="6" stroke-linecap="round" stroke-dasharray="289" stroke-dashoffset="289" transform="rotate(-90 50 50)"/></svg><img class="av" src="' + esc(avatarUrl()) + '" alt="Аватар"></div><b>' + esc(S.name) + '</b><span class="ttl">Уровень ' + lv + ' · ' + lvlName(lv) + '</span><p class="nx">' + (S.xp % 500) + ' из 500 XP · до ' + (lv + 1) + '-го уровня ' + need + '</p></section>' +
             '<div class="tri"><div><strong>' + S.streak + '</strong><span>дней подряд</span></div><div><strong>' + S.coins + '</strong><span>монет</span></div><div><strong>' + EF.totalLessons() + '</strong><span>занятий</span></div></div>' +
             '<button class="exl" data-edit="1"><div class="r"><div><b>До ' + (S.exam == "oge" ? "ОГЭ" : "ЕГЭ") + '</b><small>' + (apx() ? "примерно " : "") + esc(dtext()) + '</small></div><div class="n">' + (d === null ? "—" : (apx() ? "≈" : "") + Math.max(0, d)) + '<span>дней</span></div></div><div class="bar"><b style="width:' + pc + '%"></b></div><small style="margin-top:6px">Курс пройден на ' + pc + '%</small>' + '</button>' +
             '<div class="box td"><div class="r"><span>Цель на сегодня</span><small id="tgt">' + mins + ' из ' + st.goal + ' мин</small></div><div class="bar"><b id="tgb" style="width:' + tg + '%"></b></div></div>' +
+            '<div class="box"><div class="r"><span>Позови друга</span></div><small style="display:block;color:var(--mut,#6b7a70);font-weight:500;margin-top:4px">+50 XP и 20 ◎ за каждого, кто пройдёт первое занятие (до 10)</small>' +
+            (inv ? '<small style="display:block;font-weight:700;margin-top:8px">Приглашено: ' + inv.invited + ' · занялись: ' + inv.activated + '</small>' : '') +
+            '<button class="btn" data-inv="1" style="margin-top:12px">Пригласить</button></div>' +
             '<h2>Достижения <small>' + done + ' из ' + BD.length + '</small></h2><div class="bd">' + BD.map(function (b, i) { var ok = b[2] >= b[3]; return '<button class="bg ' + (ok ? "" : "lk") + '" data-b="' + i + '"><div class="ic">' + ic(b[1]) + '</div><small>' + esc(b[0]) + '</small>' + (ok ? "" : '<em>' + b[2] + ' из ' + b[3] + '</em>') + '</button>' }).join("") + '</div>' +
             '<h2>Подробнее</h2><details class="ac" open><summary><span>Предметы</span><small>' + SUBJ.length + ' предметов</small></summary><div>' + SUBJ.map(function (s) { return '<div class="sj"><span class="g" style="background:' + s[2] + '">' + esc(s[1]) + '</span><div><b>' + esc(s[0]) + '<small>' + s[3] + ' из ' + s[4] + '</small></b><div class="bar"><b style="width:' + Math.round(s[3] / s[4] * 100) + '%"></b></div></div></div>' }).join("") + '</div></details>' +
             '<details class="ac"><summary><span>Неделя</span><small>занятий: ' + w.sum + '</small></summary><div><div class="wk">' + w.h + '</div></div></details>' +
@@ -131,6 +136,7 @@ function start() {
             var T2 = EF.today(); $("tgt").textContent = (T2.lessons * 5) + " из " + st.goal + " мин"; $("tgb").style.width = Math.min(100, T2.lessons * 5 / st.goal * 100) + "%"
         }
         else if (b.dataset.sw) { st[b.dataset.sw] = !st[b.dataset.sw]; save(); b.setAttribute("aria-checked", st[b.dataset.sw]); if (b.dataset.sw == "remind") $("tm").hidden = !st.remind }
+        else if (b.dataset.inv) { try { if (window.EF && EF.invite) EF.invite('profile'); } catch (e) { } }
         else if (b.dataset.out) { if (confirm("Сбросить весь прогресс? Это действие нельзя отменить.")) { EF.reset() } }
     });
     document.addEventListener("change", function (e) {

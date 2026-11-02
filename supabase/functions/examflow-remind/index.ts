@@ -44,8 +44,8 @@ async function sendTelegram(job: Job): Promise<Response> {
             text: job.text,
             reply_markup: {
                 inline_keyboard: [
-                    [{ text: "Начать занятие", web_app: { url: WEBAPP_URL } }],
-                    [{ text: "Настроить напоминания", web_app: { url: `${WEBAPP_URL}profile.html?settings=1` } }],
+                    [{ text: "Начать занятие", web_app: { url: `${WEBAPP_URL}?src=remind` } }],
+                    [{ text: "Настроить напоминания", web_app: { url: `${WEBAPP_URL}profile.html?settings=1&src=remind` } }],
                 ],
             },
         }),

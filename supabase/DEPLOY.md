@@ -42,8 +42,9 @@ supabase functions deploy examflow-api --no-verify-jwt
 а не Supabase JWT — без флага шлюз отклонит запросы до кода.
 
 Через Dashboard (без CLI): Edge Functions → Deploy new function → имя
-`examflow-api` → вставить целиком `index.ts` в единственный файл → Deploy.
-Файл самодостаточен — валидация Telegram встроена в него же.
+`examflow-api` → файлы `index.ts` и `growth.ts` (чистые хелперы роста:
+парсинг `start_param`, санитайзер аналитики) → Deploy. Валидация Telegram
+встроена в `index.ts`.
 
 ## 4. Клиент
 
@@ -108,3 +109,38 @@ CSP уже пропускает `connect-src https://*.supabase.co`.
 приложение, открытое через кнопку меню без `/start`, может ответить 403 —
 тогда ставим `remind_blocked=true` и снимаем его при следующем `auth`
 (пользователь открыл приложение = чат жив).
+
+## Рост и аналитика
+
+Реферальная программа «Позови друга» (+50 XP и 20 ◎ пригласившему за
+каждого, кто пройдёт первое занятие, до 10 друзей), учёт источников
+(`start_param` / `?src=`) и события воронки в `funnel_events`.
+
+1. SQL Editor: `supabase/growth.sql` — таблицы `acquisition`, `referrals`,
+   `funnel_events` (RLS как у `players`, пишет только service role).
+2. Передеплоить функции:
+   ```
+   supabase functions deploy examflow-api --no-verify-jwt     # index.ts + growth.ts
+   supabase functions deploy examflow-remind --no-verify-jwt  # index.ts + due.ts
+   ```
+3. Mini App в @BotFather: `/newapp` → бот `myexamflow_bot` → title, описание,
+   фото 640×360 → Web App URL `https://ximeexd.github.io/examflow/` → short
+   name `app` (занято значение в `app-config.js`; при смене — обновить
+   `appShortName` там же). Прямая ссылка: `t.me/myexamflow_bot/app`.
+4. Отчёты: `supabase/analytics.sql` — 6 готовых запросов для SQL Editor
+   (новые игроки по источникам, воронка, D1/D7-ретеншн когорт `app_open`,
+   рефералы по пригласившим, открытия из напоминаний, DAU/WAU). Просто
+   запускать нужный блок — все запросы read-only.
+5. Источники-теги для рекламы: прямые ссылки вида
+   `https://t.me/myexamflow_bot/app?startapp=tiktok` (`vk`, `youtube`, … —
+   `[A-Za-z0-9_-]{1,64}`). `ref_<telegram_id>` зарезервировано под рефералки.
+   Источники из кнопок (`?src=`, напр. `src=remind`) летят в пропсы
+   `app_open`, см. отчёт №5 в analytics.sql.
+
+Как работает рефералка: `ref_<id>` приходит в `start_param` проверенного
+initData → `acquisition` (первая метка источника, конфликт игнорируется) и
+`referrals` (только если у игрока ещё нет строки в `players`). Первая
+пройденная новым игроком «настоящая» тема-занятие проставляет
+`completed_at`; пригласивший получает награду лениво при своём `auth`
+(до `REF_MAX=10`, через `rewarded_at`). Клиент показывает счётчики из
+`invites` в ответе `auth`.

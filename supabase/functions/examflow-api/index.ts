@@ -17,6 +17,7 @@
 // token (stateless HMAC). All other actions take {session}.
 
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
+import { normTrackProps, parseStartParam, TRACK_NAMES } from "./growth.ts";
 
 // ---- Telegram initData validation (first-party HMAC per
 // https://core.telegram.org/bots/webapps: every field except `hash` goes into
@@ -43,7 +44,7 @@ async function validateTelegramInitData(
   initData: string,
   botToken: string,
   nowSeconds: number,
-): Promise<{ id: string; name: string }> {
+): Promise<{ id: string; name: string; startParam: string }> {
   if (!botToken || typeof initData !== "string" || !initData || initData.length > 8192) {
     throw new Error("invalid_init_data");
   }
@@ -80,6 +81,9 @@ async function validateTelegramInitData(
   return {
     id: String(user.id),
     name: typeof user.first_name === "string" ? user.first_name.trim().slice(0, 50) : "",
+    // start_param rides inside the validated initData (part of the data-check
+    // string), so the deep-link source/ref tag is as trusted as the user id
+    startParam: params.get("start_param") || "",
   };
 }
 
@@ -109,6 +113,9 @@ const MAX_XP = 1e7;
 const LESSON_CAP_DAY = 40;
 const MAX_BODY_BYTES = 65536;
 const EVENTS_PER_MINUTE = 150;
+const TRACKS_PER_MINUTE = 60;
+// referral reward for the inviter (paid lazily on their own auth)
+const REF_XP = 50, REF_COINS = 20, REF_MAX = 10;
 const EVENT_KINDS = new Set(["finish_lesson", "practice", "claim", "profile", "reset"]);
 const EVENT_ID_RE = /^[\w.:-]{1,80}$/;
 const QID_RE = /^[^\s",()\\]{1,200}$/u;
@@ -463,6 +470,12 @@ async function applyEvent(ctx: Ctx, ev: Record<string, unknown>): Promise<void> 
       e.prog[key] = cur + 1;
       xp += 20; coins += 10;
       if (cur + 1 >= 10) { xp += 30; coins += 15; }
+      // referral funnel: the first real lesson a new player finishes marks
+      // their invite as activated — best effort, never blocks the event
+      try {
+        await admin.from("referrals").update({ completed_at: now.toISOString() })
+          .eq("referee", ctx.tg).is("completed_at", null);
+      } catch { /* growth optional */ }
     } else {
       xp += 5;
     }
@@ -599,14 +612,93 @@ Deno.serve(async (request) => {
       } catch { /* reminders optional */ }
       const { data: player } = await admin.from("players")
         .select("econ,profile,revision").eq("telegram_id", telegram.id).maybeSingle();
+
+      // ---- acquisition + referral capture (growth.sql) ------------------
+      // first touch wins; all of this is best-effort and never breaks auth
+      try {
+        const sp = parseStartParam(telegram.startParam);
+        if (sp) {
+          await admin.from("acquisition").upsert(
+            { telegram_id: telegram.id, source: sp.source, referrer: sp.referrer },
+            { onConflict: "telegram_id", ignoreDuplicates: true });
+          // a referral is recorded only for a genuinely new player (no row
+          // yet): an existing account coming via a link is not an invite
+          if (sp.referrer && sp.referrer !== telegram.id && !player) {
+            await admin.from("referrals").upsert(
+              { referee: telegram.id, referrer: sp.referrer },
+              { onConflict: "referee", ignoreDuplicates: true });
+          }
+        }
+      } catch { /* growth optional */ }
+
+      // ---- lazy invite reward: the inviter collects on their own auth ---
+      let invites: { invited: number; activated: number; rewarded: number } | null = null;
+      try {
+        const { data: rows } = await admin.from("referrals")
+          .select("referee,completed_at,rewarded_at").eq("referrer", telegram.id);
+        const refs = (rows || []) as { referee: string; completed_at: string | null; rewarded_at: string | null }[];
+        let granted = 0;
+        if (player) {
+          const pending = refs.filter((r) => r.completed_at && !r.rewarded_at);
+          const already = refs.filter((r) => r.rewarded_at).length;
+          const rewardable = pending.slice(0, Math.max(0, REF_MAX - already)).map((r) => r.referee);
+          if (rewardable.length) {
+            const { data: marked } = await admin.from("referrals")
+              .update({ rewarded_at: now.toISOString() })
+              .in("referee", rewardable).is("rewarded_at", null)
+              .select("referee");
+            const n = (marked || []).length;
+            if (n) {
+              const e = normEcon(player.econ, null);
+              grantUncapped(e, n * REF_XP, n * REF_COINS);
+              const nextRev = (player.revision as number) + 1;
+              const { data: upd } = await admin.from("players")
+                .update({ econ: e, revision: nextRev, updated_at: now.toISOString() })
+                .eq("telegram_id", telegram.id).eq("revision", player.revision)
+                .select("revision");
+              if (upd && upd.length) {
+                granted = n;
+                player.econ = e; player.revision = nextRev;
+              } else {
+                // lost the revision race — undo the marks; next auth retries
+                await admin.from("referrals").update({ rewarded_at: null })
+                  .in("referee", (marked || []).map((m) => m.referee))
+                  .eq("rewarded_at", now.toISOString());
+              }
+            }
+          }
+        }
+        invites = {
+          invited: refs.length,
+          activated: refs.filter((r) => r.completed_at).length,
+          rewarded: refs.filter((r) => r.rewarded_at).length + granted,
+        };
+      } catch { /* growth optional */ }
+
       const session = await issueSession(telegram.id, nowSec);
       return json({
         session,
         state: player ? { econ: player.econ, profile: player.profile, revision: player.revision } : null,
+        ...(invites ? { invites } : {}),
       }, 200, origin);
     }
 
     const tg = await readSession(body?.session, nowSec);
+
+    if (action === "track") {
+      // fire-and-forget analytics: needs a valid session, never a player row
+      const name = str(body?.name, 24);
+      if (!TRACK_NAMES.has(name)) return json({ error: "bad_name" }, 400, origin);
+      const since = new Date(now.getTime() - 60000).toISOString();
+      const { count: recent } = await admin.from("funnel_events")
+        .select("id", { count: "exact", head: true }).eq("telegram_id", tg).gte("created_at", since);
+      if ((recent || 0) >= TRACKS_PER_MINUTE) return json({ error: "rate_limited" }, 429, origin);
+      const { error: trErr } = await admin.from("funnel_events")
+        .insert({ telegram_id: tg, name, props: normTrackProps(body?.props) });
+      if (trErr) return json({ error: "track_failed" }, 500, origin);
+      return json({ ok: true }, 200, origin);
+    }
+
     const { data: player, error: loadError } = await admin.from("players")
       .select("econ,profile,revision,migrated").eq("telegram_id", tg).maybeSingle();
     if (loadError) throw loadError;

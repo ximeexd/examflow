@@ -4,10 +4,6 @@ function start() {
     const $ = id => document.getElementById(id);
     const esc = EF.escapeHTML;
     const S = EF.get(), T = EF.today();
-    try {
-        if (window.EFTrack) EFTrack.send('app_open',
-            window.EFGrowth ? EFGrowth.srcParam(location.search) : {});
-    } catch (e) { }
 
     /* === onboarding (первый вход) === */
     const MASCOT = '<img class="mas" src="brand-avatar.png?v=1" alt="ExamFlow">';

@@ -161,6 +161,11 @@
             }
             if (state) applyServerState(state);
             await flush();
+            // session established — every page that loads this script reports
+            // one app_open per 30 min (direct landings on tasks/quests/
+            // profile/lesson never run home-view, so it can't live there)
+            EFTrack.send('app_open', srcProps());
+            flushTrack();
         } catch (e) {
             // offline or server down — the app stays fully usable on local state
             if (EFS.cacheFirst && EFS.setStatus) {
@@ -215,6 +220,7 @@
                         try { localStorage.removeItem(sk); } catch (e) { }
                         const a = await auth(ctx);
                         if (!a || identity() !== ctx || !ownsSession(session, ctx)) break;
+                        flushTrack();
                         continue;
                     }
                     if (r.status !== 200) break;
@@ -253,13 +259,47 @@
     }
 
     // Fire-and-forget funnel events (examflow-api `track` action). Silent
-    // no-op for guests/offline; app_open is deduped per tab for 30 minutes
-    // via sessionStorage so page-to-page navigation doesn't spam events.
+    // no-op for guests; while auth is still in flight (session not yet
+    // established) events are held in pendingTrack and flushed as soon as a
+    // valid session exists — a synchronous send at page start would
+    // otherwise drop app_open on every load. The 30-minute sessionStorage
+    // dedupe runs at actual send time, not when queued, so a queued
+    // app_open can't stamp the window early and lose the real send.
+    const pendingTrack = [];
+
+    function srcProps() {
+        try {
+            if (window.EFGrowth && EFGrowth.srcParam) return EFGrowth.srcParam(location.search);
+        } catch (e) { }
+        try {
+            const s = new URLSearchParams(location.search).get('src') || '';
+            return /^[A-Za-z0-9_-]{1,64}$/.test(s) ? { src: s.toLowerCase() } : {};
+        } catch (e) { }
+        return {};
+    }
+
+    function flushTrack() {
+        if (!pendingTrack.length) return;
+        const ctx = identity();
+        if (ctx === null || !session || !ownsSession(session, ctx)) return;
+        const batch = pendingTrack.splice(0, pendingTrack.length);
+        for (const t of batch) {
+            if (t.ctx === ctx) EFTrack.send(t.name, t.props);
+        }
+    }
+
     window.EFTrack = {
         send(name, props) {
             try {
                 const ctx = identity();
-                if (ctx === null || !session || !ownsSession(session, ctx)) return;
+                if (ctx === null) return;
+                if (!session || !ownsSession(session, ctx)) {
+                    if (name === 'app_open' &&
+                        pendingTrack.some(t => t.name === 'app_open')) return;
+                    if (pendingTrack.length < 5)
+                        pendingTrack.push({ ctx, name, props: props || {} });
+                    return;
+                }
                 if (name === 'app_open') {
                     const k = 'ef_track_appopen';
                     const last = Number(sessionStorage.getItem(k) || 0);

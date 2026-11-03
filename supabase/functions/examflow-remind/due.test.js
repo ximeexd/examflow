@@ -95,5 +95,11 @@ ok(/к ЕГЭ/.test(reminderText(0, 'ege', '2026-10-31')), 'ege → к ЕГЭ');
 ok(/экзамен/.test(reminderText(0, '', '2026-10-31')), 'missing exam → generic');
 ok(reminderText(0, 'oge', '2026-10-31') === reminderText(0, 'oge', '2026-10-31'),
     'deterministic per day');
+ok(/первое занятие/i.test(reminderText(0, 'oge', '2026-10-31', true)),
+    'neverStudied → first-lesson copy');
+ok(reminderText(0, 'oge', '2026-10-31', true) === reminderText(0, 'oge', '2026-10-31', true),
+    'neverStudied deterministic per day');
+ok(reminderText(0, 'oge', '2026-10-31', false) === reminderText(0, 'oge', '2026-10-31'),
+    'neverStudied=false → plain copy unchanged');
 
 console.log(failed ? '\n' + failed + ' FAILED' : '\nall passed');

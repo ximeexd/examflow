@@ -80,10 +80,11 @@ Deno.serve(async (request) => {
                 if (!d.due) { skipped++; continue; }
                 const streak = Number((p.econ as Record<string, unknown>)?.streak) || 0;
                 const exam = String((p.profile as Record<string, unknown>)?.exam || "");
+                const neverStudied = !(p.econ as Record<string, unknown>)?.lastActive;
                 due.push({
                     chatId: String(p.telegram_id),
                     localDay: d.localDay as string,
-                    text: reminderText(streak, exam, d.localDay as string),
+                    text: reminderText(streak, exam, d.localDay as string, neverStudied),
                 });
             }
             if (data.length < PAGE || due.length >= MAX_SENDS) break;

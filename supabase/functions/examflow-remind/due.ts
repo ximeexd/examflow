@@ -65,11 +65,17 @@ const VARIANTS_PLAIN = [
     function (e) { return 'Добрый день! Один маленький урок ' + e + ' — прямо в Telegram 💪'; },
     function (e) { return '5 минут на занятие ' + e + ' — маленький шаг каждый день 💪'; },
 ];
-export function reminderText(streak, exam, localDay) {
+const VARIANTS_FIRST = [
+    function (e) { return 'Ты выбрал(а) подготовку ' + e + ' — первое занятие займёт 5 минут, а серия начнётся сразу 🔥'; },
+    function (e) { return 'Тебя ждёт первое занятие ' + e + ' — всего 5 минут, а старт уже за тобой 🔥'; },
+    function (e) { return '5 минут на первое занятие ' + e + ' — маленький шаг, который начинает серию 🔥'; },
+];
+export function reminderText(streak, exam, localDay, neverStudied) {
     const ex = exam === 'oge' ? 'к ОГЭ' : exam === 'ege' ? 'к ЕГЭ' : 'к экзамену';
     let h = 0;
     for (const ch of String(localDay)) h = ((h * 31) + ch.charCodeAt(0)) | 0;
     h = Math.abs(h);
     if (streak >= 2) return VARIANTS_STREAK[h % VARIANTS_STREAK.length](streak);
+    if (neverStudied) return VARIANTS_FIRST[h % VARIANTS_FIRST.length](ex);
     return VARIANTS_PLAIN[h % VARIANTS_PLAIN.length](ex);
 }

@@ -86,7 +86,10 @@ function start() {
                 if (!EF.subjects().includes(S.active)) S.active = EF.subjects()[0];
                 EF.save(); persistGoal(ob.goal);
                 try { if (window.EFTrack) EFTrack.send('onboarding_done', { exam: S.exam }); } catch (e) { }
-                Promise.resolve(EFS.flush()).catch(() => { }).then(() => location.reload())
+                Promise.resolve(EFS.flush()).catch(() => { }).then(() => {
+                    try { sessionStorage.setItem('ef_first', '1') } catch (e) { }
+                    location.reload()
+                })
             } return
         }
         if (e.target.closest('#obb')) { ob.step--; obr(); return }
@@ -131,6 +134,15 @@ function start() {
         const cta = document.getElementById('cta');
         cta.textContent = n ? (d ? 'Продолжить · занятие ' + n.lesson + ' →' : 'Начать · занятие 1 →') : 'Повторить курс →';
         cta.href = n ? `lesson.html?s=${encodeURIComponent(subj)}&t=${encodeURIComponent(n.topic.key)}&l=${n.lesson}` : `tasks.html?s=${encodeURIComponent(subj)}`;
+        try {
+            if (sessionStorage.getItem('ef_first')) {
+                sessionStorage.removeItem('ef_first');
+                if (cta.href.indexOf('lesson.html') >= 0) {
+                    try { if (window.EFTrack) EFTrack.send('first_lesson_auto', {}); } catch (e) { }
+                    location.replace(cta.href);
+                }
+            }
+        } catch (e) { }
         const a = document.getElementById('art'); a.innerHTML = art(o); a.classList.remove('sw'); void a.offsetWidth; a.classList.add('sw');
         document.querySelectorAll('.chip').forEach(function (b) { b.setAttribute('aria-pressed', b.textContent === subj) });
         refreshMetrics();

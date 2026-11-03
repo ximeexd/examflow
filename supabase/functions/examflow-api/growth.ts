@@ -21,6 +21,7 @@ export function parseStartParam(raw) {
 export const TRACK_NAMES = new Set([
     "app_open", "onboarding_done", "lesson_finish",
     "invite_share", "mistakes_open", "number_input_used",
+    "first_lesson_auto",
 ]);
 
 const PROP_KEY_RE = /^[a-z_]{1,20}$/;

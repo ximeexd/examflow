@@ -74,7 +74,9 @@
         catch (e) { return 'e' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10); }
     }
 
+    let callSeq = 0, appliedSeq = 0;
     async function call(body) {
+        const seq = ++callSeq;
         const r = await fetch(API, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -82,11 +84,18 @@
         });
         let data = null;
         try { data = await r.json(); } catch (e) { }
-        return { status: r.status, data: data || {} };
+        return { status: r.status, data: data || {}, seq };
     }
 
-    function applyServerState(state) {
+    function applyServerState(state, seq) {
         if (!state || typeof state !== 'object') return;
+        // a snapshot issued before a newer one already applied is stale —
+        // dropping it here keeps a finished lesson from being rolled back
+        // when a slow `state`/`auth` reply lands after the events flush
+        if (seq !== undefined) {
+            if (seq < appliedSeq) return;
+            appliedSeq = seq;
+        }
         try {
             // events not yet acknowledged (e.g. a just-finished lesson) are
             // missing from a stale server snapshot — never let it roll back progress
@@ -110,6 +119,7 @@
             const inv = r.data && r.data.invites;
             if (inv && typeof inv === 'object') lastInvites = inv;
         } catch (e) { }
+        r.data.seq = r.seq;
         return r.data;
     }
 
@@ -130,7 +140,7 @@
             // a leftover module-level session from another context is dropped
             // even when the cached scoped token turns out to be mismatched
             if (!ownsSession(session, ctx)) session = null;
-            let state = null;
+            let state = null, stateSeq = 0;
             const stored = (() => { try { return localStorage.getItem(sk); } catch (e) { return null; } })();
             // only this account's own scoped session is reused — the legacy
             // unscoped key is deliberately never read for credentials
@@ -143,7 +153,7 @@
                         session = null;
                         try { localStorage.removeItem(sk); } catch (e) { }
                     }
-                    else if (r.status === 200) state = r.data.state;
+                    else if (r.status === 200) { state = r.data.state; stateSeq = r.seq; }
                 }
             } else if (stored) {
                 try { localStorage.removeItem(sk); } catch (e) { }
@@ -152,14 +162,14 @@
                 const r = await auth(ctx);
                 if (identity() !== ctx) return;
                 if (!r) return;
-                state = r.state;
+                state = r.state; stateSeq = r.seq;
             }
             if (!skipState && (state === null || state === undefined)) {
                 const m = await call({ action: 'migrate', session, progress: EF.get(), profile: profileSnapshot() });
                 if (identity() !== ctx) return;
-                if (m.status === 200) state = m.data.state;
+                if (m.status === 200) { state = m.data.state; stateSeq = m.seq; }
             }
-            if (state) applyServerState(state);
+            if (state) applyServerState(state, stateSeq);
             await flush();
             // session established — every page that loads this script reports
             // one app_open per 30 min (direct landings on tasks/quests/
@@ -229,7 +239,7 @@
                     // re-read: events queued while the request was in flight
                     // must not be lost
                     saveQueueKey(qk, loadQueueKey(qk).filter(ev => !done.has(ev.id) && !bad.has(ev.id)));
-                    if (r.data.state) applyServerState(r.data.state);
+                    if (r.data.state) applyServerState(r.data.state, r.seq);
                     // loop re-reads the queue — drains 50-event batches and
                     // anything queued while this one was in flight
                 } catch (e) {

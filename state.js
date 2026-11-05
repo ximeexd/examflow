@@ -186,7 +186,7 @@
             changed = true;
         }
         if (s.lastActive && s.lastActive < yesterStr() && s.streak !== 0) { s.streak = 0; changed = true; }
-        if (changed && st === undefined) writeSilent();
+        if (changed && st === undefined) writeSilent(true);
         return changed;
     }
 
@@ -204,10 +204,26 @@
     const s2 = s; // reference used by refreshPeriods when called without arg
 
     // Local write that does NOT trigger the sync listener; false on quota error.
-    function writeSilent() { try { localStorage.setItem(storageKey(), JSON.stringify(s)); return true; } catch (e) { return false; } }
+    // mergeProg=true pulls stored lesson progress forward before writing: prog
+    // is monotonic (0..10, only ever advances), so a second tab holding an
+    // older in-memory snapshot can never roll back another tab's lessons.
+    function writeSilent(mergeProg) {
+        try {
+            if (mergeProg) {
+                let r = null;
+                try { r = JSON.parse(safeGet(storageKey())); } catch (e) { }
+                const rp = r && typeof r.prog === 'object' && r.prog && !Array.isArray(r.prog) ? r.prog : null;
+                if (rp) for (const k of Object.keys(rp)) {
+                    const v = num(rp[k], 0, 0, 10);
+                    if (v > (s.prog[k] || 0)) s.prog[k] = v;
+                }
+            }
+            localStorage.setItem(storageKey(), JSON.stringify(s)); return true;
+        } catch (e) { return false; }
+    }
 
-    function save() {
-        const persisted = writeSilent();
+    function save(authoritative) {
+        const persisted = writeSilent(!authoritative);
         try { window.dispatchEvent(new CustomEvent('ef:state-saved', { detail: { persisted } })); } catch (e) {}
     }
 
@@ -478,7 +494,7 @@
             }
             if (list.indexOf(s.active) < 0) s.active = list[0] || s.active;
             refreshPeriods();
-            save();
+            save(true);
         },
 
         // Save a clean state under the current scope, upload it if sync is up, reload.

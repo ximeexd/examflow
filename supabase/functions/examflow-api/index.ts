@@ -118,7 +118,7 @@ const TRACKS_PER_MINUTE = 60;
 const REF_XP = 50, REF_COINS = 20, REF_MAX = 10;
 const EVENT_KINDS = new Set(["finish_lesson", "practice", "claim", "profile", "reset"]);
 const EVENT_ID_RE = /^[\w.:-]{1,80}$/;
-const QID_RE = /^[^\s",()\\]{1,200}$/u;
+const QID_RE = /^[^\t\r\n",()\\]{1,200}$/u;
 // Set MIGRATION_OPEN=0 in the function secrets once the one-time import of
 // pre-server progress is no longer needed: new accounts then start from zero.
 const MIGRATION_OPEN = Deno.env.get("MIGRATION_OPEN") !== "0";

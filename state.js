@@ -207,18 +207,25 @@
     // mergeProg=true pulls stored lesson progress forward before writing: prog
     // is monotonic (0..10, only ever advances), so a second tab holding an
     // older in-memory snapshot can never roll back another tab's lessons.
+    // lastWrite skips the stored-state parse on the hot path: storage equal
+    // to our own last write means no other tab touched it, nothing to merge.
+    let lastWrite = '';
     function writeSilent(mergeProg) {
         try {
             if (mergeProg) {
-                let r = null;
-                try { r = JSON.parse(safeGet(storageKey())); } catch (e) { }
-                const rp = r && typeof r.prog === 'object' && r.prog && !Array.isArray(r.prog) ? r.prog : null;
-                if (rp) for (const k of Object.keys(rp)) {
-                    const v = num(rp[k], 0, 0, 10);
-                    if (v > (s.prog[k] || 0)) s.prog[k] = v;
+                const raw = safeGet(storageKey());
+                if (raw !== null && raw !== lastWrite) {
+                    let r = null;
+                    try { r = JSON.parse(raw); } catch (e) { }
+                    const rp = r && typeof r.prog === 'object' && r.prog && !Array.isArray(r.prog) ? r.prog : null;
+                    if (rp) for (const k of Object.keys(rp)) {
+                        const v = num(rp[k], 0, 0, 10);
+                        if (v > (s.prog[k] || 0)) s.prog[k] = v;
+                    }
                 }
             }
-            localStorage.setItem(storageKey(), JSON.stringify(s)); return true;
+            const str = JSON.stringify(s);
+            localStorage.setItem(storageKey(), str); lastWrite = str; return true;
         } catch (e) { return false; }
     }
 

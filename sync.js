@@ -555,9 +555,12 @@
             let u;
             try { u = new URL(a.href, location.href); } catch (err) { return; }
             if (u.origin !== location.origin || !/\.html$/.test(u.pathname)) return;
-            e.preventDefault();
-            const nav = () => { location.href = a.href; };
-            EFS.flush().then(nav, nav);
+            // converge in the background — never gate navigation on the full
+            // chunked upload. state + dirty flag are already durable in
+            // localStorage, and the next page's drain finishes any cut-off
+            // generation via meta.own cleanup; awaiting here made every link
+            // tap feel like a multi-second network stall
+            EFS.flush().catch(() => { });
         }, true);
     }
     let cacheInteraction = false;

@@ -88,12 +88,10 @@
         const target = BACK[page];
         if (!target || backBusy) return;
         backBusy = true; // serialize — repeated clicks while flushing do nothing
-        const done = () => { location.href = target; };
-        let f = null;
         try {
-            if (window.EFS && EFS.mode === 'account' && typeof EFS.flush === 'function') f = EFS.flush();
+            if (window.EFS && EFS.mode === 'account' && typeof EFS.flush === 'function') EFS.flush().catch(() => { });
         } catch (e) { }
-        if (f && typeof f.then === 'function') f.then(done, done); else done();
+        location.href = target;
     }
     if (inTg()) {
         const bb = tw().BackButton;
